@@ -117,6 +117,36 @@ export function Copiloto() {
             </div>
           </section>
 
+          <section className="panel trade-plan">
+            <div className="panel-title">
+              <div>
+                <h2>Plano técnico condicional</h2>
+                <p className="muted">Ações Nasdaq/EUA · base diária · sem execução automática</p>
+              </div>
+              {analysis.trade_plan.available && <span className="status-pill warn">{analysis.trade_plan.status}</span>}
+            </div>
+            {!analysis.trade_plan.available ? (
+              <p className="muted">{analysis.trade_plan.reason}</p>
+            ) : (
+              <>
+                <div className="metric-mini-grid trade-plan-grid">
+                  <div><span>Entrada de referência</span><strong>US$ {analysis.trade_plan.entry_price?.toFixed(2)}</strong></div>
+                  <div><span>Invalidação / stop</span><strong>US$ {analysis.trade_plan.stop_price?.toFixed(2)}</strong></div>
+                  <div><span>Alvo 1 (2R)</span><strong>US$ {analysis.trade_plan.target_1_price?.toFixed(2)}</strong></div>
+                  <div><span>Alvo 2 (3R)</span><strong>US$ {analysis.trade_plan.target_2_price?.toFixed(2)}</strong></div>
+                  <div><span>Tamanho máximo</span><strong>{analysis.trade_plan.suggested_shares} ação(ões)</strong></div>
+                  <div><span>Risco planejado</span><strong>US$ {analysis.trade_plan.risk_amount_usd?.toFixed(2)}</strong></div>
+                </div>
+                <ul className="decision-list">
+                  <li>{analysis.trade_plan.reason}</li>
+                  <li>{analysis.trade_plan.invalidation}</li>
+                  <li>Suporte de 20 dias: US$ {analysis.trade_plan.support_20d?.toFixed(2)} · Resistência de 20 dias: US$ {analysis.trade_plan.resistance_20d?.toFixed(2)}.</li>
+                  <li>Janela de acompanhamento: {analysis.trade_plan.holding_window}; plano calculado no timeframe {analysis.trade_plan.timeframe}.</li>
+                </ul>
+              </>
+            )}
+          </section>
+
           <section className="dashboard-grid">
             <div className="panel panel-wide">
               <h2>Estamos olhando porque...</h2>

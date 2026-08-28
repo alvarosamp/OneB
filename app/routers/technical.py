@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import indicators
+from app import technical_edge
 from app.auth import get_current_user
 from app.audit import audit
 from app.db import get_db
@@ -17,6 +18,36 @@ from app.schemas import (
 )
 
 router = APIRouter(prefix="/api/technical", tags=["technical"], dependencies=[Depends(get_current_user)])
+
+
+@router.get("/edge")
+def technical_edge_ranking(
+    symbols: str = "AAPL,MSFT,NVDA,AMD,AMZN,GOOGL,META,TSLA,AVGO,NFLX",
+    period: str = "2y",
+):
+    """Research-only five-day cross-sectional ranking for a ticker list.
+
+    It is intentionally an observation aid: ``OBSERVAR`` is not an order or
+    investment recommendation, and the ranking is meaningful only inside the
+    selected universe.
+    """
+    selected = list(dict.fromkeys(item.strip().upper() for item in symbols.split(",") if item.strip()))
+    if len(selected) < 3:
+        raise HTTPException(status_code=400, detail="Informe ao menos tres simbolos para formar um ranking")
+    if len(selected) > 50:
+        raise HTTPException(status_code=400, detail="Limite de 50 simbolos por ranking")
+    benchmark = market_data_service.get_bars("QQQ", period=period, interval="1d")
+    if benchmark.empty:
+        raise HTTPException(status_code=503, detail="Sem historico do benchmark QQQ")
+    histories = {symbol: market_data_service.get_bars(symbol, period=period, interval="1d") for symbol in selected}
+    ranked = technical_edge.rank_latest(histories, benchmark)
+    return {
+        "horizon_days": technical_edge.HORIZON_DAYS,
+        "benchmark": "QQQ",
+        "universe": selected,
+        "research_note": "Ranking experimental de observacao; nao e recomendacao nem ordem.",
+        "rows": ranked,
+    }
 
 
 def _last(values):

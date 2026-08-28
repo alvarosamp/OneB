@@ -241,6 +241,76 @@ def detect_patterns(db: Session) -> list[str]:
     return patterns[:12]
 
 
+def build_trade_plan(
+    history: pd.DataFrame,
+    entry_price: float | None,
+    capital_usd: float,
+    risk_budget_pct: float,
+    bias: str,
+) -> dict:
+    """Build a transparent, long-only *conditional* plan for US equities.
+
+    This is deliberately not an execution instruction: the plan is unavailable
+    until the daily history contains enough data, and its validity is tied to
+    the explanatory bias returned by the other agents.  ATR supplies a
+    volatility-aware minimum stop distance while the 20-day low supplies the
+    structural invalidation level.
+    """
+    if entry_price is None or history.empty or len(history) < 20:
+        return {
+            "available": False,
+            "timeframe": "1D",
+            "reason": "Histórico diário insuficiente para calcular níveis técnicos confiáveis.",
+        }
+
+    atr_14 = _safe_last(indicators.atr(history["high"], history["low"], history["close"]))
+    support = float(history["low"].tail(20).min())
+    resistance = float(history["high"].tail(20).max())
+    # A stop must be below the entry by at least 1 ATR, but never above the
+    # latest 20-day support.  This makes the invalidation reproducible.
+    atr_stop = entry_price - (atr_14 or entry_price * 0.03)
+    stop_price = min(atr_stop, support * 0.995)
+    risk_per_share = max(entry_price - stop_price, entry_price * 0.005)
+    risk_amount = capital_usd * (risk_budget_pct / 100)
+    shares_by_risk = int(risk_amount / risk_per_share)
+    shares_by_capital = int(capital_usd / entry_price)
+    suggested_shares = max(0, min(shares_by_risk, shares_by_capital))
+    target_1 = entry_price + risk_per_share * 2
+    target_2 = entry_price + risk_per_share * 3
+
+    if bias == "OBSERVAR_COMPRA":
+        status = "OBSERVAR_CONFIRMAÇÃO"
+        reason = "Só considerar após confirmar o gatilho técnico e revisar notícias do dia."
+    elif bias == "EVITAR_POR_ENQUANTO":
+        status = "NÃO OPERAR"
+        reason = "O consenso atual não autoriza uma entrada; os níveis ficam apenas como referência."
+    else:
+        status = "AGUARDAR"
+        reason = "Aguardar confirmação antes de considerar qualquer entrada manual."
+
+    return {
+        "available": True,
+        "timeframe": "1D",
+        "holding_window": "5 a 20 pregões",
+        "status": status,
+        "reason": reason,
+        "entry_price": round(entry_price, 2),
+        "stop_price": round(stop_price, 2),
+        "target_1_price": round(target_1, 2),
+        "target_2_price": round(target_2, 2),
+        "risk_per_share_usd": round(risk_per_share, 2),
+        "risk_amount_usd": round(risk_amount, 2),
+        "suggested_shares": suggested_shares,
+        "position_value_usd": round(suggested_shares * entry_price, 2),
+        "risk_reward_target_1": 2.0,
+        "risk_reward_target_2": 3.0,
+        "support_20d": round(support, 2),
+        "resistance_20d": round(resistance, 2),
+        "atr_14": round(atr_14, 2) if atr_14 is not None else None,
+        "invalidation": f"Fechamento diário abaixo de US$ {stop_price:.2f} invalida o cenário.",
+    }
+
+
 def analyze_symbol(db: Session, symbol: str, user_id: int, capital_usd: float, risk_budget_pct: float, question: str = "") -> dict:
     symbol = symbol.upper().strip()
     history = market_data_service.get_bars(symbol, period="1y", interval="1d")
@@ -273,6 +343,7 @@ def analyze_symbol(db: Session, symbol: str, user_id: int, capital_usd: float, r
     for agent in agents:
         if agent.vote != "Comprar":
             contrary.extend(agent.evidence[:1])
+    trade_plan = build_trade_plan(history, entry_price, capital_usd, risk_budget_pct, bias)
     return {
         "symbol": symbol,
         "question": question,
@@ -283,6 +354,7 @@ def analyze_symbol(db: Session, symbol: str, user_id: int, capital_usd: float, r
         "why": explanation,
         "contrary_view": contrary[:5],
         "risk_plan": risk_vote.evidence,
+        "trade_plan": trade_plan,
         "simulation": simulate_history(history),
         "patterns": detect_patterns(db),
         "disclaimer": "Nao e recomendacao de investimento nem ordem de compra/venda. Use como copiloto de analise e valide manualmente.",

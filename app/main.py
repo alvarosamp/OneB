@@ -29,6 +29,7 @@ from app.routers import (
     watchlist,
 )
 from app.scheduler import build_scheduler
+from app.security import SecurityHeadersMiddleware
 from app.telegram_bot import build_application
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -76,6 +77,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="OneB Market API", lifespan=lifespan)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_origin],

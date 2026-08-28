@@ -231,7 +231,14 @@ def test_intelligence_live_check_uses_market_history(client, monkeypatch):
         },
         index=dates,
     )
-    monkeypatch.setattr("app.market_data.yfinance_client.get_history", lambda *args, **kwargs: history)
+    # The endpoint uses the configured market-data provider through the shared
+    # service, so patch the service boundary rather than a specific provider.
+    # This keeps the test independent from the developer's .env selection.
+    monkeypatch.setattr("app.market_data.service.get_bars", lambda *args, **kwargs: history)
+    monkeypatch.setattr(
+        "app.routers.intelligence.quality_gate",
+        lambda *args, **kwargs: {"allowed": True, "confidence": "HIGH", "reason": ""},
+    )
 
     res = test_client.get("/api/intelligence/live-check/AAPL")
 
@@ -581,6 +588,9 @@ def test_copilot_analyze_endpoint(client, monkeypatch):
     assert data["symbol"] == "NVDA"
     assert "votes" in data
     assert len(data["votes"]) == 5
+    assert data["trade_plan"]["available"] is True
+    assert data["trade_plan"]["target_1_price"] > data["trade_plan"]["entry_price"]
+    assert data["trade_plan"]["stop_price"] < data["trade_plan"]["entry_price"]
     assert "simulation" in data
 
 
@@ -727,6 +737,12 @@ def test_decision_desk_generates_and_records_recommendations(client, monkeypatch
         index=pd.date_range("2025-01-01", periods=rows, freq="D"),
     )
     monkeypatch.setattr("app.paper_simulator._history", lambda symbol, period="1y": history)
+    # The scenario verifies decision recording, not external provider health.
+    # Keep it deterministic and cover data-quality behavior in its own tests.
+    monkeypatch.setattr(
+        "app.decision_engine.quality_gate",
+        lambda *args, **kwargs: {"allowed": True, "confidence": "HIGH", "reason": ""},
+    )
 
     data = test_client.get("/api/decision-desk/recommendations?record=true").json()
 

@@ -20,14 +20,25 @@ export function Mercado() {
   );
   const [econ, setEcon] = useState<EconomicEvent[]>([]);
   const [earnings, setEarnings] = useState<EarningsEvent[]>([]);
+  const [calendarError, setCalendarError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get<EconomicEvent[]>('/api/economic-events?days_ahead=14&limit=50').then(setEcon).catch(() => {});
-    api.get<EarningsEvent[]>('/api/earnings-events?days_ahead=14&limit=50').then(setEarnings).catch(() => {});
+    Promise.all([
+      api.get<EconomicEvent[]>('/api/economic-events?days_ahead=14&limit=50'),
+      api.get<EarningsEvent[]>('/api/earnings-events?days_ahead=14&limit=50'),
+    ])
+      .then(([events, upcomingEarnings]) => {
+        setEcon(events);
+        setEarnings(upcomingEarnings);
+        setCalendarError(null);
+      })
+      .catch((err: unknown) => {
+        setCalendarError(err instanceof Error ? err.message : 'Não foi possível carregar a agenda de mercado.');
+      });
   }, []);
 
   return (
-    <div className="container">
+    <div className="container dashboard-container">
       <div className="page-header">
         <div>
           <p className="eyebrow">Monitor macro</p>
@@ -38,27 +49,27 @@ export function Mercado() {
         </div>
       </div>
 
-      <section>
-        <h2>
-          Noticias do mundo e macro{' '}
-          {globalLastUpdated && <span className="muted">(atualizado {globalLastUpdated.toLocaleTimeString('pt-BR')})</span>}
-        </h2>
-        <ul className="alert-list">
+      <section className="panel">
+        <div className="panel-title">
+          <h2>Noticias do mundo e macro</h2>
+          {globalLastUpdated && <span className="muted">Atualizado {globalLastUpdated.toLocaleTimeString('pt-BR')}</span>}
+        </div>
+        <ul className="compact-list">
           {!globalNews || globalNews.length === 0 ? (
             <li className="muted">Nenhuma noticia global coletada ainda.</li>
           ) : (
             globalNews.map((n, i) => (
-              <li key={i} className="market-news-row">
+              <li key={i}>
                 <span className={`impact-pill ${n.impact_score >= 40 ? 'danger' : n.impact_score >= 20 ? 'warn' : ''}`}>
                   {n.impact_score}
                 </span>
                 <div>
-                  <span className="muted">{fmtDateTime(n.published_at)}</span> -{' '}
                   <a href={n.url} target="_blank" rel="noopener noreferrer">
                     {n.headline}
-                  </a>{' '}
-                  {n.source && <span className="muted">({n.source})</span>}
-                  <span className="muted block-text">categoria: {n.category}</span>
+                  </a>
+                  <span>
+                    {fmtDateTime(n.published_at)} {n.source ? `· ${n.source}` : ''} · {n.category}
+                  </span>
                 </div>
               </li>
             ))
@@ -66,32 +77,42 @@ export function Mercado() {
         </ul>
       </section>
 
-      <section>
-        <h2>
-          Noticias por ativo{' '}
-          {lastUpdated && <span className="muted">(atualizado {lastUpdated.toLocaleTimeString('pt-BR')})</span>}
-        </h2>
-        <ul className="alert-list">
+      {(globalNews === null || news === null || calendarError) && (
+        <p className="data-warning" role="status">
+          {calendarError ?? 'Parte dos dados de mercado está indisponível. A página tentará atualizar novamente.'}
+        </p>
+      )}
+
+      <section className="panel">
+        <div className="panel-title">
+          <h2>Noticias por ativo</h2>
+          {lastUpdated && <span className="muted">Atualizado {lastUpdated.toLocaleTimeString('pt-BR')}</span>}
+        </div>
+        <ul className="compact-list">
           {!news || news.length === 0 ? (
             <li className="muted">Nenhuma noticia coletada ainda.</li>
           ) : (
             news.map((n, i) => (
               <li key={i}>
-                <span className="muted">{fmtDateTime(n.published_at)}</span> - <strong>{n.symbol}</strong>{' '}
-                <a href={n.url} target="_blank" rel="noopener noreferrer">
-                  {n.headline}
-                </a>{' '}
-                {n.source && <span className="muted">({n.source})</span>}
+                <span className="mini-symbol">{n.symbol}</span>
+                <div>
+                  <a href={n.url} target="_blank" rel="noopener noreferrer">
+                    {n.headline}
+                  </a>
+                  <span>
+                    {fmtDateTime(n.published_at)} {n.source ? `· ${n.source}` : ''}
+                  </span>
+                </div>
               </li>
             ))
           )}
         </ul>
       </section>
 
-      <section>
+      <section className="panel">
         <h2>Calendario economico (proximos dias)</h2>
-        <div className="table-scroll">
-          <table className="table">
+        <div className="table-scroll compact-scroll">
+          <table className="table dense-table">
             <thead>
               <tr>
                 <th>Data</th>
@@ -126,10 +147,10 @@ export function Mercado() {
         </div>
       </section>
 
-      <section>
+      <section className="panel">
         <h2>Earnings da watchlist</h2>
-        <div className="table-scroll">
-          <table className="table">
+        <div className="table-scroll compact-scroll">
+          <table className="table dense-table">
             <thead>
               <tr>
                 <th>Data</th>

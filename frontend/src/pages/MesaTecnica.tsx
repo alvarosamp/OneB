@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { api } from '../api/client';
 import { CandlestickChart } from '../components/CandlestickChart';
 import { useToast } from '../context/ToastContext';
-import type { ChartData, TechnicalAnalysis, TechnicalLevel, TradeSetup, WatchlistItem } from '../types';
+import type { ChartData, TechnicalAnalysis, TechnicalEdgeRanking, TechnicalLevel, TradeSetup, WatchlistItem } from '../types';
 
 function fmtMoney(value: number | null | undefined) {
   if (value === null || value === undefined) return '-';
@@ -57,6 +57,7 @@ export function MesaTecnica() {
   const [interval, setInterval_] = useState('15m');
   const [data, setData] = useState<ChartData | null>(null);
   const [analysis, setAnalysis] = useState<TechnicalAnalysis | null>(null);
+  const [research, setResearch] = useState<TechnicalEdgeRanking | null>(null);
   const [status, setStatus] = useState('Carregando favoritos...');
   const [levelForm, setLevelForm] = useState({ label: '', kind: 'ZONE', price: '', notes: '' });
   const [setupForm, setSetupForm] = useState({
@@ -76,6 +77,10 @@ export function MesaTecnica() {
         if (cancelled) return;
         setItems(watchlist);
         setSymbol((current) => current || watchlist[0]?.symbol || 'AAPL');
+        const universe = Array.from(new Set([...watchlist.map((item) => item.symbol), 'AAPL', 'MSFT', 'NVDA'])).slice(0, 50);
+        if (universe.length >= 3) {
+          api.get<TechnicalEdgeRanking>(`/api/technical/edge?symbols=${encodeURIComponent(universe.join(','))}`).then(setResearch).catch(() => setResearch(null));
+        }
       })
       .catch(() => {
         if (!cancelled) {
@@ -462,6 +467,18 @@ export function MesaTecnica() {
             </div>
           ))}
         </div>
+
+        <section className="study-card">
+          <span>Pesquisa experimental · 5 pregões</span>
+          <p className="muted">Ranking cross-sectional, separado da leitura operacional e sem ordem automática.</p>
+          {research?.rows.slice(0, 5).map((row) => (
+            <div key={row.symbol} className="signal-row neutral">
+              <strong>#{row.rank ?? '-'} {row.symbol}</strong>
+              <span>{row.status === 'OK' ? `${row.label} · score ${row.edge_score}` : 'Sem leitura'}</span>
+            </div>
+          ))}
+          {research && <small>{research.research_note}</small>}
+        </section>
       </aside>
     </div>
   );

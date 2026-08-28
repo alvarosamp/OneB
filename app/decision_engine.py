@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app import llm_client
 from app import paper_simulator as sim
 from app import probability_model as pm
+from app.config import settings
 from app.data_quality import quality_gate
 from app.decision_cards import build_decision_card
 from app.market_data import finnhub_client
@@ -278,11 +279,13 @@ def _logged_memory(db: Session, symbol: str, user_id: int | None, actions: tuple
 
 
 def evaluate_pending_outcomes(db: Session) -> int:
-    cutoff = datetime.now(timezone.utc) - timedelta(days=5)
     rows = (
         db.query(RecommendationDecision)
-        .filter(RecommendationDecision.outcome_status == "PENDING")
-        .filter(RecommendationDecision.created_at <= cutoff)
+        .filter(
+            (RecommendationDecision.outcome_status == "PENDING")
+            | (RecommendationDecision.outcome_return_1d_pct.is_(None))
+            | (RecommendationDecision.outcome_return_20d_pct.is_(None))
+        )
         .all()
     )
     updated = 0
@@ -290,16 +293,35 @@ def evaluate_pending_outcomes(db: Session) -> int:
         history = sim._history(row.symbol)
         if history.empty:
             continue
-        current_price = _last_price(history)
-        raw_return = (current_price / float(row.price) - 1) * 100
-        # A short "wins" when the price falls — flip the sign so HIT/FALSE_POSITIVE
-        # and outcome_return_5d_pct mean "was the recommended direction right",
-        # not "did the price go up", for every action type.
-        ret = -raw_return if row.action in SHORT_ACTIONS else raw_return
-        row.outcome_return_5d_pct = round(ret, 2)
-        row.outcome_status = "HIT" if ret > 0.5 else "FALSE_POSITIVE"
-        row.outcome_checked_at = datetime.now(timezone.utc)
-        updated += 1
+        if not isinstance(history.index, pd.DatetimeIndex):
+            continue
+        decision_at = pd.Timestamp(row.created_at)
+        decision_at = decision_at.tz_localize(None) if decision_at.tzinfo else decision_at
+        index = history.index.tz_localize(None) if history.index.tz is not None else history.index
+        start = next((i for i, stamp in enumerate(index) if stamp.normalize() >= decision_at.normalize()), None)
+        if start is None:
+            continue
+
+        def observed_return(horizon: int) -> float | None:
+            target = start + horizon
+            if target >= len(history):
+                return None
+            raw = (float(history["close"].iloc[target]) / float(row.price) - 1) * 100
+            return round(-raw if row.action in SHORT_ACTIONS else raw, 4)
+
+        now = datetime.now(timezone.utc)
+        one_day, five_day, twenty_day = observed_return(1), observed_return(5), observed_return(20)
+        if one_day is not None and row.outcome_return_1d_pct is None:
+            row.outcome_return_1d_pct, row.outcome_1d_checked_at = one_day, now
+            updated += 1
+        if five_day is not None and row.outcome_return_5d_pct is None:
+            row.outcome_return_5d_pct = five_day
+            row.outcome_status = "HIT" if five_day > 0.5 else "FALSE_POSITIVE"
+            row.outcome_checked_at = now
+            updated += 1
+        if twenty_day is not None and row.outcome_return_20d_pct is None:
+            row.outcome_return_20d_pct, row.outcome_20d_checked_at = twenty_day, now
+            updated += 1
     if updated:
         db.commit()
     return updated
@@ -615,6 +637,7 @@ def _recommendation(
         model_version="v1",
         dataset_version="live",
         quality_score={"LOW": 0.25, "MEDIUM": 0.65, "HIGH": 0.95}.get(gate["confidence"], 0.0),
+        data_as_of=data["history"].index[i].to_pydatetime(),
         evidence=[
             Evidence("technical", "bearish" if is_short else "bullish", min(score / 100, 1), confidence / 100, evidence[0]),
             Evidence("data_quality", "neutral" if gate["allowed"] else "bearish", 0.0 if gate["allowed"] else 1.0, 0.95, gate["reason"] or "OK"),
@@ -669,6 +692,7 @@ def _recommendation(
             model_version="v1",
             dataset_version="live",
             quality_score={"LOW": 0.25, "MEDIUM": 0.65, "HIGH": 0.95}.get(gate["confidence"], 0.0),
+            data_as_of=data["history"].index[i].to_pydatetime(),
             evidence=[
                 Evidence("risk", "bearish", 1.0, 0.95, row["fair_reason"]),
             ],
@@ -771,6 +795,69 @@ def _apply_portfolio_circuit_breaker(rows: list[dict], performance: dict) -> boo
     return True
 
 
+def build_decision_health(db: Session, user) -> dict:
+    """Operational guardrail based on forward-tested, recorded decisions.
+
+    It deliberately evaluates only completed 5-day outcomes.  Until there is
+    enough evidence, the desk may explain and rank setups, but it cannot
+    elevate one to a controlled entry.
+    """
+    user_id = getattr(user, "id", None)
+    query = db.query(RecommendationDecision).filter(
+        RecommendationDecision.action.in_(LONG_ACTIONS + SHORT_ACTIONS),
+        RecommendationDecision.outcome_status != "PENDING",
+    )
+    if user_id is not None:
+        query = query.filter((RecommendationDecision.user_id == user_id) | (RecommendationDecision.user_id.is_(None)))
+    rows = query.order_by(RecommendationDecision.created_at.desc()).limit(100).all()
+    samples = len(rows)
+    wins = sum(row.outcome_status == "HIT" for row in rows)
+    win_rate = round(wins / samples * 100, 2) if samples else None
+    calibration_error = (
+        round(sum(abs(row.confidence / 100 - (1 if row.outcome_status == "HIT" else 0)) for row in rows) / samples, 4)
+        if samples
+        else None
+    )
+    if samples < settings.decision_health_min_samples:
+        return {
+            "operating_mode": "OBSERVATION_ONLY",
+            "allowed": False,
+            "samples": samples,
+            "win_rate_pct": win_rate,
+            "calibration_error": calibration_error,
+            "reason": f"Amostra insuficiente: {samples}/{settings.decision_health_min_samples} outcomes de 5d.",
+        }
+    if win_rate is None or win_rate < settings.decision_health_min_win_rate_pct:
+        return {
+            "operating_mode": "PROTECTED",
+            "allowed": False,
+            "samples": samples,
+            "win_rate_pct": win_rate,
+            "calibration_error": calibration_error,
+            "reason": f"Acerto recente de {win_rate}% abaixo do mínimo de {settings.decision_health_min_win_rate_pct}%.",
+        }
+    return {
+        "operating_mode": "GUARDED",
+        "allowed": True,
+        "samples": samples,
+        "win_rate_pct": win_rate,
+        "calibration_error": calibration_error,
+        "reason": "Evidência mínima atingida; risco e qualidade de dados continuam obrigatórios.",
+    }
+
+
+def _apply_decision_health_gate(rows: list[dict], health: dict) -> bool:
+    if health["allowed"]:
+        return False
+    downgrade = {"BUY_CONTROLLED": "WATCH_BUY", "SELL_SHORT": "WATCH_SHORT"}
+    for row in rows:
+        if row["action"] in downgrade:
+            row["action"] = downgrade[row["action"]]
+            row["suggested_size_pct"] = 0.0
+            row["fair_reason"] = f"{health['reason']} {row['fair_reason']}"
+    return True
+
+
 async def build_decision_desk(db: Session, user, record: bool = False) -> dict:
     evaluate_pending_outcomes(db)
     symbols = _active_symbols(db)
@@ -791,6 +878,8 @@ async def build_decision_desk(db: Session, user, record: bool = False) -> dict:
 
     performance = _portfolio_recent_performance(db, getattr(user, "id", None))
     breaker_tripped = _apply_portfolio_circuit_breaker(rows, performance)
+    decision_health = build_decision_health(db, user)
+    health_gate_tripped = _apply_decision_health_gate(rows, decision_health)
     for row in rows:
         row["decision_card"] = build_decision_card(row)
     await _attach_ai_narratives(rows)
@@ -815,6 +904,21 @@ async def build_decision_desk(db: Session, user, record: bool = False) -> dict:
                 invalidation=row["invalidation"],
                 evidence_json=_json(row["evidence"]),
                 memory_json=_json(row["memory"]),
+                horizon=row["prediction"]["horizon"],
+                direction=row["prediction"]["direction"],
+                probability=row["prediction"]["probability"],
+                uncertainty=row["prediction"]["uncertainty"],
+                regime=row["prediction"]["regime"],
+                model_id=row["prediction"]["model_id"],
+                model_version=row["prediction"]["model_version"],
+                dataset_version=row["prediction"]["dataset_version"],
+                quality_score=row["prediction"]["quality_score"],
+                prediction_json=_json(row["prediction"]),
+                data_as_of=(
+                    datetime.fromisoformat(row["prediction"]["data_as_of"])
+                    if row["prediction"].get("data_as_of")
+                    else None
+                ),
             )
             db.add(decision)
             recorded += 1
@@ -847,6 +951,7 @@ async def build_decision_desk(db: Session, user, record: bool = False) -> dict:
         "skipped": skipped,
         "recommendations": rows,
         "circuit_breaker": {"tripped": breaker_tripped, **performance},
+        "decision_health": {"tripped": health_gate_tripped, **decision_health},
         "calibration_source": thresholds["source"],
         "short_calibration_source": short_thresholds["source"],
         "macro_context": macro_context,
@@ -1035,7 +1140,13 @@ def latest_decisions(db: Session, user, limit: int = 50) -> list[dict]:
             "evidence": _loads(row.evidence_json, []),
             "memory": _loads(row.memory_json, {}),
             "outcome_status": row.outcome_status,
+            "outcome_return_1d_pct": row.outcome_return_1d_pct,
             "outcome_return_5d_pct": row.outcome_return_5d_pct,
+            "outcome_return_20d_pct": row.outcome_return_20d_pct,
+            "regime": row.regime,
+            "model_id": row.model_id,
+            "model_version": row.model_version,
+            "prediction": _loads(row.prediction_json, {}),
             "created_at": row.created_at,
         }
         for row in rows

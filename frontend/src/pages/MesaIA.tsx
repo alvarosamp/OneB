@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api/client';
 import type { DecisionDesk, MarketDivergence, RecommendationDecision, ReliabilityScoreboard } from '../types';
 import { useToast } from '../context/ToastContext';
@@ -26,6 +26,24 @@ function pct(value: number | null | undefined) {
   return value === null || value === undefined ? '-' : `${value.toFixed(2)}%`;
 }
 
+function confidenceBand(value: number | null | undefined) {
+  if (value === null || value === undefined) return { cls: 'low', label: 'Sem dado' };
+  if (value >= 70) return { cls: 'high', label: 'Alta' };
+  if (value >= 45) return { cls: 'mid', label: 'Média' };
+  return { cls: 'low', label: 'Baixa' };
+}
+
+function ConfidenceBadge({ value }: { value: number | null | undefined }) {
+  const { cls, label } = confidenceBand(value);
+  return (
+    <span className={`confidence ${cls}`}>
+      <i />
+      {label}
+      {value !== null && value !== undefined ? ` · ${value}%` : ''}
+    </span>
+  );
+}
+
 export function MesaIA() {
   const toast = useToast();
   const [desk, setDesk] = useState<DecisionDesk | null>(null);
@@ -35,8 +53,12 @@ export function MesaIA() {
   const [loading, setLoading] = useState(true);
   const [recording, setRecording] = useState(false);
 
-  async function load(record = false) {
-    record ? setRecording(true) : setLoading(true);
+  const load = useCallback(async (record = false) => {
+    if (record) {
+      setRecording(true);
+    } else {
+      setLoading(true);
+    }
     try {
       const [deskData, historyData, scoreboardData, divergenceData] = await Promise.all([
         api.get<DecisionDesk>(`/api/decision-desk/recommendations${record ? '?record=true' : ''}`),
@@ -55,11 +77,11 @@ export function MesaIA() {
       setLoading(false);
       setRecording(false);
     }
-  }
+  }, [toast]);
 
   useEffect(() => {
-    load();
-  }, []);
+    void load();
+  }, [load]);
 
   const recommendations = desk?.recommendations ?? [];
   const buyRows = recommendations.filter((row) => row.action === 'BUY_CONTROLLED');
@@ -74,6 +96,7 @@ export function MesaIA() {
           <p className="eyebrow">Copiloto Temporal de Mercado</p>
           <h1>Mesa IA</h1>
           <p>Recomendações auditáveis com motivo, score, memória de falso positivo e plano de risco.</p>
+          <p className="muted">Motor de regras e risco decide; o LLM apenas explica. Pesquisa experimental fica na Mesa Técnica.</p>
         </div>
         <button type="button" onClick={() => load(true)} disabled={recording || loading}>
           {recording ? 'Registrando...' : 'Registrar leitura'}
@@ -86,6 +109,12 @@ export function MesaIA() {
         <div className="circuit-breaker-banner">
           ⚠️ Freio de portfólio ativo: taxa de acerto recente de {desk.circuit_breaker.win_rate_pct}% em{' '}
           {desk.circuit_breaker.samples} recomendações. Compras rebaixadas para observação até o placar melhorar.
+        </div>
+      )}
+
+      {desk?.decision_health.tripped && (
+        <div className="circuit-breaker-banner">
+          ℹ️ Mesa em modo {desk.decision_health.operating_mode}: {desk.decision_health.reason} Sinais seguem visíveis apenas para observação.
         </div>
       )}
 
@@ -158,7 +187,7 @@ export function MesaIA() {
                     <strong>{row.symbol}</strong>
                     <span>{actionLabel(row.action)}</span>
                   </div>
-                  <b>{row.confidence}</b>
+                  <ConfidenceBadge value={row.confidence} />
                 </header>
                 <div className="decision-metrics">
                   <span>Preço <b>${row.price.toFixed(2)}</b></span>
@@ -198,8 +227,11 @@ export function MesaIA() {
                   <th>Ativo</th>
                   <th>Ação</th>
                   <th>Confiança</th>
-                  <th>Resultado</th>
-                  <th>Retorno 5d</th>
+              <th>Resultado</th>
+              <th>1d</th>
+              <th>Retorno 5d</th>
+              <th>20d</th>
+              <th>Regime / modelo</th>
                 </tr>
               </thead>
               <tbody>
@@ -208,14 +240,17 @@ export function MesaIA() {
                     <td>{new Date(row.created_at).toLocaleDateString()}</td>
                     <td>{row.symbol}</td>
                     <td>{actionLabel(row.action)}</td>
-                    <td>{row.confidence}</td>
+                    <td><ConfidenceBadge value={row.confidence} /></td>
                     <td>{row.outcome_status}</td>
+                    <td>{pct(row.outcome_return_1d_pct)}</td>
                     <td>{pct(row.outcome_return_5d_pct)}</td>
+                    <td>{pct(row.outcome_return_20d_pct)}</td>
+                    <td>{row.regime} · {row.model_id}@{row.model_version}</td>
                   </tr>
                 ))}
                 {!history.length && (
                   <tr>
-                    <td colSpan={6} className="muted">Registre uma leitura para iniciar a memória temporal.</td>
+                    <td colSpan={9} className="muted">Registre uma leitura para iniciar a memória temporal.</td>
                   </tr>
                 )}
               </tbody>

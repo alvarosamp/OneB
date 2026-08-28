@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     # forward-tested em vez de depender de alguem clicar "Registrar leitura" manualmente.
     decision_desk_snapshot_hour_utc: int = 20
 
+    # Governança operacional da Mesa IA. Com pouca evidência observada, ou
+    # desempenho recente insuficiente, entradas viram observação.
+    decision_health_min_samples: int = 20
+    decision_health_min_win_rate_pct: float = 45.0
+
     # Assistente com LLM - opcional, tudo degrada graciosamente sem a key configurada.
     # "anthropic" (produção, pago), "gemini" ou "groq" (ambos grátis, bons pra testar).
     llm_provider: str = "anthropic"

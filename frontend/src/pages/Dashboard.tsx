@@ -77,7 +77,7 @@ function scoreLabel(score: number) {
 }
 
 export function Dashboard() {
-  const { data, lastUpdated } = usePolling<DashboardSummary>('/api/dashboard-summary', 20000);
+  const { data, error: summaryError, lastUpdated } = usePolling<DashboardSummary>('/api/dashboard-summary', 20000);
   const [econ, setEcon] = useState<EconomicEvent[]>([]);
   const [earnings, setEarnings] = useState<EarningsEvent[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -139,6 +139,8 @@ export function Dashboard() {
           Como usar
         </Link>
       </div>
+
+      {summaryError && <p className="data-warning" role="status">{summaryError}</p>}
 
       <section className="metric-grid">
         <div className="metric-card">

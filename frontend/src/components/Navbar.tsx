@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Bell, ChevronDown, FileDown, LogOut, Menu, Moon, Search, Sun, User, X } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -33,6 +33,8 @@ export function Navbar() {
   const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [assetSearchOpen, setAssetSearchOpen] = useState(false);
+  const [assetSearch, setAssetSearch] = useState('');
   const [downloading, setDownloading] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
   const inTerminal = terminalRoutes.has(location.pathname) || location.pathname.startsWith('/ativo/');
@@ -52,6 +54,22 @@ export function Navbar() {
   function handleLogout() {
     logout();
     navigate('/login');
+  }
+
+  function handleAssetSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const symbol = assetSearch.trim().toUpperCase();
+    if (!symbol) return;
+
+    // Mantém os símbolos usados pelos provedores do backend, como ^GSPC, GC=F e PETR4.SA.
+    if (!/^[A-Z0-9.^=-]+$/.test(symbol)) {
+      toast('Use um símbolo válido, por exemplo NVDA, PETR4.SA ou ^GSPC.', 'error');
+      return;
+    }
+
+    setAssetSearchOpen(false);
+    setAssetSearch('');
+    navigate(`/ativo/${encodeURIComponent(symbol)}`);
   }
 
   async function handleDownloadPdf() {
@@ -117,8 +135,29 @@ export function Navbar() {
           <i />
           Mercado aberto
         </span>
-        <button type="button" className="icon-button" aria-label="Pesquisar">
-          <Search size={18} />
+        {inTerminal && assetSearchOpen && (
+          <form className="asset-search-form" onSubmit={handleAssetSearch}>
+            <Search size={16} aria-hidden="true" />
+            <input
+              autoFocus
+              value={assetSearch}
+              onChange={(event) => setAssetSearch(event.target.value)}
+              onBlur={() => {
+                if (!assetSearch.trim()) setAssetSearchOpen(false);
+              }}
+              placeholder="NVDA, PETR4.SA..."
+              aria-label="Buscar ativo"
+            />
+          </form>
+        )}
+        <button
+          type="button"
+          className="icon-button"
+          aria-label={assetSearchOpen ? 'Fechar busca' : 'Buscar ativo'}
+          aria-expanded={assetSearchOpen}
+          onClick={() => setAssetSearchOpen((open) => !open)}
+        >
+          {assetSearchOpen ? <X size={18} /> : <Search size={18} />}
         </button>
         <button type="button" className="icon-button" aria-label="Notificacoes">
           <Bell size={18} />

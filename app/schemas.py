@@ -379,6 +379,16 @@ class CircuitBreakerOut(BaseModel):
     win_rate_pct: float | None
 
 
+class DecisionHealthOut(BaseModel):
+    tripped: bool
+    operating_mode: str
+    allowed: bool
+    samples: int
+    win_rate_pct: float | None
+    calibration_error: float | None
+    reason: str
+
+
 class DecisionDeskOut(BaseModel):
     generated_at: datetime
     headline: str
@@ -387,6 +397,7 @@ class DecisionDeskOut(BaseModel):
     skipped: list[str]
     recommendations: list[DecisionDeskRecommendationOut]
     circuit_breaker: CircuitBreakerOut
+    decision_health: DecisionHealthOut
     calibration_source: str
     short_calibration_source: str
     macro_context: dict
@@ -459,7 +470,13 @@ class RecommendationDecisionOut(BaseModel):
     evidence: list[str]
     memory: dict
     outcome_status: str
+    outcome_return_1d_pct: float | None
     outcome_return_5d_pct: float | None
+    outcome_return_20d_pct: float | None
+    regime: str
+    model_id: str
+    model_version: str
+    prediction: dict
     created_at: datetime
 
 

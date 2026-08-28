@@ -6,6 +6,7 @@ from app.auth import get_current_user
 from app.db import get_db
 from app.decision_engine import (
     build_decision_desk,
+    build_decision_health,
     build_market_divergence,
     build_reliability_scoreboard,
     latest_decisions,
@@ -39,6 +40,11 @@ def scoreboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
 @router.get("/model-health", response_model=ModelHealthOut)
 def model_health():
     return pm.health()
+
+
+@router.get("/decision-health")
+def decision_health(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    return build_decision_health(db, user)
 
 
 @router.get("/market-divergence", response_model=MarketDivergenceOut)

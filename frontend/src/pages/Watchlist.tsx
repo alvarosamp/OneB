@@ -17,6 +17,20 @@ const assetTypeLabels: Record<AssetType, string> = {
   macro: 'Macro',
 };
 
+function minutesSince(iso: string | null) {
+  if (!iso) return null;
+  return Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+}
+
+function priceConfidence(quote: WatchlistPrice | undefined) {
+  if (!quote || quote.price === null) return { cls: 'low', label: 'Sem dado' };
+  const age = minutesSince(quote.taken_at);
+  if (age === null) return { cls: 'low', label: 'Sem dado' };
+  if (age <= 5) return { cls: 'high', label: 'Ao vivo' };
+  if (age <= 30) return { cls: 'mid', label: `${age} min` };
+  return { cls: 'low', label: `${age} min` };
+}
+
 export function Watchlist() {
   const toast = useToast();
   const confirm = useConfirm();
@@ -115,6 +129,10 @@ export function Watchlist() {
         conditions: builder.conditions,
       });
       toast(`Regra criada para ${item.symbol}`, 'success');
+      setExpandedId(null);
+      setBacktestResult(null);
+      builder.reset();
+      await loadItems();
     } catch (err) {
       toast(err instanceof ApiError ? err.message : 'Erro ao criar regra', 'error');
     } finally {
@@ -124,9 +142,15 @@ export function Watchlist() {
 
   return (
     <div className="container">
-      <h1>Watchlist &amp; Regras de Alerta</h1>
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">Monitoramento</p>
+          <h1>Watchlist &amp; Regras de Alerta</h1>
+          <p className="muted">Ativos acompanhados, preço em tempo quase real e regras de disparo por ativo.</p>
+        </div>
+      </div>
 
-      <section>
+      <section className="panel">
         <h2>Adicionar ativo</h2>
         <form onSubmit={handleAdd}>
           <input
@@ -148,7 +172,7 @@ export function Watchlist() {
         </form>
       </section>
 
-      <section>
+      <section className="panel">
         <div className="panel-title">
           <h2>Ativos monitorados</h2>
           {lastUpdated && <span className="muted">Atualizado {lastUpdated.toLocaleTimeString('pt-BR')}</span>}
@@ -161,6 +185,7 @@ export function Watchlist() {
                 <th>Tipo</th>
                 <th>Preço</th>
                 <th>Variação</th>
+                <th>Confiabilidade do dado</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
@@ -168,13 +193,14 @@ export function Watchlist() {
             <tbody>
               {items.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="muted">
+                  <td colSpan={7} className="muted">
                     Nenhum ativo cadastrado ainda.
                   </td>
                 </tr>
               )}
               {items.map((item) => {
                 const quote = priceById.get(item.id);
+                const confidence = priceConfidence(quote);
                 return (
                 <Fragment key={item.id}>
                   <tr>
@@ -185,6 +211,12 @@ export function Watchlist() {
                     <td>{quote?.price != null ? quote.price.toFixed(2) : '-'}</td>
                     <td className={quote?.change_pct != null ? (quote.change_pct >= 0 ? 'up' : 'down') : undefined}>
                       {quote?.change_pct != null ? `${quote.change_pct >= 0 ? '+' : ''}${quote.change_pct.toFixed(2)}%` : '-'}
+                    </td>
+                    <td>
+                      <span className={`confidence ${confidence.cls}`}>
+                        <i />
+                        {confidence.label}
+                      </span>
                     </td>
                     <td>
                       <span className={`status-pill ${item.active ? 'good' : 'warn'}`}>
@@ -202,7 +234,7 @@ export function Watchlist() {
                   </tr>
                   {expandedId === item.id && (
                     <tr>
-                      <td colSpan={6}>
+                      <td colSpan={7}>
                         <div className="rule-form">
                           <RuleConditionBuilder builder={builder} />
                           <div className="chart-controls">

@@ -101,7 +101,7 @@ export function Regime() {
         </div>
       </div>
 
-      <section>
+      <section className="panel">
         <form onSubmit={handleSubmit} className="inline-form">
           <input
             value={symbolInput}
@@ -130,20 +130,22 @@ export function Regime() {
             </div>
 
             {report.local_regime && report.local_regime.factors.length > 0 && (
-              <ul className="alert-list">
+              <ul className="compact-list">
                 {report.local_regime.factors.map((f, i) => (
                   <li key={i}>
-                    <strong>{f.name}</strong>
-                    {f.impact !== null && <span className="muted"> ({f.impact > 0 ? '+' : ''}{f.impact})</span>} —{' '}
-                    {f.evidence}
+                    <span className="mini-symbol">{f.impact !== null ? `${f.impact > 0 ? '+' : ''}${f.impact}` : '-'}</span>
+                    <div>
+                      <strong>{f.name}</strong>
+                      <span>{f.evidence}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
 
             {report.cross_asset_relevance.length > 0 && (
-              <div className="table-scroll">
-                <table className="table">
+              <div className="table-scroll compact-scroll">
+                <table className="table dense-table">
                   <thead>
                     <tr>
                       <th>Instrumento</th>
@@ -173,13 +175,13 @@ export function Regime() {
         )}
       </section>
 
-      <section>
-        <h2>
-          Universo macro monitorado{' '}
-          {lastUpdated && <span className="muted">(atualizado {lastUpdated.toLocaleTimeString('pt-BR')})</span>}
-        </h2>
-        <div className="table-scroll">
-          <table className="table">
+      <section className="panel">
+        <div className="panel-title">
+          <h2>Universo macro monitorado</h2>
+          {lastUpdated && <span className="muted">Atualizado {lastUpdated.toLocaleTimeString('pt-BR')}</span>}
+        </div>
+        <div className="table-scroll compact-scroll">
+          <table className="table dense-table">
             <thead>
               <tr>
                 <th>Instrumento</th>

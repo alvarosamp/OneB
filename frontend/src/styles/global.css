@@ -1110,6 +1110,34 @@ body {
   gap: 0.45rem;
 }
 
+.asset-search-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 38px;
+  padding: 0 0.7rem;
+  border: 1px solid rgba(38,132,255,0.45);
+  border-radius: 8px;
+  color: #8ec3ff;
+  background: rgba(255,255,255,0.035);
+  box-shadow: 0 0 0 3px rgba(38,132,255,0.08);
+}
+
+.asset-search-form input {
+  width: min(17vw, 180px);
+  min-width: 130px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #f5f7fa;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.asset-search-form input::placeholder {
+  color: #7f8a98;
+}
+
 .icon-button,
 .nav-toggle-label {
   display: inline-grid;
@@ -1708,6 +1736,46 @@ form button,
   background: #050607;
 }
 
+.app-error-state {
+  display: grid;
+  place-content: center;
+  min-height: min(70vh, 620px);
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.app-loading-state {
+  display: grid;
+  min-height: 42vh;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.app-error-state h1 {
+  margin: 0.2rem 0 0.8rem;
+}
+
+.app-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.data-warning {
+  margin: 0 0 1rem;
+  padding: 0.72rem 0.9rem;
+  border: 1px solid rgba(245, 184, 75, 0.38);
+  border-radius: 8px;
+  color: #ffdca0;
+  background: rgba(245, 184, 75, 0.08);
+  font-size: 0.88rem;
+}
+
 @media (max-width: 1100px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -2224,8 +2292,8 @@ canvas {
 
 .technical-favorites button.active,
 .technical-favorites button:hover {
-  border-color: rgba(37, 99, 235, 0.85);
-  background: rgba(37, 99, 235, 0.16);
+  border-color: rgba(38, 132, 255, 0.85);
+  background: rgba(38, 132, 255, 0.16);
 }
 
 .technical-favorites span {
@@ -6156,6 +6224,7 @@ form button,
 @media (max-width: 760px) {
   .topbar-actions .market-status,
   .topbar-actions .icon-button,
+  .asset-search-form,
   .user-menu-name,
   .app-topbar-nav {
     display: none;
@@ -6201,4 +6270,56 @@ form button,
   .metal-candles span {
     width: 34px;
   }
+}
+
+/* ---------- Indicador de confiabilidade (badge reutilizavel) ---------- */
+/* Usa os mesmos tokens de --up/--muted do resto do app. Ex.: */
+/* <span className={`confidence ${band}`}><i /> Alta &middot; 82%</span> */
+.confidence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.confidence i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.confidence.high {
+  color: #9be9c4;
+  background: rgba(50, 213, 131, 0.12);
+  border-color: rgba(50, 213, 131, 0.35);
+}
+
+.confidence.high i {
+  background: var(--up);
+}
+
+.confidence.mid {
+  color: #ffdca0;
+  background: rgba(245, 184, 75, 0.12);
+  border-color: rgba(245, 184, 75, 0.35);
+}
+
+.confidence.mid i {
+  background: #f5b84b;
+}
+
+.confidence.low {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border);
+}
+
+.confidence.low i {
+  background: var(--muted);
 }

@@ -41,11 +41,19 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
-    method: options.method ?? 'GET',
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method: options.method ?? 'GET',
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    });
+  } catch {
+    throw new ApiError(
+      0,
+      'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
+    );
+  }
 
   if (res.status === 401) {
     if (options.skipAuth) {
@@ -80,7 +88,11 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   if (res.status === 204) {
     return undefined as T;
   }
-  return res.json() as Promise<T>;
+  try {
+    return (await res.json()) as T;
+  } catch {
+    throw new ApiError(res.status, 'O servidor retornou uma resposta inválida. Tente novamente.');
+  }
 }
 
 export const api = {
@@ -95,11 +107,23 @@ export const api = {
 /** For downloads (PDF) — needs the Authorization header, so a plain <a href> won't work. */
 export async function fetchBlob(path: string): Promise<Blob> {
   const token = getToken();
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch {
+    throw new ApiError(0, 'Não foi possível conectar ao servidor. Tente novamente.');
+  }
   if (!res.ok) {
-    throw new ApiError(res.status, res.statusText);
+    let detail = res.statusText;
+    try {
+      const data = await res.json();
+      detail = data.detail ?? detail;
+    } catch {
+      // Downloads may return an empty or non-JSON error response.
+    }
+    throw new ApiError(res.status, detail);
   }
   return res.blob();
 }

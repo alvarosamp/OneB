@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -7,38 +7,45 @@ import { ConfirmProvider } from './components/ConfirmModal';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute';
-import { Login } from './pages/Login';
-import { Cadastro } from './pages/Cadastro';
-import { Landing } from './pages/Landing';
-import { Estrategias } from './pages/Estrategias';
-import { Comunidade } from './pages/Comunidade';
-import { Planos } from './pages/Planos';
-import { Sobre } from './pages/Sobre';
-import { Aplicacoes } from './pages/Aplicacoes';
-import { Hub } from './pages/Hub';
-import { Aulas } from './pages/Aulas';
-import { Aprendizado } from './pages/Aprendizado';
-import { CursoDetalhe } from './pages/CursoDetalhe';
-import { Lives } from './pages/Lives';
-import { Dashboard } from './pages/Dashboard';
-import { Watchlist } from './pages/Watchlist';
-import { Mercado } from './pages/Mercado';
-import { AnaliseMatinal } from './pages/AnaliseMatinal';
-import { Alertas } from './pages/Alertas';
-import { Posicoes } from './pages/Posicoes';
-import { Assistente } from './pages/Assistente';
-import { Usuarios } from './pages/Usuarios';
-import { AtivoDetalhe } from './pages/AtivoDetalhe';
-import { ComoUsar } from './pages/ComoUsar';
-import { Copiloto } from './pages/Copiloto';
-import { Perfil } from './pages/Perfil';
-import { Saas } from './pages/Saas';
-import { Inteligencia } from './pages/Inteligencia';
-import { Operacoes } from './pages/Operacoes';
-import { MesaTecnica } from './pages/MesaTecnica';
-import { MesaIA } from './pages/MesaIA';
-import { Regime } from './pages/Regime';
-import { ResumoDiario } from './pages/ResumoDiario';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
+
+function lazyPage(load: () => Promise<object>, name: string) {
+  return lazy(async () => ({ default: (await load() as Record<string, ComponentType>)[name]! }));
+}
+
+const Login = lazyPage(() => import('./pages/Login'), 'Login');
+const Cadastro = lazyPage(() => import('./pages/Cadastro'), 'Cadastro');
+const Landing = lazyPage(() => import('./pages/Landing'), 'Landing');
+const Estrategias = lazyPage(() => import('./pages/Estrategias'), 'Estrategias');
+const Comunidade = lazyPage(() => import('./pages/Comunidade'), 'Comunidade');
+const Planos = lazyPage(() => import('./pages/Planos'), 'Planos');
+const Sobre = lazyPage(() => import('./pages/Sobre'), 'Sobre');
+const Aplicacoes = lazyPage(() => import('./pages/Aplicacoes'), 'Aplicacoes');
+const Hub = lazyPage(() => import('./pages/Hub'), 'Hub');
+const Aulas = lazyPage(() => import('./pages/Aulas'), 'Aulas');
+const Aprendizado = lazyPage(() => import('./pages/Aprendizado'), 'Aprendizado');
+const CursoDetalhe = lazyPage(() => import('./pages/CursoDetalhe'), 'CursoDetalhe');
+const Lives = lazyPage(() => import('./pages/Lives'), 'Lives');
+const Dashboard = lazyPage(() => import('./pages/Dashboard'), 'Dashboard');
+const Watchlist = lazyPage(() => import('./pages/Watchlist'), 'Watchlist');
+const Mercado = lazyPage(() => import('./pages/Mercado'), 'Mercado');
+const AnaliseMatinal = lazyPage(() => import('./pages/AnaliseMatinal'), 'AnaliseMatinal');
+const Alertas = lazyPage(() => import('./pages/Alertas'), 'Alertas');
+const Posicoes = lazyPage(() => import('./pages/Posicoes'), 'Posicoes');
+const Assistente = lazyPage(() => import('./pages/Assistente'), 'Assistente');
+const Usuarios = lazyPage(() => import('./pages/Usuarios'), 'Usuarios');
+const AtivoDetalhe = lazyPage(() => import('./pages/AtivoDetalhe'), 'AtivoDetalhe');
+const ComoUsar = lazyPage(() => import('./pages/ComoUsar'), 'ComoUsar');
+const Copiloto = lazyPage(() => import('./pages/Copiloto'), 'Copiloto');
+const Perfil = lazyPage(() => import('./pages/Perfil'), 'Perfil');
+const Saas = lazyPage(() => import('./pages/Saas'), 'Saas');
+const Inteligencia = lazyPage(() => import('./pages/Inteligencia'), 'Inteligencia');
+const Operacoes = lazyPage(() => import('./pages/Operacoes'), 'Operacoes');
+const MesaTecnica = lazyPage(() => import('./pages/MesaTecnica'), 'MesaTecnica');
+const MesaIA = lazyPage(() => import('./pages/MesaIA'), 'MesaIA');
+const Regime = lazyPage(() => import('./pages/Regime'), 'Regime');
+const ResumoDiario = lazyPage(() => import('./pages/ResumoDiario'), 'ResumoDiario');
+const NaoEncontrado = lazyPage(() => import('./pages/NaoEncontrado'), 'NaoEncontrado');
 
 function Layout({ children }: { children: ReactNode }) {
   return (
@@ -74,11 +81,22 @@ function ToolLayout({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <AppWithBoundary />
+    </BrowserRouter>
+  );
+}
+
+function AppWithBoundary() {
+  const location = useLocation();
+
+  return (
+    <AppErrorBoundary key={location.pathname}>
       <ThemeProvider>
         <AuthProvider>
           <ToastProvider>
             <ConfirmProvider>
-              <Routes>
+              <Suspense fallback={<PageLoading />}>
+                <Routes>
                 <Route
                   path="/"
                   element={<Landing />}
@@ -282,11 +300,17 @@ export default function App() {
                     />
                   </Route>
                 </Route>
-              </Routes>
+                <Route path="*" element={<NaoEncontrado />} />
+                </Routes>
+              </Suspense>
             </ConfirmProvider>
           </ToastProvider>
         </AuthProvider>
       </ThemeProvider>
-    </BrowserRouter>
+    </AppErrorBoundary>
   );
+}
+
+function PageLoading() {
+  return <main className="app-loading-state" aria-live="polite">Carregando ambiente OneB…</main>;
 }

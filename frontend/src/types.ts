@@ -570,6 +570,15 @@ export interface DecisionDesk {
   skipped: string[];
   recommendations: DecisionDeskRecommendation[];
   circuit_breaker: CircuitBreaker;
+  decision_health: {
+    tripped: boolean;
+    operating_mode: string;
+    allowed: boolean;
+    samples: number;
+    win_rate_pct: number | null;
+    calibration_error: number | null;
+    reason: string;
+  };
   calibration_source: string;
   short_calibration_source: string;
   macro_context: {
@@ -618,8 +627,30 @@ export interface MarketDivergence {
 export interface RecommendationDecision extends DecisionDeskRecommendation {
   id: number;
   outcome_status: string;
+  outcome_return_1d_pct: number | null;
   outcome_return_5d_pct: number | null;
+  outcome_return_20d_pct: number | null;
+  regime: string;
+  model_id: string;
+  model_version: string;
+  prediction: Record<string, unknown>;
   created_at: string;
+}
+
+export interface TechnicalEdgeRow {
+  symbol: string;
+  status: 'OK' | 'SEM_LEITURA';
+  edge_score?: number;
+  rank?: number;
+  label?: 'OBSERVAR' | 'NEUTRO' | 'FRACO';
+}
+
+export interface TechnicalEdgeRanking {
+  horizon_days: number;
+  benchmark: string;
+  universe: string[];
+  research_note: string;
+  rows: TechnicalEdgeRow[];
 }
 
 export interface CopilotVote {
@@ -640,6 +671,27 @@ export interface CopilotAnalysis {
   why: string[];
   contrary_view: string[];
   risk_plan: string[];
+  trade_plan: {
+    available: boolean;
+    timeframe: string;
+    reason: string;
+    holding_window?: string;
+    status?: string;
+    entry_price?: number;
+    stop_price?: number;
+    target_1_price?: number;
+    target_2_price?: number;
+    risk_per_share_usd?: number;
+    risk_amount_usd?: number;
+    suggested_shares?: number;
+    position_value_usd?: number;
+    risk_reward_target_1?: number;
+    risk_reward_target_2?: number;
+    support_20d?: number;
+    resistance_20d?: number;
+    atr_14?: number | null;
+    invalidation?: string;
+  };
   simulation: {
     available: boolean;
     summary: string;

@@ -386,9 +386,26 @@ class RecommendationDecision(Base):
     invalidation: Mapped[str] = mapped_column(Text, default="")
     evidence_json: Mapped[str] = mapped_column(Text, default="[]")
     memory_json: Mapped[str] = mapped_column(Text, default="{}")
+    # Immutable prediction contract captured at decision time. This lets
+    # calibration remain reproducible even after a live model changes.
+    horizon: Mapped[str] = mapped_column(String(16), default="5d")
+    direction: Mapped[str] = mapped_column(String(16), default="long")
+    probability: Mapped[float | None] = mapped_column(Float, nullable=True)
+    uncertainty: Mapped[float | None] = mapped_column(Float, nullable=True)
+    regime: Mapped[str] = mapped_column(String(32), default="UNKNOWN", index=True)
+    model_id: Mapped[str] = mapped_column(String(64), default="decision_engine")
+    model_version: Mapped[str] = mapped_column(String(32), default="v1")
+    dataset_version: Mapped[str] = mapped_column(String(64), default="live")
+    quality_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    prediction_json: Mapped[str] = mapped_column(Text, default="{}")
+    data_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     outcome_status: Mapped[str] = mapped_column(String(32), default="PENDING", index=True)
+    outcome_return_1d_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
     outcome_return_5d_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outcome_return_20d_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outcome_1d_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     outcome_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    outcome_20d_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
 
 
