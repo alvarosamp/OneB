@@ -6,8 +6,8 @@ from uuid import uuid4
 
 import pandas as pd
 
-from app.market_data.providers import MarketQuote
 from app.market_data import macro_data
+from app.market_data.providers import MarketQuote
 from app.market_data.service import MarketDataService, normalize_bars
 
 
@@ -53,6 +53,16 @@ class EmptyProvider:
         return pd.DataFrame(columns=["open", "high", "low", "close", "volume"])
 
     def get_quote(self, symbol: str) -> MarketQuote | None:
+        return None
+
+
+class ErrorProvider:
+    name = "fake"
+
+    def get_bars(self, *_args, **_kwargs):
+        raise RuntimeError("provider unavailable")
+
+    def get_quote(self, _symbol: str) -> MarketQuote | None:
         return None
 
 
@@ -168,3 +178,42 @@ def test_market_data_service_falls_back_when_primary_returns_empty():
     assert metadata is not None
     assert metadata["provider"] == "fake"
     assert "FALLBACK_PROVIDER:fake" in metadata["issues"]
+
+
+def test_refresh_returns_last_valid_cache_when_all_providers_fail():
+    service = MarketDataService(provider=FakeProvider(), data_root=_workspace_tmp())
+    original = service.get_bars("AAPL", period="1y", interval="1d")
+    service.provider = ErrorProvider()
+    service.fallback_provider = EmptyProvider()
+
+    recovered = service.get_bars("AAPL", period="1y", interval="1d", refresh=True)
+
+    assert recovered.equals(original)
+    assert recovered.attrs["cache_fallback"] is True
+
+
+def test_macro_history_propagates_refresh_to_source(monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        macro_data.fred_client,
+        "get_series",
+        lambda symbol, **kwargs: calls.append((symbol, kwargs["refresh"])) or pd.DataFrame({"close": [4.0]}),
+    )
+
+    macro_data.get_macro_history("US10Y", refresh=True)
+
+    assert calls == [("DGS10", True)]
+
+
+def test_tiingo_primary_is_skipped_for_yahoo_native_futures_symbol():
+    primary = EmptyProvider()
+    primary.name = "tiingo"
+    fallback = FakeProvider()
+    service = MarketDataService(provider=primary, data_root=_workspace_tmp())
+    service.fallback_provider = fallback
+
+    bars = service.get_bars("NQ=F", period="1y", interval="1d", refresh=True)
+
+    assert primary.calls == 0
+    assert fallback.calls == 1
+    assert bars.attrs["provider"] == "fake"

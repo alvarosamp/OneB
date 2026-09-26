@@ -1,82 +1,47 @@
-import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
+import { lazy, Suspense, type ComponentType } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ConfirmProvider } from './components/ConfirmModal';
-import { Navbar } from './components/Navbar';
-import { Sidebar } from './components/Sidebar';
 import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
+import { AppShell } from './components/terminal/AppShell';
+import { RedirectTo } from './components/terminal/RedirectTo';
+import { CenteredMessage } from './components/AuthLayout';
 
 function lazyPage(load: () => Promise<object>, name: string) {
   return lazy(async () => ({ default: (await load() as Record<string, ComponentType>)[name]! }));
 }
 
+// Público / marketing
+const Landing = lazyPage(() => import('./pages/Landing'), 'Landing');
 const Login = lazyPage(() => import('./pages/Login'), 'Login');
 const Cadastro = lazyPage(() => import('./pages/Cadastro'), 'Cadastro');
-const Landing = lazyPage(() => import('./pages/Landing'), 'Landing');
 const Estrategias = lazyPage(() => import('./pages/Estrategias'), 'Estrategias');
 const Comunidade = lazyPage(() => import('./pages/Comunidade'), 'Comunidade');
 const Planos = lazyPage(() => import('./pages/Planos'), 'Planos');
 const Sobre = lazyPage(() => import('./pages/Sobre'), 'Sobre');
 const Aplicacoes = lazyPage(() => import('./pages/Aplicacoes'), 'Aplicacoes');
-const Hub = lazyPage(() => import('./pages/Hub'), 'Hub');
 const Aulas = lazyPage(() => import('./pages/Aulas'), 'Aulas');
-const Aprendizado = lazyPage(() => import('./pages/Aprendizado'), 'Aprendizado');
-const CursoDetalhe = lazyPage(() => import('./pages/CursoDetalhe'), 'CursoDetalhe');
-const Lives = lazyPage(() => import('./pages/Lives'), 'Lives');
-const Dashboard = lazyPage(() => import('./pages/Dashboard'), 'Dashboard');
-const Watchlist = lazyPage(() => import('./pages/Watchlist'), 'Watchlist');
-const Mercado = lazyPage(() => import('./pages/Mercado'), 'Mercado');
-const AnaliseMatinal = lazyPage(() => import('./pages/AnaliseMatinal'), 'AnaliseMatinal');
-const Alertas = lazyPage(() => import('./pages/Alertas'), 'Alertas');
-const Posicoes = lazyPage(() => import('./pages/Posicoes'), 'Posicoes');
-const Assistente = lazyPage(() => import('./pages/Assistente'), 'Assistente');
-const Usuarios = lazyPage(() => import('./pages/Usuarios'), 'Usuarios');
-const AtivoDetalhe = lazyPage(() => import('./pages/AtivoDetalhe'), 'AtivoDetalhe');
-const ComoUsar = lazyPage(() => import('./pages/ComoUsar'), 'ComoUsar');
-const Copiloto = lazyPage(() => import('./pages/Copiloto'), 'Copiloto');
-const Perfil = lazyPage(() => import('./pages/Perfil'), 'Perfil');
-const Saas = lazyPage(() => import('./pages/Saas'), 'Saas');
-const Inteligencia = lazyPage(() => import('./pages/Inteligencia'), 'Inteligencia');
-const Operacoes = lazyPage(() => import('./pages/Operacoes'), 'Operacoes');
-const MesaTecnica = lazyPage(() => import('./pages/MesaTecnica'), 'MesaTecnica');
-const MesaIA = lazyPage(() => import('./pages/MesaIA'), 'MesaIA');
-const Regime = lazyPage(() => import('./pages/Regime'), 'Regime');
-const ResumoDiario = lazyPage(() => import('./pages/ResumoDiario'), 'ResumoDiario');
 const NaoEncontrado = lazyPage(() => import('./pages/NaoEncontrado'), 'NaoEncontrado');
 
-function Layout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <Navbar />
-      <main className="academy-layout">{children}</main>
-      <footer className="disclaimer app-disclaimer">
-        Ferramenta apenas de monitoramento e sugestão. Não executa ordens e não constitui
-        recomendação de investimento. Dados podem ter atraso. Valide qualquer sinal antes de
-        decidir.
-      </footer>
-    </>
-  );
-}
-
-function ToolLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <Navbar />
-      <div className="app-shell">
-        <Sidebar />
-        <main className="app-shell-content terminal-layout">{children}</main>
-      </div>
-      <footer className="disclaimer app-disclaimer terminal-disclaimer">
-        Ferramenta apenas de monitoramento e sugestão. Não executa ordens e não constitui
-        recomendação de investimento. Dados podem ter atraso. Valide qualquer sinal antes de
-        decidir.
-      </footer>
-    </>
-  );
-}
+// App logado
+const Dashboard = lazyPage(() => import('./pages/Dashboard'), 'Dashboard');
+const Mercado = lazyPage(() => import('./pages/Mercado'), 'Mercado');
+const Analise = lazyPage(() => import('./pages/Analise'), 'Analise');
+const Radar = lazyPage(() => import('./pages/Radar'), 'Radar');
+const Watchlist = lazyPage(() => import('./pages/Watchlist'), 'Watchlist');
+const Alertas = lazyPage(() => import('./pages/Alertas'), 'Alertas');
+const Carteira = lazyPage(() => import('./pages/Carteira'), 'Carteira');
+const Assistente = lazyPage(() => import('./pages/Assistente'), 'Assistente');
+const AtivoDetalhe = lazyPage(() => import('./pages/AtivoDetalhe'), 'AtivoDetalhe');
+const AcademiaHome = lazyPage(() => import('./pages/academia/AcademiaHome'), 'AcademiaHome');
+const Trilha = lazyPage(() => import('./pages/academia/Trilha'), 'Trilha');
+const Aula = lazyPage(() => import('./pages/academia/Aula'), 'Aula');
+const Lives = lazyPage(() => import('./pages/academia/Lives'), 'Lives');
+const Configuracoes = lazyPage(() => import('./pages/Configuracoes'), 'Configuracoes');
+const Ajuda = lazyPage(() => import('./pages/Ajuda'), 'Ajuda');
 
 export default function App() {
   return (
@@ -90,227 +55,84 @@ function AppWithBoundary() {
   const location = useLocation();
 
   return (
-    <AppErrorBoundary key={location.pathname}>
-      <ThemeProvider>
-        <AuthProvider>
-          <ToastProvider>
-            <ConfirmProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <ConfirmProvider>
+            {/* A fronteira de erro reinicia por rota, mas sem remontar os providers. */}
+            <AppErrorBoundary key={location.pathname}>
               <Suspense fallback={<PageLoading />}>
-                <Routes>
-                <Route
-                  path="/"
-                  element={<Landing />}
-                />
-                <Route path="/aulas" element={<Aulas />} />
-                <Route path="/aplicacoes" element={<Aplicacoes />} />
-                <Route path="/estrategias" element={<Estrategias />} />
-                <Route path="/comunidade" element={<Comunidade />} />
-                <Route path="/planos" element={<Planos />} />
-                <Route path="/sobre" element={<Sobre />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/cadastro" element={<Cadastro />} />
-
-                <Route element={<ProtectedRoute />}>
-                  <Route
-                    path="/inicio"
-                    element={
-                      <Layout>
-                        <Hub />
-                      </Layout>
-                    }
-                  />
-                  <Route
-                    path="/aprendizado"
-                    element={
-                      <Layout>
-                        <Aprendizado />
-                      </Layout>
-                    }
-                  />
-                  <Route
-                    path="/aulas/:slug"
-                    element={
-                      <Layout>
-                        <CursoDetalhe />
-                      </Layout>
-                    }
-                  />
-                  <Route
-                    path="/lives"
-                    element={
-                      <Layout>
-                        <Lives />
-                      </Layout>
-                    }
-                  />
-                  <Route
-                    path="/perfil"
-                    element={
-                      <Layout>
-                        <Perfil />
-                      </Layout>
-                    }
-                  />
-
-                  <Route
-                    path="/ferramenta"
-                    element={
-                      <ToolLayout>
-                        <Dashboard />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/watchlist"
-                    element={
-                      <ToolLayout>
-                        <Watchlist />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/mercado"
-                    element={
-                      <ToolLayout>
-                        <Mercado />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/analise-matinal"
-                    element={
-                      <ToolLayout>
-                        <AnaliseMatinal />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/alertas"
-                    element={
-                      <ToolLayout>
-                        <Alertas />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/posicoes"
-                    element={
-                      <ToolLayout>
-                        <Posicoes />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/assistente"
-                    element={
-                      <ToolLayout>
-                        <Assistente />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/copiloto"
-                    element={
-                      <ToolLayout>
-                        <Copiloto />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/saas"
-                    element={
-                      <ToolLayout>
-                        <Saas />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/inteligencia"
-                    element={
-                      <ToolLayout>
-                        <Inteligencia />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/operacoes"
-                    element={
-                      <ToolLayout>
-                        <Operacoes />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/resumo-diario"
-                    element={
-                      <ToolLayout>
-                        <ResumoDiario />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/mesa-ia"
-                    element={
-                      <ToolLayout>
-                        <MesaIA />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/mesa-tecnica"
-                    element={
-                      <ToolLayout>
-                        <MesaTecnica />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/regime"
-                    element={
-                      <ToolLayout>
-                        <Regime />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/ativo/:symbol"
-                    element={
-                      <ToolLayout>
-                        <AtivoDetalhe />
-                      </ToolLayout>
-                    }
-                  />
-                  <Route
-                    path="/como-usar"
-                    element={
-                      <ToolLayout>
-                        <ComoUsar />
-                      </ToolLayout>
-                    }
-                  />
-
-                  <Route element={<AdminRoute />}>
-                    <Route
-                      path="/usuarios"
-                      element={
-                        <ToolLayout>
-                          <Usuarios />
-                        </ToolLayout>
-                      }
-                    />
-                  </Route>
-                </Route>
-                <Route path="*" element={<NaoEncontrado />} />
-                </Routes>
+                <AppRoutes />
               </Suspense>
-            </ConfirmProvider>
-          </ToastProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </AppErrorBoundary>
+            </AppErrorBoundary>
+          </ConfirmProvider>
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+
+/**
+ * Mapa de rotas. As rotas antigas continuam válidas via <RedirectTo>, que
+ * preserva a query (ver DESIGN.md › Rotas).
+ */
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/aulas" element={<Aulas />} />
+      <Route path="/aplicacoes" element={<Aplicacoes />} />
+      <Route path="/estrategias" element={<Estrategias />} />
+      <Route path="/comunidade" element={<Comunidade />} />
+      <Route path="/planos" element={<Planos />} />
+      <Route path="/sobre" element={<Sobre />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/cadastro" element={<Cadastro />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppShell />}>
+          <Route path="/ferramenta" element={<Dashboard />} />
+          <Route path="/mercado" element={<Mercado />} />
+          <Route path="/analise" element={<Analise />} />
+          <Route path="/radar" element={<Radar />} />
+          <Route path="/watchlist" element={<Watchlist />} />
+          <Route path="/alertas" element={<Alertas />} />
+          <Route path="/carteira" element={<Carteira />} />
+          <Route path="/assistente" element={<Assistente />} />
+          <Route path="/ativo/:symbol" element={<AtivoDetalhe />} />
+          <Route path="/academia" element={<AcademiaHome />} />
+          <Route path="/academia/trilhas/:slug" element={<Trilha />} />
+          <Route path="/academia/lives" element={<Lives />} />
+          <Route path="/aulas/:slug" element={<Aula />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/ajuda" element={<Ajuda />} />
+        </Route>
+
+        {/* Rotas antigas */}
+        <Route path="/inicio" element={<RedirectTo to="/academia" />} />
+        <Route path="/aprendizado" element={<RedirectTo to="/academia" />} />
+        <Route path="/lives" element={<RedirectTo to="/academia/lives" />} />
+        <Route path="/resumo-diario" element={<RedirectTo to="/analise" params={{ tab: 'visao-geral' }} />} />
+        <Route path="/analise-matinal" element={<RedirectTo to="/analise" params={{ tab: 'visao-geral' }} />} />
+        <Route path="/regime" element={<RedirectTo to="/analise" params={{ tab: 'regime' }} />} />
+        <Route path="/mesa-tecnica" element={<RedirectTo to="/analise" params={{ tab: 'tecnica' }} />} />
+        <Route path="/inteligencia" element={<RedirectTo to="/radar" />} />
+        <Route path="/mesa-ia" element={<RedirectTo to="/assistente" params={{ modo: 'mercado' }} />} />
+        <Route path="/copiloto" element={<RedirectTo to="/assistente" params={{ modo: 'ativo' }} />} />
+        <Route path="/posicoes" element={<RedirectTo to="/carteira" params={{ tab: 'posicoes' }} />} />
+        <Route path="/perfil" element={<RedirectTo to="/carteira" params={{ tab: 'desempenho' }} />} />
+        <Route path="/saas" element={<RedirectTo to="/configuracoes" params={{ tab: 'workspace' }} />} />
+        <Route path="/como-usar" element={<RedirectTo to="/ajuda" />} />
+        <Route path="/operacoes" element={<RedirectTo to="/configuracoes" params={{ tab: 'sistema' }} />} />
+        <Route element={<AdminRoute />}>
+          <Route path="/usuarios" element={<RedirectTo to="/configuracoes" params={{ tab: 'usuarios' }} />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<NaoEncontrado />} />
+    </Routes>
   );
 }
 
 function PageLoading() {
-  return <main className="app-loading-state" aria-live="polite">Carregando ambiente OneB…</main>;
+  return <CenteredMessage role="status" title="Carregando…" />;
 }

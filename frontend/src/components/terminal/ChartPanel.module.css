@@ -1,0 +1,77 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  min-height: 20px;
+  margin-bottom: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.legendItem .num {
+  color: var(--text-primary);
+}
+
+.swatch,
+.swatchDashed {
+  display: inline-block;
+  width: 12px;
+  height: 0;
+  border-top: 2px solid currentColor;
+}
+
+.swatchDashed {
+  border-top-style: dashed;
+}
+
+.legendNote {
+  color: var(--text-tertiary);
+}
+
+.price {
+  position: relative;
+  height: var(--chart-h, 360px);
+  min-height: 200px;
+}
+
+@media (max-width: 767px) {
+  .price {
+    height: calc(var(--chart-h, 360px) * 0.72);
+  }
+}
+
+.volume {
+  position: relative;
+  height: 64px;
+  margin-top: 2px;
+}
+
+.indicator {
+  position: relative;
+  height: 110px;
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+
+.panelLabel {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}

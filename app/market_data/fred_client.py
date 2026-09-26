@@ -161,9 +161,9 @@ def get_series(
     return out[_COLUMNS]
 
 
-def get_quote(series_id: str, name: str) -> FredQuote | None:
+def get_quote(series_id: str, name: str, *, refresh: bool = False) -> FredQuote | None:
     """Latest value plus day-over-day change for a FRED series."""
-    history = get_series(series_id)
+    history = get_series(series_id, refresh=refresh)
     if history.empty:
         return None
 

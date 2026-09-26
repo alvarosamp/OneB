@@ -14,7 +14,6 @@ from app.db import SessionLocal
 from app.market_data import service as market_data_service
 from app.models import WatchlistItem
 
-
 DEFAULT_SYMBOLS = [
     # Mega-cap tech (correlacionado, o nucleo original)
     "AAPL",

@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import styles from './ReliabilityChart.module.css';
 import type { ReliabilityScoreboard } from '../types';
 
 Chart.register(
@@ -38,11 +39,13 @@ export function ReliabilityChart({ data }: ReliabilityChartProps) {
 
   useEffect(() => {
     const charts = chartsRef.current;
-    const isDark = theme === 'dark';
-    const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-    const textColor = isDark ? '#a1a1aa' : '#64748b';
-    const predictedColor = isDark ? 'rgba(99, 102, 241, 0.55)' : 'rgba(99, 102, 241, 0.45)';
-    const actualColor = isDark ? '#22c55e' : '#16a34a';
+    // Cores dos tokens (--chart-*, --series-*); acompanham o tema.
+    const css = getComputedStyle(document.documentElement);
+    const token = (name: string) => css.getPropertyValue(name).trim();
+    const gridColor = token('--chart-grid');
+    const textColor = token('--chart-text');
+    const predictedColor = token('--series-1');
+    const actualColor = token('--series-3');
 
     const calibrated = data.calibration.filter((bucket) => bucket.samples > 0);
 
@@ -117,21 +120,25 @@ export function ReliabilityChart({ data }: ReliabilityChartProps) {
   }
 
   return (
-    <div className="reliability-scoreboard">
-      <div className="reliability-summary">
+    <div className={styles.board}>
+      <div className={styles.summary}>
         <span>Amostras checadas</span>
-        <strong>{data.total_samples}</strong>
+        <strong className="num">{data.total_samples}</strong>
         <span>Acerto geral</span>
-        <strong>{data.overall_win_rate_pct}%</strong>
+        <strong className="num">{String(data.overall_win_rate_pct).replace('.', ',')}%</strong>
       </div>
-      <div className="reliability-charts">
+      <div className={styles.charts}>
         <div>
-          <h3>Calibração: confiança dita x acerto real</h3>
-          <canvas ref={calibrationRef} height={160} />
+          <h3>Calibração: confiança declarada contra acerto real</h3>
+          <div className={styles.canvas}>
+            <canvas ref={calibrationRef} role="img" aria-label="Calibração: confiança declarada contra acerto real" />
+          </div>
         </div>
         <div>
-          <h3>Evolução do acerto (lotes de recomendações)</h3>
-          <canvas ref={trendRef} height={160} />
+          <h3>Evolução do acerto por lote de leituras</h3>
+          <div className={styles.canvas}>
+            <canvas ref={trendRef} role="img" aria-label="Evolução do acerto por lote de leituras" />
+          </div>
         </div>
       </div>
     </div>

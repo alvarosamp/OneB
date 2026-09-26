@@ -17,10 +17,11 @@ from scripts.calibrate_decision_strategy import (
     WALK_FORWARD_WINDOW_DAYS,
     StrategyParams,
     _walk_forward_folds,
+)
+from scripts.calibrate_decision_strategy import (
     replay as long_replay,
 )
 from scripts.compare_recommendations import DEFAULT_SYMBOLS, _load_prepared, _symbols
-
 
 OUTPUT_PATH = Path(os.getenv("AUTOMATION_READINESS_PATH", "data/automation_readiness_report.json"))
 MIN_TRADES = int(os.getenv("AUTOMATION_READY_MIN_TRADES", "20"))

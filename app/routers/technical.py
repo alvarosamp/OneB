@@ -1,10 +1,13 @@
+import json
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import indicators
-from app import technical_edge
-from app.auth import get_current_user
+from app import indicators, technical_edge
 from app.audit import audit
+from app.auth import get_current_user
 from app.db import get_db
 from app.market_data import service as market_data_service
 from app.models import TechnicalLevel, TradeSetup
@@ -18,6 +21,28 @@ from app.schemas import (
 )
 
 router = APIRouter(prefix="/api/technical", tags=["technical"], dependencies=[Depends(get_current_user)])
+
+
+@router.get("/intraday-cards")
+def intraday_cards():
+    """Read the latest research snapshot; stale cards can never suggest action."""
+    path = Path(__file__).resolve().parents[2] / "data" / "research" / "intraday_cards" / "latest.json"
+    if not path.exists():
+        return {"status": "UNAVAILABLE", "cards": [], "reason": "Snapshot intradiario ainda nao foi gerado."}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    for card in payload.get("cards", []):
+        as_of = datetime.fromisoformat(card["as_of"])
+        if datetime.now(timezone.utc) - as_of > timedelta(minutes=20):
+            card["action"] = "NO_TRADE"
+            card["direction"] = None
+            card["entry_price"] = None
+            card["stop_price"] = None
+            card["take_profit"] = []
+            card["confidence_pct"] = None
+            card["data_health"]["fresh"] = False
+            if "Snapshot desatualizado." not in card["reasons"]:
+                card["reasons"].insert(0, "Snapshot desatualizado.")
+    return payload
 
 
 @router.get("/edge")

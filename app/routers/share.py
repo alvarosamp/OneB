@@ -5,8 +5,8 @@ import secrets
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user
 from app.audit import audit
+from app.auth import get_current_user
 from app.db import get_db
 from app.models import PriceSnapshot, ShareLink, WatchlistItem
 from app.saas import get_or_create_workspace

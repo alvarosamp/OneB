@@ -25,7 +25,8 @@ import numpy as np
 import pandas as pd
 
 from app import paper_simulator as sim
-from app.market_data import macro_data, service as market_data_service
+from app.market_data import macro_data
+from app.market_data import service as market_data_service
 from scripts.compare_recommendations import DEFAULT_SYMBOLS, _load_prepared, _symbols
 from scripts.data_reliability_gate import build_report as build_data_gate
 from scripts.statistical_edge_audit import (

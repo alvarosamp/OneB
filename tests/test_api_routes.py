@@ -1,6 +1,8 @@
-import pytest
 from datetime import datetime, timezone
 from types import SimpleNamespace
+
+import pandas as pd
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -9,12 +11,15 @@ from sqlalchemy.pool import StaticPool
 from app.auth import get_current_user
 from app.db import Base, get_db
 from app.main import app
+from app.market_data import macro_data
 from app.market_data.providers import MarketQuote
+from app.market_data.yfinance_client import CommodityQuote, FxQuote
 from app.models import (
     AlertCondition,
     AlertLog,
     AlertRule,
     GlobalNewsItem,
+    MacroIntelligenceSnapshot,
     PriceSnapshot,
     RuleLogic,
     RuleType,
@@ -22,8 +27,6 @@ from app.models import (
     TransactionSide,
     WatchlistItem,
 )
-from app.market_data.yfinance_client import CommodityQuote, FxQuote
-import pandas as pd
 
 
 @pytest.fixture()
@@ -81,6 +84,83 @@ def test_dashboard_summary_with_data(client):
     assert len(data["rows"]) == 1
     assert data["rows"][0]["symbol"] == "AAPL"
     assert data["rows"][0]["price"] == 150.5
+
+
+def test_macro_trend_radar_contract_and_order(client, monkeypatch):
+    test_client, _ = client
+    history_calls: list[tuple[str, str, str]] = []
+    trend_calls: list[tuple[str, bool]] = []
+
+    def fake_history(key: str, *, period: str, interval: str, refresh: bool = False):
+        assert refresh is False
+        history_calls.append((key, period, interval))
+        frame = pd.DataFrame()
+        frame.attrs["macro_key"] = key
+        return frame
+
+    def fake_trend(frame: pd.DataFrame, *, yield_series: bool):
+        key = frame.attrs["macro_key"]
+        trend_calls.append((key, yield_series))
+        return {"direction": "LATERAL", "change_unit": "bps" if yield_series else "%"}
+
+    monkeypatch.setattr("app.routers.regime.macro_data.get_macro_history", fake_history)
+    monkeypatch.setattr("app.routers.regime.regime_engine.trend_analysis", fake_trend)
+    monkeypatch.setattr("app.routers.regime.regime_engine.latest_macro_snapshot", lambda *_args: None)
+    monkeypatch.setattr("app.routers.regime.regime_engine.cross_asset_relevance", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(
+        "app.routers.regime.regime_engine.macro_correlation_analysis",
+        lambda histories: {"60": {"received_keys": list(histories)}},
+    )
+    monkeypatch.setattr("app.routers.regime.regime_engine.macro_relationship_dynamics", lambda _windows: [{"status": "INVERSAO"}])
+    monkeypatch.setattr(
+        "app.routers.regime.regime_engine.macro_lead_lag_candidates",
+        lambda histories: [{"leader": next(iter(histories)), "follower": "DXY"}],
+    )
+
+    res = test_client.get("/api/regime/macro")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert [row["key"] for row in data["trend_watchlist"]] == list(macro_data.TREND_WATCHLIST)
+    assert len(data["instruments"]) == len(macro_data.MACRO_INSTRUMENTS)
+    assert all(row["context"] for row in data["trend_watchlist"])
+    assert "VIX" in {row["key"] for row in data["instruments"]}
+    assert "VIX" not in {row["key"] for row in data["trend_watchlist"]}
+    assert data["correlation_windows"]["60"]["received_keys"] == list(macro_data.MACRO_INSTRUMENTS)
+    assert data["relationship_dynamics"] == [{"status": "INVERSAO"}]
+    assert data["lead_lag_candidates"][0]["leader"] == next(iter(macro_data.MACRO_INSTRUMENTS))
+    assert history_calls == [(key, "1y", "1d") for key in macro_data.MACRO_INSTRUMENTS]
+    assert {key for key, is_yield in trend_calls if is_yield} == {"US2Y", "US5Y", "US10Y", "US30Y"}
+    assert all(
+        row["trend"]["change_unit"] == ("bps" if row["key"].startswith("US") else "%")
+        for row in data["trend_watchlist"]
+    )
+
+
+def test_macro_history_endpoint_returns_persisted_daily_state(client):
+    test_client, Session = client
+    db = Session()
+    db.add(
+        MacroIntelligenceSnapshot(
+            snapshot_date="2026-09-15",
+            captured_at=datetime(2026, 9, 15, 21, tzinfo=timezone.utc),
+            coverage_pct=91.7,
+            fresh_count=10,
+            stale_count=1,
+            missing_count=1,
+            payload={"lead_lag_candidates": []},
+        )
+    )
+    db.commit()
+    db.close()
+
+    res = test_client.get("/api/regime/macro/history", params={"limit": 30})
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data["days_recorded"] == 1
+    assert data["snapshots"][0]["snapshot_date"] == "2026-09-15"
+    assert data["snapshots"][0]["coverage_pct"] == 91.7
 
 
 def test_dashboard_summary_includes_user_item_from_older_workspace(client):
@@ -249,7 +329,7 @@ def test_intelligence_live_check_uses_market_history(client, monkeypatch):
 def test_data_quality_compares_multiple_sources(client, monkeypatch):
     test_client, _ = client
     dates = pd.date_range(pd.Timestamp.now(tz="UTC").normalize() - pd.Timedelta(days=1), periods=2, freq="D", tz="UTC")
-    history = pd.DataFrame(
+    _unused_history = pd.DataFrame(
         {
             "open": [100, 101],
             "high": [101, 102],

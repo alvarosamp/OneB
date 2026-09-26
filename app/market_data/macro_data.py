@@ -16,7 +16,8 @@ from datetime import timezone
 
 import pandas as pd
 
-from app.market_data import fred_client, service as market_data_service, yfinance_client
+from app.market_data import fred_client, yfinance_client
+from app.market_data import service as market_data_service
 
 # key -> (source, symbol_or_series_id, display_name)
 MACRO_INSTRUMENTS: dict[str, tuple[str, str, str]] = {
@@ -37,6 +38,39 @@ MACRO_INSTRUMENTS: dict[str, tuple[str, str, str]] = {
     "EURBRL": ("yfinance", "EURBRL=X", "EUR/BRL"),
 }
 
+# The macro portfolio the user follows day to day.  VIX remains in the wider
+# registry as a risk input, but this ordered list mirrors the instruments that
+# deserve a dedicated trend board in the UI.
+TREND_WATCHLIST = (
+    "US2Y",
+    "US5Y",
+    "US10Y",
+    "US30Y",
+    "GOLD",
+    "BRENT",
+    "WTI",
+    "NASDAQ",
+    "SP500",
+    "DXY",
+    "EURUSD",
+    "EURBRL",
+)
+
+TREND_CONTEXT: dict[str, str] = {
+    "US2Y": "Juro curto: reage principalmente à trajetória esperada da política monetária dos EUA.",
+    "US5Y": "Trecho intermediário da curva: combina expectativa de Fed, inflação e crescimento.",
+    "US10Y": "Referência global de desconto: alta do yield tende a apertar as condições financeiras.",
+    "US30Y": "Juro longo: sensível a inflação estrutural, prêmio de prazo e risco fiscal.",
+    "GOLD": "Ouro em dólar: observe junto de juros reais, dólar e demanda por proteção.",
+    "BRENT": "Petróleo global: tendência reflete oferta, geopolítica e demanda internacional.",
+    "WTI": "Petróleo dos EUA: complemente a leitura com estoques, oferta e atividade americana.",
+    "NASDAQ": "Tecnologia dos EUA: costuma ser sensível a juros longos, liquidez e crescimento.",
+    "SP500": "Ações amplas dos EUA: referência para apetite a risco e breadth do mercado.",
+    "DXY": "Força ampla do dólar: alta pode apertar liquidez global e pressionar ativos em dólar.",
+    "EURUSD": "Força relativa euro/dólar: alta indica euro mais forte frente ao dólar.",
+    "EURBRL": "Câmbio euro/real: alta indica euro mais forte e real mais fraco.",
+}
+
 FRED_FALLBACKS: dict[str, tuple[str, str]] = {
     # Lower-tier continuity proxies used only when FRED is unavailable.
     "DXY": ("DX-Y.NYB", "Yahoo proxy for ICE U.S. Dollar Index"),
@@ -46,8 +80,8 @@ FRED_FALLBACKS: dict[str, tuple[str, str]] = {
 }
 
 
-def _yfinance_yield_proxy(symbol: str, period: str, interval: str) -> pd.DataFrame:
-    history = market_data_service.get_bars(symbol, period=period, interval=interval)
+def _yfinance_yield_proxy(symbol: str, period: str, interval: str, *, refresh: bool = False) -> pd.DataFrame:
+    history = market_data_service.get_bars(symbol, period=period, interval=interval, refresh=refresh)
     if history.empty:
         return history
     out = history.copy()
@@ -56,17 +90,17 @@ def _yfinance_yield_proxy(symbol: str, period: str, interval: str) -> pd.DataFra
     return out
 
 
-def _fallback_history(key: str, period: str, interval: str) -> pd.DataFrame:
+def _fallback_history(key: str, period: str, interval: str, *, refresh: bool = False) -> pd.DataFrame:
     fallback = FRED_FALLBACKS.get(key.upper())
     if fallback is None:
         return pd.DataFrame(columns=["open", "high", "low", "close", "volume"])
     symbol, _reason = fallback
     if key.upper() == "US10Y":
-        return _yfinance_yield_proxy(symbol, period, interval)
-    return market_data_service.get_bars(symbol, period=period, interval=interval)
+        return _yfinance_yield_proxy(symbol, period, interval, refresh=refresh)
+    return market_data_service.get_bars(symbol, period=period, interval=interval, refresh=refresh)
 
 
-def get_macro_quote(key: str):
+def get_macro_quote(key: str, *, refresh: bool = False):
     """Latest quote for one MACRO_INSTRUMENTS entry. Returns an object with
     .symbol/.name/.price/.change_pct/.updated_at regardless of source
     (yfinance_client.IndexQuote or fred_client.FredQuote) — callers
@@ -77,12 +111,12 @@ def get_macro_quote(key: str):
         return None
     source, symbol, name = entry
     if source == "fred":
-        quote = fred_client.get_quote(symbol, name)
+        quote = fred_client.get_quote(symbol, name, refresh=refresh)
         if quote is None:
             fallback = FRED_FALLBACKS.get(key.upper())
             if fallback is None:
                 return None
-            history = _fallback_history(key, period="5d", interval="1d")
+            history = _fallback_history(key, period="5d", interval="1d", refresh=refresh)
             if history.empty:
                 return None
             close = history["close"].dropna()
@@ -118,7 +152,7 @@ def get_macro_quote(key: str):
     return yfinance_client.get_index_quote(symbol, name)
 
 
-def get_macro_history(key: str, period: str = "6mo", interval: str = "1d") -> pd.DataFrame:
+def get_macro_history(key: str, period: str = "6mo", interval: str = "1d", *, refresh: bool = False) -> pd.DataFrame:
     """Daily history for a MACRO_INSTRUMENTS entry — used for rolling
     correlation/regime calculations, which need a return series rather than
     just the latest quote.
@@ -128,8 +162,8 @@ def get_macro_history(key: str, period: str = "6mo", interval: str = "1d") -> pd
         return pd.DataFrame(columns=["open", "high", "low", "close", "volume"])
     source, symbol, _name = entry
     if source == "fred":
-        history = fred_client.get_series(symbol)
+        history = fred_client.get_series(symbol, refresh=refresh)
         if not history.empty:
             return history
-        return _fallback_history(key, period, interval)
-    return market_data_service.get_bars(symbol, period=period, interval=interval)
+        return _fallback_history(key, period, interval, refresh=refresh)
+    return market_data_service.get_bars(symbol, period=period, interval=interval, refresh=refresh)

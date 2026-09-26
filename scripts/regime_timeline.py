@@ -17,8 +17,9 @@ from __future__ import annotations
 import pandas as pd
 
 from app import indicators
+from app.market_data import fred_client
+from app.market_data import service as market_data_service
 from app.paper_simulator import MARKET_HISTORY_PERIOD
-from app.market_data import fred_client, service as market_data_service
 
 pd.set_option("display.width", 140)
 

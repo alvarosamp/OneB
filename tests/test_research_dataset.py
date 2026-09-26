@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
 from pathlib import Path
 from uuid import uuid4
+
+import numpy as np
+import pandas as pd
 
 from app.research_dataset import ResearchDatasetConfig, build_research_dataset
 
@@ -53,7 +54,8 @@ def test_build_research_dataset_creates_features_labels_and_time_splits(monkeypa
     assert not panel.empty
     assert {"rsi14", "adx14", "rel_ret_5d_vs_benchmark", "fwd_return_5d", "fwd_drawdown_5d", "label_5d"}.issubset(panel.columns)
     assert panel[summary["feature_columns"]].isna().sum().sum() == 0
-    assert set(panel["split"]) == {"train", "validation", "test"}
+    assert set(panel["split"]) == {"train", "validation", "test", "purged"}
+    assert (panel["split"] == "purged").any()
     assert panel.loc[panel["split"] == "train", "date"].max() < panel.loc[panel["split"] == "test", "date"].min()
     assert summary["dataset_quality"]["status"] in {"PASS", "WARN"}
     assert (config.output_dir / "research_dataset_v1.csv").exists()

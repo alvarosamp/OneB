@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-
 REGISTRY_DIR = Path(os.getenv("RESEARCH_REGISTRY_DIR", "data/research_registry"))
 REGISTRY_LOG = REGISTRY_DIR / "experiments.jsonl"
 

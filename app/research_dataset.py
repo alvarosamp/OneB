@@ -11,8 +11,9 @@ import numpy as np
 import pandas as pd
 
 from app import indicators
+from app import research_provenance
 from app.market_data import service as market_data_service
-
+from app.temporal_validation import purged_three_way_split
 
 DEFAULT_SYMBOLS = [
     "AAPL",
@@ -56,11 +57,22 @@ class ResearchDatasetConfig:
     bad_threshold_5d_pct: float = -1.0
     train_pct: float = 0.70
     validation_pct: float = 0.15
+    # Purge e embargo nas fronteiras de split. Sem isso, as ultimas amostras de
+    # treino tem labels calculados com precos que ja pertencem ao bloco de
+    # validacao/teste -- o modelo treina sobre o que deveria estar prevendo.
+    # purge_horizon_days: cobre a janela do label. Default = maior horizonte
+    #   gerado (20d), para que o dataset seja seguro qualquer que seja o label
+    #   escolhido depois. Se voce so vai treinar em label_5d, pode baixar para 5
+    #   e recuperar ~7% das linhas.
+    # embargo_days: cobre a autocorrelacao das features (a maior janela de
+    #   lookback dos indicadores e 50 barras; 20 cobre a maioria).
+    purge_horizon_days: int = max(HORIZONS_DAYS)
+    embargo_days: int = 20
     output_dir: Path = Path("data/research")
     refresh: bool = False
 
     @classmethod
-    def from_env(cls) -> "ResearchDatasetConfig":
+    def from_env(cls) -> ResearchDatasetConfig:
         symbols = _symbols_from_env("RESEARCH_DATASET_SYMBOLS") or DEFAULT_SYMBOLS
         return cls(
             symbols=symbols,
@@ -278,19 +290,40 @@ def _add_labels(frame: pd.DataFrame, config: ResearchDatasetConfig) -> pd.DataFr
 
 
 def _assign_splits(panel: pd.DataFrame, config: ResearchDatasetConfig) -> pd.DataFrame:
+    """Divide o painel em train/validation/test COM purge e embargo.
+
+    Linhas que caem na zona de purge recebem ``split == "purged"`` e nao devem
+    entrar em nenhum conjunto. Elas sao mantidas no arquivo de proposito: o
+    auditor consegue ver exatamente o que foi removido e por que, em vez de as
+    linhas simplesmente desaparecerem.
+
+    O gap aplicado em cada fronteira e ``purge_horizon_days + embargo_days``,
+    medido em BARRAS DE PREGAO (nao em dias corridos).
+    """
     out = panel.copy()
     dates = pd.Index(sorted(out["date"].dropna().unique()))
     if dates.empty:
         out["split"] = "train"
         return out
-    train_end = dates[max(0, min(len(dates) - 1, math.floor(len(dates) * config.train_pct) - 1))]
-    validation_end_index = math.floor(len(dates) * (config.train_pct + config.validation_pct)) - 1
-    validation_end = dates[max(0, min(len(dates) - 1, validation_end_index))]
-    out["split"] = np.where(
-        out["date"] <= train_end,
-        "train",
-        np.where(out["date"] <= validation_end, "validation", "test"),
-    )
+
+    try:
+        result = purged_three_way_split(
+            out["date"],
+            label_horizon=int(config.purge_horizon_days),
+            train_pct=config.train_pct,
+            validation_pct=config.validation_pct,
+            embargo=int(config.embargo_days),
+        )
+    except ValueError:
+        # Serie curta demais para purgar: e melhor falhar de forma visivel do
+        # que devolver silenciosamente um split vazado.
+        raise ValueError(
+            f"serie com {len(dates)} datas e curta demais para purge de "
+            f"{config.purge_horizon_days} + embargo de {config.embargo_days} "
+            "barras. Aumente o periodo (config.period) ou reduza o purge."
+        ) from None
+
+    out["split"] = result.split.to_numpy()
     return out
 
 
@@ -401,4 +434,59 @@ def build_research_dataset(config: ResearchDatasetConfig | None = None, *, write
         dataset_path, summary_path = _write_outputs(panel, summary, config.output_dir)
         summary["outputs"] = {"dataset": str(dataset_path), "summary": str(summary_path)}
         summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        # Manifesto imutavel: sem isto, nao ha como provar depois QUAL conjunto
+        # exato de linhas treinou um modelo. Os CSVs de cache sao sobrescritos a
+        # cada refresh, entao o hash precisa ser tirado no momento da geracao.
+        try:
+            source_paths = _source_cache_paths(config)
+            research_provenance.write_manifest(
+                dataset_path,
+                command="app.research_dataset.build_research_dataset",
+                parameters={
+                    **asdict(config),
+                    "output_dir": str(config.output_dir),
+                    "horizons_days": HORIZONS_DAYS,
+                },
+                input_paths=source_paths,
+                extra={
+                    "rows": int(len(panel)),
+                    "symbols": int(panel["symbol"].nunique()) if not panel.empty else 0,
+                    "split_counts": {
+                        str(k): int(v)
+                        for k, v in (
+                            panel["split"].value_counts().to_dict().items()
+                            if not panel.empty
+                            else []
+                        )
+                    },
+                    "purge_horizon_days": config.purge_horizon_days,
+                    "embargo_days": config.embargo_days,
+                    "summary_sha256": research_provenance.file_fingerprint(summary_path)[
+                        "sha256"
+                    ],
+                },
+            )
+        except Exception as exc:  # manifesto nunca deve derrubar a geracao
+            summary.setdefault("warnings", []).append(
+                f"falha ao escrever manifesto de proveniencia: {exc}"
+            )
     return panel, summary
+
+
+def _source_cache_paths(config: ResearchDatasetConfig) -> list[Path]:
+    """Caminhos dos CSVs de cache que alimentaram este dataset.
+
+    Sao estes arquivos que precisam ser hasheados: o dataset derivado sozinho
+    nao diz de onde veio, e o cache e sobrescrito a cada atualizacao.
+    """
+    cache_root = Path("data/raw/prices")
+    paths: list[Path] = []
+    symbols = [*config.symbols, config.benchmark_symbol]
+    for symbol in symbols:
+        safe = symbol.replace("/", "_")
+        for provider_dir in sorted(cache_root.glob("*")):
+            candidate = provider_dir / config.interval / config.period / f"{safe}.csv"
+            if candidate.exists():
+                paths.append(candidate)
+    return paths

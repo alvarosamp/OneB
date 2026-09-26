@@ -1,8 +1,9 @@
-from app.db import Base
-from app.models import AlertLog, WatchlistItem, PriceSnapshot
-from app.reports import build_pdf_report
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+from app.db import Base
+from app.models import AlertLog, PriceSnapshot, WatchlistItem
+from app.reports import build_pdf_report
 
 
 def _make_session():

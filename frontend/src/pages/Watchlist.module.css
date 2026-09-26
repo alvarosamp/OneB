@@ -1,0 +1,170 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.addForm {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.addForm > button {
+  margin-top: 20px;
+}
+
+.symbol {
+  width: 160px;
+}
+
+.label {
+  width: 220px;
+}
+
+.type {
+  width: 200px;
+}
+
+.asset {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.asset span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+}
+
+.rowActions {
+  display: inline-flex;
+  gap: var(--sp-1);
+}
+
+.rulePanel {
+  display: grid;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-0);
+}
+
+.ruleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ruleTitle {
+  font-size: var(--fs-lg);
+}
+
+.ruleBody {
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.subTitle {
+  margin-bottom: var(--sp-3);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
+.ruleList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 760px;
+}
+
+.ruleList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ruleMeta {
+  display: block;
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+}
+
+.ruleActions {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-top: var(--sp-4);
+}
+
+.playbook {
+  width: 280px;
+}
+
+.backtest {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--sp-4);
+  margin: var(--sp-4) 0 0;
+  max-width: 900px;
+}
+
+.backtest dt {
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+}
+
+.backtest dd {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.error {
+  margin-top: var(--sp-2);
+  color: var(--warning);
+  font-size: var(--fs-sm);
+}
+
+.choose {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.chooseList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+@media (max-width: 767px) {
+  .symbol,
+  .label,
+  .type,
+  .playbook {
+    width: 100%;
+  }
+
+  .addForm > button {
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .backtest {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rulePanel {
+    padding: var(--sp-4);
+  }
+}

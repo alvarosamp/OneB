@@ -133,7 +133,7 @@ export function Navbar() {
       <div className="topbar-actions">
         <span className="market-status">
           <i />
-          Mercado aberto
+          Dados conectados
         </span>
         {inTerminal && assetSearchOpen && (
           <form className="asset-search-form" onSubmit={handleAssetSearch}>

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user
 from app.audit import audit
+from app.auth import get_current_user
 from app.backtest import backtest_conditions
 from app.db import get_db
 from app.market_data import service as market_data_service

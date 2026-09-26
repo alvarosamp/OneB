@@ -21,8 +21,9 @@ Backend e front-end são **dois serviços separados**:
 - **Backend** (`app/`): FastAPI, API REST pura (JSON), autenticação por **JWT** (Bearer token,
   sem cookie de sessão), SQLite + APScheduler + bot do Telegram.
 - **Front-end** (`frontend/`): **React + TypeScript + Vite**, um SPA que consome o backend via
-  `fetch`. Guarda o token JWT no `localStorage` e manda em `Authorization: Bearer <token>` em
-  cada request.
+  `fetch`. Mantém o access token (curto) apenas em memória e manda em
+  `Authorization: Bearer <token>`; a sessão persiste por um cookie httpOnly de refresh que o
+  JavaScript não consegue ler.
 
 Por quê separado: permite hospedar cada parte de forma independente (ex: backend num Web
 Service e front num Static Site no Render), o que é o modelo "cloud-native" padrão. O preço
@@ -58,6 +59,16 @@ e quebra sem aviso quando eles mudam o HTML — não é uma base confiável para
 seu amigo vai usar de verdade. Por isso, cotações/notícias/calendário econômico vêm de APIs
 oficiais (Finnhub + FMP), que cobrem a mesma necessidade com estabilidade e dentro do free tier.
 
+## Requisitos
+
+| Componente          | Suportado                                  |
+|---------------------|--------------------------------------------|
+| Python              | 3.11–3.12 (testados no CI)                 |
+| Node.js             | 22 (Vite atual exige 20.19+ ou 22.12+)     |
+| Docker Compose      | v2                                          |
+| Banco (dev)         | SQLite (padrão, sem configuração)          |
+| Banco (produção)    | PostgreSQL via `docker-compose.prod.yml`   |
+
 ## Setup local
 
 ### Docker separado
@@ -75,14 +86,40 @@ ServiÃ§os:
 - `worker`: scheduler, coleta de dados, bots e resumos Telegram.
 - `frontend`: Vite em `http://localhost:5173`.
 
-Para um frontend estÃ¡tico servido por Nginx:
+### ProduÃ§Ã£o com Docker Compose
+
+O ambiente de produÃ§Ã£o publica somente o Nginx. Ele serve o SPA e encaminha `/api` para o
+FastAPI pela rede interna. PostgreSQL, API, worker e simulador nÃ£o expÃµem portas ao host.
 
 ```bash
-docker compose -f docker-compose.prod.yml up --build
+cp .env.production.example .env
+# edite .env e substitua todos os valores CHANGE_ME
+docker compose -f docker-compose.prod.yml config --quiet
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml ps
 ```
 
-Nesse modelo o `worker` Ã© o Ãºnico processo que roda automaÃ§Ãµes; isso evita duplicar alertas,
-coletas e mensagens de bot quando a API escala.
+No Windows PowerShell, use `Copy-Item .env.production.example .env` no primeiro comando.
+A aplicaÃ§Ã£o fica em `http://localhost` (ou na porta definida por `APP_PORT`). Os dados do
+PostgreSQL ficam no volume `pgdata`; modelos, caches e estado do simulador ficam em `appdata`.
+
+Para acompanhar o primeiro deploy:
+
+```bash
+docker compose -f docker-compose.prod.yml logs -f migrate api frontend
+```
+
+O serviÃ§o `migrate` aplica o Alembic e precisa terminar com cÃ³digo 0 antes dos demais processos.
+O `worker` Ã© o Ãºnico processo que roda automaÃ§Ãµes; nÃ£o o escale, pois isso duplicaria alertas,
+coletas e mensagens. Em um servidor pÃºblico, termine HTTPS num load balancer ou reverse proxy e
+configure `FRONTEND_ORIGIN=https://seu-dominio.com`; o cookie de refresh Ã© `Secure` em produÃ§Ã£o.
+
+Backup bÃ¡sico do banco:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T db \
+  pg_dump -U oneb -d oneb -Fc > oneb.dump
+```
 
 ### Backend
 
@@ -139,25 +176,53 @@ usuário pode criar conta e entrar em seguida (ver seção "Autenticação" abai
 
 ## Autenticação
 
-Login por token (JWT):
+Sessão em duas partes: um **access token** curto que vive só em memória do navegador e um
+**refresh token** de 30 dias num cookie `HttpOnly`.
 
 - **Cadastro aberto**: `POST /api/auth/cadastro` cria a conta e já devolve um token para entrar.
-  A primeira conta criada vira administradora automaticamente; as seguintes entram como usuários
-  comuns.
-- Admins ainda podem criar contas manualmente e escolher permissão de admin na tela `/usuarios`.
-- Senhas ficam com hash bcrypt (nunca em texto plano). O login devolve um token JWT que o front
-  guarda no `localStorage` e manda em `Authorization: Bearer <token>` em cada request — sem
-  cookie, sem CSRF (não tem cookie automático do navegador pra explorar).
-- Token expira em `JWT_EXPIRE_HOURS` (padrão 7 dias) — depois disso precisa logar de novo. Sem
-  refresh token (mantido simples de propósito, ver "Limitações conhecidas").
-- Rate limit simples no login: 5 tentativas erradas seguidas bloqueiam por 5 minutos (contador
-  em memória, reseta se o processo reiniciar — trava contra brute force casual, não solução
-  enterprise).
-- Sem "esqueci minha senha" — se alguém esquecer, um admin recria o usuário direto no banco (ou
-  me chama que eu ajudo). Não há serviço de e-mail configurado no projeto.
+  O cadastro público **nunca** concede admin. (Antes, a primeira conta criada virava
+  administradora — num deploy publicado antes de você se cadastrar, qualquer visitante que
+  chegasse primeiro ganhava controle total.)
+- **Primeiro admin**: preencha `ADMIN_BOOTSTRAP_USERNAME` e `ADMIN_BOOTSTRAP_PASSWORD` no `.env`.
+  Essa conta é criada como admin no startup, **somente enquanto o banco não tiver nenhum
+  usuário**. Depois disso, promova alguém com `python -m scripts.promote_admin <usuario>`.
+- Admins podem criar contas e escolher permissão de admin na tela `/usuarios`.
+- Senhas ficam com hash bcrypt (nunca em texto plano).
+- **Access token**: JWT de `ACCESS_TOKEN_EXPIRE_MINUTES` (padrão 15 min), guardado apenas em
+  memória pelo SPA — nunca em `localStorage`, porque web storage é legível por qualquer XSS.
+- **Refresh token**: string opaca de `REFRESH_TOKEN_EXPIRE_DAYS` (padrão 30) em cookie
+  `HttpOnly`, `SameSite=Strict`, `Secure` quando `ENVIRONMENT=production`, guardada no banco
+  apenas como hash SHA-256. É rotacionada a cada uso; se um token já rotacionado reaparecer
+  (sinal de credencial copiada), a família inteira é revogada.
+- O front renova o access token em silêncio quando ele expira — na prática você não é
+  deslogado no meio do uso, e o `logout` revoga a sessão **no servidor**.
+- As duas rotas autenticadas por cookie (`/api/auth/refresh` e `/api/auth/logout`) exigem o
+  header `X-Refresh-Request`, o que fecha o vetor de CSRF que o cookie reintroduziria.
+- Rate limit no login: 5 tentativas erradas em 5 minutos bloqueiam o usuário. O contador é
+  **persistido no banco** (tabela `login_attempts`), então sobrevive a restart/redeploy e vale
+  para todas as réplicas.
+- **Esqueci minha senha**: não há e-mail configurado, então a redefinição é administrativa —
+  um admin usa `POST /api/auth/usuarios/{id}/senha`, ou, se ninguém tiver acesso de admin,
+  `python -m scripts.reset_password <usuario>`. O usuário **não** é recriado: o `id` é
+  referenciado por watchlist, posições, alertas e histórico, e recriar a conta descartaria
+  tudo isso. Trocar a senha derruba todas as sessões ativas daquele usuário.
 
-Fluxo sugerido: cada pessoa pode fazer o próprio cadastro e entrar em seguida. Se alguém precisar
-virar admin, uma conta administradora pode ajustar isso em `/usuarios`.
+Detalhes do modelo de ameaça, runbook de vazamento e canal de reporte: [`SECURITY.md`](SECURITY.md).
+
+## Migrations do banco
+
+Em desenvolvimento (SQLite) o schema é criado no boot direto a partir dos modelos — nada a fazer.
+Em produção, o schema é versionado com Alembic:
+
+```bash
+alembic upgrade head      # aplica as migrations pendentes
+alembic downgrade -1      # volta uma migration
+alembic revision --autogenerate -m "descricao"   # depois de mudar app/models.py
+```
+
+O `docker-compose.prod.yml` roda `alembic upgrade head` num serviço `migrate` que precisa
+terminar com sucesso antes de API, worker e simulador subirem.
+
 ## Rodando os testes
 
 Backend:
@@ -209,6 +274,8 @@ pontual, não e2e completo de cada página (validado manualmente, ver "Smoke tes
    - a cada `QUOTE_POLL_SECONDS` (padrão 60s) busca a cotação atual de cada ativo ativo;
    - a cada `INDICATOR_REFRESH_SECONDS` (padrão 5min) recalcula indicadores e avalia as regras;
    - a cada `NEWS_REFRESH_SECONDS` (padrão 30min) busca notícias novas de cada ativo;
+   - em dias úteis, às `MACRO_INTELLIGENCE_HOUR_UTC` (padrão 23h UTC), atualiza os históricos
+     macro e persiste tendências, correlações, mudanças de regime e hipóteses de antecedência;
    - todo dia às `CALENDAR_REFRESH_HOUR_UTC` atualiza calendário econômico e de earnings;
    - todo dia às `DAILY_SUMMARY_HOUR_UTC` envia um resumo pelo Telegram (preços + notícias das
      últimas 24h + eventos econômicos de alto impacto do dia + earnings da semana).
@@ -286,7 +353,7 @@ Dois serviços no **Render** (não pede cartão de crédito no free tier):
 3. No painel do Render: **New +** → **Web Service** → conecte o repositório.
 4. Environment: **Docker** (ele detecta o `Dockerfile` na raiz automaticamente).
 5. Em **Environment Variables**, cole todas as chaves do seu `.env` local (`FINNHUB_API_KEY`,
-   `FMP_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `SECRET_KEY`, `JWT_EXPIRE_HOURS`,
+   `FMP_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `SECRET_KEY`, `ENVIRONMENT=production`,
    provedor de LLM escolhido, etc.) — uma por uma no painel, nunca commitando o arquivo.
    `SECRET_KEY` **precisa** ser fixa aqui (gerada uma vez, colada no painel) — se ficar em
    branco, cada restart gera uma nova e invalida todos os tokens JWT emitidos.
@@ -403,8 +470,14 @@ frontend/                   # front-end (SPA)
   pro comportamento sem IA (sem quebrar nada).
 - Backtest é simplificado (não é um motor de backtesting completo): reavalia a regra em janela
   deslizante sobre o histórico do yfinance, não simula slippage/custos/execução real.
-- Sem refresh token: expirado o `JWT_EXPIRE_HOURS`, precisa logar de novo — trade-off
-  deliberado pra manter a auth simples num app de poucos usuários.
+- Sem e-mail transacional: a redefinição de senha é administrativa (ver "Autenticação"),
+  não existe fluxo de "esqueci minha senha" self-service.
+- O worker é singleton por convenção de deployment: os `job_defaults` do APScheduler
+  (`max_instances`, `coalesce`) evitam sobreposição **dentro** de um processo, mas subir dois
+  workers ainda duplicaria alertas e coletas. Não escale esse serviço.
 - Sem execução de ordens: qualquer decisão de compra/venda continua manual, feita por você na
   corretora (ex: Exness).
 
+## Licença
+
+Apache License 2.0 — ver [`LICENSE`](LICENSE).

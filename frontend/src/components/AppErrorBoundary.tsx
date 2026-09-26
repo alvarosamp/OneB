@@ -1,4 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { CenteredMessage } from './AuthLayout';
+import { Button } from './ui';
+import { buttonClass } from './ui/buttonClass';
 
 interface Props {
   children: ReactNode;
@@ -8,7 +11,7 @@ interface State {
   failed: boolean;
 }
 
-/** Keeps an unexpected rendering failure isolated from the rest of the application. */
+/** Mantém uma falha de renderização isolada do resto do app. */
 export class AppErrorBoundary extends Component<Props, State> {
   state: State = { failed: false };
 
@@ -17,25 +20,23 @@ export class AppErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Keep diagnostic information available in development without exposing it to users.
+    // Diagnóstico disponível no console sem expor detalhes ao usuário.
     console.error('Erro ao renderizar a aplicação OneB.', error, info);
   }
 
   render() {
     if (this.state.failed) {
       return (
-        <main className="app-error-state" role="alert">
-          <p className="eyebrow">Erro inesperado</p>
-          <h1>Não foi possível abrir esta tela.</h1>
-          <p className="muted">Se o problema persistir, atualize a página ou volte ao início.</p>
-          <div className="app-error-actions">
-            <a className="btn-secondary" href="/inicio">Ir para o início</a>
-            <button type="button" onClick={() => window.location.reload()}>Atualizar página</button>
-          </div>
-        </main>
+        <CenteredMessage role="alert" title="Não foi possível abrir esta tela" description="Atualize a página. Se o problema continuar, volte para o Hoje.">
+          <a className={buttonClass({})} href="/ferramenta">
+            Ir para o Hoje
+          </a>
+          <Button variant="primary" onClick={() => window.location.reload()}>
+            Atualizar página
+          </Button>
+        </CenteredMessage>
       );
     }
-
     return this.props.children;
   }
 }

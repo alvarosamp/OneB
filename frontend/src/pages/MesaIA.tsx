@@ -4,6 +4,17 @@ import type { DecisionDesk, MarketDivergence, RecommendationDecision, Reliabilit
 import { useToast } from '../context/ToastContext';
 import { ReliabilityChart } from '../components/ReliabilityChart';
 
+type IntradayCard = {
+  symbol: string;
+  action: string;
+  as_of: string;
+  market_price: number;
+  setup_family: string | null;
+  reasons: string[];
+  data_health: { sessions: number; fresh: boolean; median_spread_price: number; p95_spread_price: number };
+  holdout_evidence: { trades: number | null; profit_factor: number | null; bh_q_value: number | null };
+};
+
 function actionLabel(action: string) {
   if (action === 'BUY_CONTROLLED') return 'Compra controlada';
   if (action === 'WATCH_BUY') return 'Observar compra';
@@ -52,6 +63,13 @@ export function MesaIA() {
   const [divergence, setDivergence] = useState<MarketDivergence | null>(null);
   const [loading, setLoading] = useState(true);
   const [recording, setRecording] = useState(false);
+  const [intradayCards, setIntradayCards] = useState<IntradayCard[]>([]);
+
+  useEffect(() => {
+    api.get<{ cards: IntradayCard[] }>('/api/technical/intraday-cards')
+      .then((data) => setIntradayCards(data.cards))
+      .catch(() => setIntradayCards([]));
+  }, []);
 
   const load = useCallback(async (record = false) => {
     if (record) {
@@ -104,6 +122,29 @@ export function MesaIA() {
       </section>
 
       {loading && <p className="muted">Calculando recomendações...</p>}
+
+      <section className="decision-history">
+        <h2>Nasdaq e ouro · leitura intradiária</h2>
+        <p className="muted">O cartão só libera um plano de compra ou venda quando dados da corretora e testes fora da amostra sustentarem o sinal.</p>
+        {intradayCards.length === 0 ? <p className="muted">Aguardando snapshot intradiário.</p> : (
+          <div className="decision-grid">
+            {intradayCards.map((card) => (
+              <article key={card.symbol} className="decision-card neutral">
+                <header><strong>{card.symbol}</strong><span>{card.action === 'NO_TRADE' ? 'Aguardar' : card.action}</span></header>
+                <div className="decision-metrics">
+                  <span>Referência <b>{card.market_price.toFixed(2)}</b></span>
+                  <span>Spread mediano <b>{card.data_health.median_spread_price.toFixed(2)}</b></span>
+                  <span>Sessões <b>{card.data_health.sessions}</b></span>
+                  <span>Dados <b>{card.data_health.fresh ? 'Atuais' : 'Desatualizados'}</b></span>
+                </div>
+                <p className="muted">Último candle fechado: {new Date(card.as_of).toLocaleString('pt-BR')}</p>
+                <p className="muted">Setup avaliado: {card.setup_family ?? 'sem setup'}. Holdout: {card.holdout_evidence.trades ?? 0} operações, PF {card.holdout_evidence.profit_factor ?? '-'}, q {card.holdout_evidence.bh_q_value ?? '-'}.</p>
+                <ul>{card.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
       {desk?.circuit_breaker.tripped && (
         <div className="circuit-breaker-banner">

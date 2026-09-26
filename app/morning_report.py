@@ -16,7 +16,8 @@ from sqlalchemy.orm import Session
 
 from app import indicators
 from app.config import settings
-from app.market_data import service as market_data_service, yfinance_client
+from app.market_data import service as market_data_service
+from app.market_data import yfinance_client
 from app.models import EarningsEvent, EconomicEvent, GlobalNewsItem, MorningReport, PriceSnapshot, WatchlistItem
 
 INDEX_FETCHERS = [

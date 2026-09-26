@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 from dataclasses import asdict, dataclass, field
@@ -11,12 +12,12 @@ import pandas as pd
 
 from app.market_data.providers import MarketDataProvider, MarketQuote, YahooMarketDataProvider, default_provider
 
-
 DATA_ROOT = Path(os.getenv("MARKET_DATA_ROOT", "data"))
 CACHE_ENABLED = os.getenv("MARKET_DATA_CACHE_ENABLED", "true").lower() == "true"
 CACHE_ONLY = os.getenv("MARKET_DATA_CACHE_ONLY", "false").lower() == "true"
 FORMAT_VERSION = 1
 REQUIRED_COLUMNS = ["open", "high", "low", "close", "volume"]
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -92,7 +93,11 @@ class MarketDataService:
         self.fallback_provider = YahooMarketDataProvider()
         self.data_root = data_root or DATA_ROOT
 
-    def _provider_chain(self, interval: str) -> list[MarketDataProvider]:
+    def _provider_chain(self, interval: str, symbol: str | None = None) -> list[MarketDataProvider]:
+        normalized_symbol = (symbol or "").upper().strip()
+        yahoo_native_symbol = normalized_symbol.endswith(("=F", "=X")) or normalized_symbol.startswith("^")
+        if self.provider.name == "tiingo" and yahoo_native_symbol:
+            return [self.fallback_provider]
         providers = [self.provider]
         if self.provider.name != self.fallback_provider.name:
             providers.append(self.fallback_provider)
@@ -108,15 +113,19 @@ class MarketDataService:
         refresh: bool = False,
         cache_only: bool = CACHE_ONLY,
     ) -> pd.DataFrame:
+        cached_fallback = self.load_cached_bars(symbol, period=period, interval=interval) if use_cache else None
         if use_cache and not refresh:
-            cached = self.load_cached_bars(symbol, period=period, interval=interval)
-            if cached is not None and not cached.empty:
-                return cached
+            if cached_fallback is not None and not cached_fallback.empty:
+                return cached_fallback
         if cache_only:
             return pd.DataFrame(columns=REQUIRED_COLUMNS)
 
-        for provider in self._provider_chain(interval):
-            raw = provider.get_bars(symbol, period=period, interval=interval)
+        for provider in self._provider_chain(interval, symbol):
+            try:
+                raw = provider.get_bars(symbol, period=period, interval=interval)
+            except Exception:
+                logger.exception("Falha isolada no provedor %s para %s", provider.name, symbol)
+                continue
             bars, issues = normalize_bars(raw)
             if bars.empty:
                 continue
@@ -134,6 +143,9 @@ class MarketDataService:
                     provider_name=provider.name,
                 )
             return bars
+        if cached_fallback is not None and not cached_fallback.empty:
+            cached_fallback.attrs["cache_fallback"] = True
+            return cached_fallback
         return pd.DataFrame(columns=REQUIRED_COLUMNS)
 
     def refresh_bars(self, symbol: str, period: str = "1y", interval: str = "1d") -> pd.DataFrame:
@@ -163,7 +175,7 @@ class MarketDataService:
         )
 
     def load_cached_bars(self, symbol: str, period: str = "1y", interval: str = "1d") -> pd.DataFrame | None:
-        for provider in self._provider_chain(interval):
+        for provider in self._provider_chain(interval, symbol):
             for csv_path, meta_path in (
                 self._paths(symbol, interval, period, provider.name),
                 self._legacy_paths(symbol, interval, provider.name),
@@ -221,11 +233,11 @@ class MarketDataService:
 
     def load_metadata(self, symbol: str, interval: str = "1d", period: str | None = None) -> dict | None:
         if period:
-            for provider in self._provider_chain(interval):
+            for provider in self._provider_chain(interval, symbol):
                 metadata = self._read_metadata(self._paths(symbol, interval, period, provider.name)[1])
                 if metadata is not None:
                     return metadata
-        for provider in self._provider_chain(interval):
+        for provider in self._provider_chain(interval, symbol):
             legacy = self._read_metadata(self._legacy_paths(symbol, interval, provider.name)[1])
             if legacy is not None:
                 return legacy

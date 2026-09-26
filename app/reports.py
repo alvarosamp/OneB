@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from sqlalchemy.orm import Session
@@ -245,7 +245,6 @@ def _daily_asset_row(item: WatchlistItem) -> dict | None:
     macd_signal = _last(macd_df["signal"])
     volume_ratio = _last(indicators.volume_ratio(history["volume"]))
     atr = _last(indicators.atr(history["high"], history["low"], close))
-    annualized_vol = _last(indicators.annualized_volatility(close))
     support = float(history["low"].tail(80).min())
     resistance = float(history["high"].tail(80).max())
 

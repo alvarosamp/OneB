@@ -10,7 +10,8 @@ from telegram.ext import Application
 from app.config import settings
 from app.db import SessionLocal
 from app.dedup import filter_new_by_key
-from app.market_data import finnhub_client, fred_client, service as market_data_service, yfinance_client
+from app.market_data import finnhub_client, fred_client
+from app.market_data import service as market_data_service
 from app.models import (
     AlertLog,
     AlertRule,
@@ -201,6 +202,25 @@ async def refresh_macro_snapshots() -> None:
         logger.info("Snapshot macro atualizado: %s instrumento(s).", stored)
     except Exception:
         logger.exception("Erro no job refresh_macro_snapshots")
+        db.rollback()
+    finally:
+        db.close()
+
+
+async def refresh_macro_intelligence() -> None:
+    from app import regime_engine
+
+    db = SessionLocal()
+    try:
+        snapshot = regime_engine.store_macro_intelligence_snapshot(db, refresh=True)
+        logger.info(
+            "Inteligencia macro diaria atualizada: %s (cobertura %.1f%%, frescos %s).",
+            snapshot.snapshot_date,
+            snapshot.coverage_pct,
+            snapshot.fresh_count,
+        )
+    except Exception:
+        logger.exception("Erro no job refresh_macro_intelligence")
         db.rollback()
     finally:
         db.close()
@@ -470,7 +490,20 @@ async def recalibrate_decision_strategy() -> None:
 
 
 def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
-    scheduler = AsyncIOScheduler()
+    # job_defaults valem para TODOS os jobs registrados abaixo:
+    #   max_instances=1  -> um job lento (ex.: coleta de cotacoes travada numa API)
+    #                       nunca roda concorrente consigo mesmo no proximo tick;
+    #   coalesce=True    -> se varios disparos ficaram atrasados (processo dormindo,
+    #                       deploy, GC longo), roda UMA vez em vez de N vezes em rajada,
+    #                       o que evitava tanto alerta duplicado quanto rajada de quota;
+    #   misfire_grace_time -> disparo atrasado alem disso e descartado em vez de rodar
+    #                       tarde com dado ja irrelevante.
+    # Obs: isso resolve concorrencia DENTRO de um scheduler. Duas instancias do worker
+    # rodando ao mesmo tempo continuam duplicando efeitos -- isso exige lease distribuido
+    # e idempotencia por evento, ainda nao implementados.
+    scheduler = AsyncIOScheduler(
+        job_defaults={"max_instances": 1, "coalesce": True, "misfire_grace_time": 60}
+    )
     scheduler.add_job(poll_quotes, "interval", seconds=settings.quote_poll_seconds, id="poll_quotes")
     scheduler.add_job(
         evaluate_rules,
@@ -527,6 +560,14 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
         seconds=settings.macro_refresh_seconds,
         next_run_time=datetime.now(timezone.utc),
         id="refresh_macro_snapshots",
+    )
+    scheduler.add_job(
+        refresh_macro_intelligence,
+        "cron",
+        day_of_week="mon-fri",
+        hour=settings.macro_intelligence_hour_utc,
+        minute=0,
+        id="refresh_macro_intelligence",
     )
     scheduler.add_job(
         refresh_calendars,

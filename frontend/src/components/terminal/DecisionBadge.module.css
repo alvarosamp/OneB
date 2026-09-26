@@ -1,0 +1,51 @@
+.wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.state::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--text-tertiary);
+}
+
+.observar::before {
+  background: var(--brand);
+}
+
+.formacao::before {
+  background: var(--warning);
+}
+
+.bias {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+.lg .state {
+  font-size: var(--fs-xl);
+}
+
+.lg .state::before {
+  width: 10px;
+  height: 10px;
+}
+
+.sm .state {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}

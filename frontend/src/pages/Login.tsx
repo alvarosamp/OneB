@@ -2,6 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
+import { AuthLayout } from '../components/AuthLayout';
+import styles from '../components/AuthLayout.module.css';
+import { Button, Input } from '../components/ui';
 
 export function Login() {
   const { login } = useAuth();
@@ -18,57 +21,36 @@ export function Login() {
     setSubmitting(true);
     try {
       await login(username, password);
-      const from = (location.state as { from?: string } | null)?.from ?? '/inicio';
+      const from = (location.state as { from?: string } | null)?.from ?? '/ferramenta';
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erro ao entrar. Tente de novo.');
+      setError(err instanceof ApiError ? err.message : 'Não foi possível entrar. Tente de novo.');
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="auth-body">
-      <main className="auth-shell">
-        <div className="auth-card">
-          <div className="auth-brand">OneB · Escola de Investimentos</div>
-          <h1>Entrar</h1>
-          {error && <p className="form-error">{error}</p>}
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <label className="field-label">
-              Usuário
-              <input
-                type="text"
-                autoComplete="username"
-                required
-                autoFocus
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </label>
-            <label className="field-label">
-              Senha
-              <input
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
-            <button type="submit" className="auth-submit" disabled={submitting}>
-              {submitting ? 'Entrando...' : 'Entrar'}
-            </button>
-          </form>
-          <p className="auth-footer-link">
-            Primeiro acesso? <Link to="/cadastro">Criar conta</Link>
-          </p>
-        </div>
-        <p className="disclaimer auth-disclaimer">
-          Ferramenta apenas de monitoramento e sugestão. Não executa ordens e não constitui
-          recomendação de investimento.
+    <AuthLayout
+      title="Entrar"
+      footer={
+        <>
+          Primeiro acesso? <Link to="/cadastro">Criar conta</Link>
+        </>
+      }
+    >
+      {error && (
+        <p className={styles.error} role="alert">
+          {error}
         </p>
-      </main>
-    </div>
+      )}
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <Input label="Usuário" autoComplete="username" required autoFocus value={username} onChange={(e) => setUsername(e.target.value)} />
+        <Input label="Senha" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+        <Button type="submit" variant="primary" size="lg" block loading={submitting}>
+          Entrar
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

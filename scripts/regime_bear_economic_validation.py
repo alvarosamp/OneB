@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from scripts.regime_signal_evidence import _add_label_and_regime, _fit_scores
 from scripts.compare_recommendations import DEFAULT_SYMBOLS, _load_prepared, _symbols
 from scripts.cross_sectional_ic import _build_panel
 from scripts.data_reliability_gate import build_report as build_data_gate
+from scripts.regime_signal_evidence import _add_label_and_regime, _fit_scores
 from scripts.research_folds import date_based_folds
 
 HORIZON_DAYS, TOP_QUANTILE, ROUND_TRIP_COST_BPS, MIN_SYMBOLS_PER_DATE, MIN_ECONOMIC_PERIODS = 5, 0.20, 20.0, 10, 24

@@ -24,6 +24,16 @@ class CadastroRequest(BaseModel):
     password: str = Field(min_length=8)
 
 
+class PasswordResetRequest(BaseModel):
+    """Nova senha definida por um admin para um usuario existente.
+
+    Reset, nao recriacao: o id do usuario e referenciado por watchlist, posicoes,
+    alertas e historico -- apagar e recriar a conta descartaria tudo isso em silencio.
+    """
+
+    password: str = Field(min_length=8, max_length=128)
+
+
 class UsuarioCreateRequest(BaseModel):
     username: str = Field(min_length=3, max_length=64)
     password: str = Field(min_length=8)

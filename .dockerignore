@@ -1,12 +1,16 @@
-.git
-.venv
-.pytest_cache
-pytest-cache-files-*
-__pycache__
-*.pyc
-data
-output
-tmp
-frontend/node_modules
-frontend/dist
-frontend/.vite
+# A imagem do backend usa uma allowlist para impedir que bancos, segredos, resultados de
+# pesquisa e artefatos sincronizados pelo OneDrive entrem no contexto de build.
+**
+!Dockerfile
+!requirements.txt
+!alembic.ini
+!app/
+!app/**
+!scripts/
+!scripts/**
+!migrations/
+!migrations/**
+
+**/.env
+**/__pycache__/
+**/*.pyc

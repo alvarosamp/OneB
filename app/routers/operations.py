@@ -12,7 +12,8 @@ from app.auth import get_current_user
 from app.config import settings
 from app.data_quality import validate_watchlist_data
 from app.db import get_db
-from app.market_data import service as market_data_service, tiingo_client, yfinance_client
+from app.market_data import service as market_data_service
+from app.market_data import tiingo_client, yfinance_client
 from app.models import AlertLog, AlertRule, AuditLog, PriceSnapshot, WatchlistItem
 
 router = APIRouter(prefix="/api/operations", tags=["operations"], dependencies=[Depends(get_current_user)])

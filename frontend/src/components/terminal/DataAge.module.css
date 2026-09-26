@@ -1,0 +1,17 @@
+.age {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stale {
+  color: var(--warning);
+}
+
+.failed {
+  color: var(--warning);
+}

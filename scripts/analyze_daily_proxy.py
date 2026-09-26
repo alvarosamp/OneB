@@ -12,9 +12,11 @@ merit at all on these two instruments -- a sanity check one timeframe removed
 from the real system, not a replacement for the MT5 M1 validation.
 """
 from __future__ import annotations
+
 import json
 import math
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 

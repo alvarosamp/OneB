@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Menu, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { navLinks } from '../../content/onebMarketing';
+import '../../styles/marketing.css';
 
 export function MarketingLayout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -30,9 +31,9 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
         >
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <nav className={open ? 'open' : ''} aria-label="Navegacao principal">
+        <nav className={open ? 'open' : ''} aria-label="Navegação principal">
           {navLinks.map((link) => (
-            <NavLink key={link.href} to={link.href} end={link.href === '/'} onClick={() => setOpen(false)}>
+            <NavLink key={link.href} to={link.href} onClick={() => setOpen(false)}>
               {link.label}
             </NavLink>
           ))}
@@ -61,11 +62,11 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
               <small>Escola de Investimentos</small>
             </span>
           </div>
-          <p>Escola de investimentos com terminal de apoio a decisao para estudar, praticar e revisar risco.</p>
+          <p>Escola de investimentos com terminal de apoio à decisão para estudar, praticar e revisar risco.</p>
         </div>
         <div>
-          <strong>Navegacao</strong>
-          {navLinks.slice(1).map((link) => (
+          <strong>Navegação</strong>
+          {navLinks.map((link) => (
             <NavLink key={link.href} to={link.href}>
               {link.label}
             </NavLink>
@@ -78,8 +79,8 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           <a href="#risco">Aviso de risco</a>
         </div>
         <p className="oneb-risk">
-          Ferramenta educacional e de monitoramento. Nao executa ordens e nao constitui recomendacao de investimento.
-          Operacoes no mercado financeiro envolvem riscos.
+          Ferramenta educacional e de monitoramento. Não executa ordens e não constitui recomendação de investimento.
+          Operações no mercado financeiro envolvem riscos.
         </p>
       </footer>
     </div>

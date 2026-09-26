@@ -7,8 +7,18 @@ from sqlalchemy.orm import Session
 from app import indicators
 from app.auth import get_current_user
 from app.db import get_db
-from app.market_data import service as market_data_service, yfinance_client
-from app.models import AlertLog, EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem, PriceSnapshot, User, WatchlistItem
+from app.market_data import service as market_data_service
+from app.market_data import yfinance_client
+from app.models import (
+    AlertLog,
+    EarningsEvent,
+    EconomicEvent,
+    GlobalNewsItem,
+    NewsItem,
+    PriceSnapshot,
+    User,
+    WatchlistItem,
+)
 from app.saas import get_or_create_workspace
 from app.schemas import AlertLogOut
 

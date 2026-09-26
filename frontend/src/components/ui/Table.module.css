@@ -1,0 +1,100 @@
+.scroller {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+}
+
+.table td {
+  color: var(--text-primary);
+}
+
+.dense th,
+.dense td {
+  padding: 6px var(--sp-2);
+}
+
+.table .right {
+  text-align: right;
+}
+
+.table .center {
+  text-align: center;
+}
+
+.table .wrap {
+  white-space: normal;
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.sortButton:hover {
+  color: var(--text-primary);
+}
+
+.right .sortButton {
+  flex-direction: row-reverse;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover td {
+  background: var(--surface-hover);
+}
+
+.clickable:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+.stickyFirst th:first-child,
+.stickyFirst td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--bg-1);
+}
+
+.stickyFirst tr.clickable:hover td:first-child {
+  background: var(--surface-hover);
+}
+
+.empty td {
+  padding: 0;
+}

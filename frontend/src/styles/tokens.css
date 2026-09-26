@@ -1,0 +1,212 @@
+/*
+ * OneB — tokens de design.
+ * ÚNICA fonte de cores, tipografia, espaço, raio, z-index e movimento.
+ * Nenhum hex/rgba deve aparecer fora deste arquivo (ver DESIGN.md).
+ *
+ * Tema escuro é o padrão do terminal (:root e :root.dark).
+ * Tema claro (:root.light) mantém os mesmos contrastes (AA).
+ */
+
+:root,
+:root.dark {
+  color-scheme: dark;
+
+  /* Superfícies */
+  --bg-0: #050607;
+  --bg-1: #090b0e;
+  --bg-2: #0f1317;
+  --surface: #12171c;
+  --surface-raised: #171d23;
+  --surface-hover: #1a2128;
+  --border: #1f262e;
+  --border-strong: #2d3640;
+
+  /* Texto */
+  --text-primary: #f4f7fb;
+  --text-secondary: #9aa6b2;
+  --text-tertiary: #7d8994;
+  --text-on-brand: #ffffff;
+
+  /* Marca = interação e informação (links, foco, seleção) */
+  --brand: #2684ff;
+  --brand-strong: #1f6fe0; /* fundo de botão primário: contraste AA com texto branco */
+  --brand-hover: #1a66d6;
+  --brand-subtle: rgba(38, 132, 255, 0.12);
+  --brand-border: rgba(38, 132, 255, 0.4);
+
+  /* Semântica de mercado (verde/vermelho só para alta/queda e P&L) */
+  --positive: #32d583;
+  --negative: #f04438;
+  --negative-text: #ff6b61; /* texto vermelho sobre superfícies escuras (AA) */
+  --positive-subtle: rgba(50, 213, 131, 0.12);
+  --negative-subtle: rgba(240, 68, 56, 0.12);
+
+  /* Aviso e informação */
+  --warning: #fdb022;
+  --warning-subtle: rgba(253, 176, 34, 0.12);
+  --info: #2684ff;
+  --info-subtle: rgba(38, 132, 255, 0.12);
+
+  /* Gráficos (lidos pelo Chart.js via getComputedStyle) */
+  --chart-up: #32d583;
+  --chart-down: #f04438;
+  --chart-grid: #161c22;
+  --chart-axis: #1f262e;
+  --chart-text: #7d8994;
+  --chart-crosshair: #4a5561;
+  --chart-line: #9aa6b2;
+  --chart-ema-fast: #4c9aff;   /* EMA 20 */
+  --chart-ema-slow: #c29bff;   /* EMA 200 */
+  --chart-vwap: #5fc9d6;
+  --chart-volume: rgba(154, 166, 178, 0.28);
+  --chart-rsi: #c29bff;
+  --chart-macd: #4c9aff;
+  --chart-macd-signal: #e8a33d;
+  --chart-macd-hist-up: rgba(50, 213, 131, 0.5);
+  --chart-macd-hist-down: rgba(240, 68, 56, 0.5);
+  --chart-band: rgba(154, 166, 178, 0.08);
+  --chart-level-support: #32d583;
+  --chart-level-resistance: #f04438;
+  --chart-level-target: #e8a33d;
+  --chart-level-entry: #4c9aff;
+  --chart-level-stop: #ff6b61;
+  --chart-level-zone: #c29bff;
+  --chart-level-auto: #9aa6b2;
+  --series-gold: #d4af37;      /* ouro (XAU) — só como cor de série */
+  --series-1: #4c9aff;
+  --series-2: #c29bff;
+  --series-3: #5fc9d6;
+  --series-4: #e8a33d;
+
+  /* Overlay */
+  --overlay: rgba(2, 3, 4, 0.72);
+  --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+:root.light {
+  color-scheme: light;
+
+  --bg-0: #ffffff;
+  --bg-1: #f5f7fa;
+  --bg-2: #eef1f5;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-hover: #f0f3f7;
+  --border: #dde3ea;
+  --border-strong: #c5ced8;
+
+  --text-primary: #101418;
+  --text-secondary: #56616d;
+  --text-tertiary: #6b7580;
+  --text-on-brand: #ffffff;
+
+  --brand: #1766d1;
+  --brand-strong: #1766d1;
+  --brand-hover: #1257b5;
+  --brand-subtle: rgba(23, 102, 209, 0.08);
+  --brand-border: rgba(23, 102, 209, 0.4);
+
+  --positive: #0f7a45;
+  --negative: #d92d20;
+  --negative-text: #b42318;
+  --positive-subtle: rgba(15, 122, 69, 0.08);
+  --negative-subtle: rgba(217, 45, 32, 0.08);
+
+  --warning: #b54708;
+  --warning-subtle: rgba(181, 71, 8, 0.08);
+  --info: #1766d1;
+  --info-subtle: rgba(23, 102, 209, 0.08);
+
+  --chart-up: #12a05c;
+  --chart-down: #d92d20;
+  --chart-grid: #eef1f5;
+  --chart-axis: #dde3ea;
+  --chart-text: #6b7580;
+  --chart-crosshair: #9aa6b2;
+  --chart-line: #56616d;
+  --chart-ema-fast: #1766d1;
+  --chart-ema-slow: #7a4fd6;
+  --chart-vwap: #12818f;
+  --chart-volume: rgba(86, 97, 109, 0.22);
+  --chart-rsi: #7a4fd6;
+  --chart-macd: #1766d1;
+  --chart-macd-signal: #b8741a;
+  --chart-macd-hist-up: rgba(18, 160, 92, 0.45);
+  --chart-macd-hist-down: rgba(217, 45, 32, 0.45);
+  --chart-band: rgba(86, 97, 109, 0.07);
+  --chart-level-support: #12a05c;
+  --chart-level-resistance: #d92d20;
+  --chart-level-target: #b8741a;
+  --chart-level-entry: #1766d1;
+  --chart-level-stop: #b42318;
+  --chart-level-zone: #7a4fd6;
+  --chart-level-auto: #56616d;
+  --series-gold: #a8841a;
+  --series-1: #1766d1;
+  --series-2: #7a4fd6;
+  --series-3: #12818f;
+  --series-4: #b8741a;
+
+  --overlay: rgba(16, 20, 24, 0.4);
+  --shadow-popover: 0 8px 24px rgba(16, 20, 24, 0.14);
+}
+
+:root {
+  /* Tipografia */
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --fs-xs: 0.75rem;    /* 12 — metadados, eixos */
+  --fs-sm: 0.8125rem;  /* 13 — tabelas, rótulos */
+  --fs-md: 0.875rem;   /* 14 — corpo da ferramenta */
+  --fs-lg: 1rem;       /* 16 — corpo de leitura (Academia), títulos de bloco */
+  --fs-xl: 1.25rem;    /* 20 — títulos de página */
+  --fs-2xl: 1.75rem;   /* 28 — preço em destaque */
+  --fs-3xl: 2.25rem;   /* 36 — marketing */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --lh-tight: 1.2;
+  --lh-normal: 1.45;
+  --lh-reading: 1.65;
+  --measure: 70ch;
+
+  /* Espaço (base 4px) */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+
+  /* Raio */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-full: 999px;
+
+  /* Camadas */
+  --z-sticky: 10;
+  --z-nav: 20;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+
+  /* Layout */
+  --topbar-h: 48px;
+  --sidebar-w: 216px;
+  --sidebar-w-collapsed: 56px;
+  --bottomnav-h: 56px;
+  --content-max: 1600px;
+
+  /* Movimento (só em resposta a ação ou mudança de dado) */
+  --dur-fast: 120ms;
+  --dur-med: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Ícones */
+  --icon-sm: 14px;
+  --icon-md: 16px;
+  --icon-lg: 20px;
+}

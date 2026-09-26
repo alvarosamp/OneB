@@ -12,7 +12,6 @@ import pandas as pd
 
 from app import indicators
 
-
 HORIZON_DAYS = 5
 # A positive sign means that a higher cross-sectional rank was beneficial in
 # the audited sample.  The negative short-horizon momentum signs are

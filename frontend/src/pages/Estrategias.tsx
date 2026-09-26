@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
+import { CheckCircle2 } from 'lucide-react';
 import { MarketingLayout } from '../components/marketing/MarketingLayout';
 import { StrategyCard } from '../components/marketing/StrategyCard';
 import { strategies } from '../content/onebMarketing';
 
-const filters = ['Todas', 'Iniciante', 'Intermediario', 'Avancado', 'Mercado americano', 'Analise tecnica', 'Gestao de risco'];
+const principles = ['Contexto antes do gatilho', 'Invalidação antes da entrada', 'Risco definido antes do retorno'];
 
 export function Estrategias() {
   return (
@@ -11,28 +11,24 @@ export function Estrategias() {
       <main className="oneb-page oneb-section">
         <section className="oneb-page-hero">
           <div>
-            <p className="oneb-eyebrow">Metodo OneB</p>
-            <h1>Aprenda estrategias como processo, nao como promessa.</h1>
+            <p className="oneb-eyebrow">Estratégias OneB</p>
+            <h1>Estratégia é processo, não promessa.</h1>
             <p>
-              Conteudo pratico para entender contexto, risco, invalidacao e revisao antes de qualquer decisao no mercado.
+              Aprenda a estruturar uma decisão que possa ser explicada, registrada e revisada — inclusive quando a melhor escolha for esperar.
             </p>
           </div>
-          <aside className="oneb-progress-card circular">
-            <div className="oneb-circle">65%</div>
-            <div>
-              <span>Seu progresso</span>
-              <p>Voce concluiu 48 de 72 aulas.</p>
-              <Link to="/login">Ver meu progresso</Link>
-            </div>
+          <aside className="oneb-principles-card">
+            <p className="oneb-eyebrow">Antes de operar</p>
+            {principles.map((principle) => (
+              <div key={principle}><CheckCircle2 size={18} /><span>{principle}</span></div>
+            ))}
+            <small>Sem sinal mágico. Sem decisão sem motivo.</small>
           </aside>
         </section>
-        <div className="oneb-filters">
-          {filters.map((filter) => (
-            <button key={filter} className={filter === 'Todas' ? 'active' : ''} type="button">
-              {filter}
-            </button>
-          ))}
-        </div>
+        <section className="oneb-curriculum-intro">
+          <div><p className="oneb-eyebrow">Fundamentos do método</p><h2>Quatro hábitos para decisões melhores.</h2></div>
+          <p>Cada bloco resolve uma parte do processo. Juntos, eles formam uma rotina simples de preparação e revisão.</p>
+        </section>
         <div className="oneb-strategy-grid">
           {strategies.map((strategy, index) => (
             <StrategyCard key={strategy.title} strategy={strategy} index={index} />

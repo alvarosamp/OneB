@@ -870,3 +870,174 @@ export interface LearningState {
   recommendation: LearningRecommendation | null;
   certificate: CertificateStatus;
 }
+
+// ---- Regime / macro (app/routers/regime.py) ----
+export interface RegimeFactor {
+  name: string;
+  impact: number | null;
+  evidence: string;
+}
+
+export interface LocalRegime {
+  label: 'STRONG BULL' | 'BULL' | 'NEUTRAL' | 'BEAR' | 'STRONG BEAR' | string;
+  score: number;
+  factors: RegimeFactor[];
+}
+
+export interface CrossAssetRow {
+  key: string;
+  name: string;
+  correlation_30d: number;
+  relevance: 'ALTA' | 'MEDIA' | 'BAIXA';
+  direction: 'CONFIRMANDO' | 'DIVERGINDO' | null;
+  change_pct_latest: number | null;
+}
+
+export interface RegimeReport {
+  symbol: string;
+  local_regime: LocalRegime | null;
+  macro_context: 'POSITIVO' | 'NEUTRO' | 'NEGATIVO';
+  cross_asset_relevance: CrossAssetRow[];
+}
+
+export interface MacroInstrument {
+  key: string;
+  symbol: string;
+  name: string;
+  price: number | null;
+  change_pct: number | null;
+  taken_at: string | null;
+  /** Presentes nas versões do backend com radar de tendências. */
+  context?: string | null;
+  trend?: TrendAnalysis | null;
+}
+
+export type TrendDirection = 'ALTA FORTE' | 'ALTA' | 'LATERAL' | 'BAIXA' | 'BAIXA FORTE';
+
+export interface TrendAnalysis {
+  direction: TrendDirection;
+  score: number;
+  strength: 'FORTE' | 'MODERADA' | 'FRACA' | 'INDEFINIDA';
+  adx14: number | null;
+  change_5d: number | null;
+  change_20d: number | null;
+  change_60d: number | null;
+  change_unit: '%' | 'bps';
+  last: number;
+  ema20: number;
+  ema50: number;
+  as_of: string;
+  age_days: number;
+}
+
+export interface CorrelationPair {
+  left: string;
+  right: string;
+  correlation: number;
+  observations: number;
+}
+
+export interface CorrelationWindow {
+  sessions: number;
+  minimum_observations: number;
+  matrix: Array<{ key: string; values: Record<string, number | null> }>;
+  strongest_positive: CorrelationPair[];
+  strongest_negative: CorrelationPair[];
+}
+
+export interface RelationshipDynamic {
+  left: string;
+  right: string;
+  correlation_20d: number;
+  correlation_60d: number;
+  delta: number;
+  strength_delta: number;
+  status: 'INVERSAO' | 'FORTALECENDO' | 'ENFRAQUECENDO' | 'ESTAVEL';
+}
+
+export interface LeadLagCandidate {
+  leader: string;
+  follower: string;
+  lag_sessions: number;
+  correlation: number;
+  contemporaneous_correlation: number | null;
+  improvement: number;
+  observations: number;
+}
+
+export interface LeadLagValidation {
+  leader: string;
+  follower: string;
+  lag_sessions: number;
+  observations_days: number;
+  persistence_pct: number;
+  average_correlation: number;
+  last_seen: string;
+  status: 'RECORRENTE' | 'OBSERVACAO';
+}
+
+export interface NewsContext {
+  window_start: string;
+  window_end: string;
+  article_count: number;
+  high_impact_count: number;
+  impact_sum: number;
+  average_impact: number | null;
+  maximum_impact: number | null;
+  mean_sentiment: number | null;
+  sentiment_observations: number;
+  sentiment_coverage_pct: number;
+  theme_counts: Record<string, number>;
+  top_headlines: Array<{ headline: string; source: string; impact_score: number; sentiment_score: number | null; published_at: string; url: string }>;
+}
+
+export interface NewsMarketCorrelation {
+  factor_type: 'INTENSIDADE' | 'SENTIMENTO' | 'TEMA';
+  factor: string;
+  asset: string;
+  target: 'MAGNITUDE' | 'DIRECAO';
+  correlation: number;
+  observations: number;
+  direction: 'POSITIVA' | 'NEGATIVA';
+  status: 'EXPLORATORIO';
+}
+
+export interface NewsMarketAnalysis {
+  method: string;
+  minimum_observations: number;
+  available_forward_pairs: number;
+  sessions_recorded?: number;
+  news_days?: number;
+  coverage_pct?: number;
+  expected_sessions_approx?: number;
+  session_coverage_pct?: number;
+  status: 'PRONTO' | 'COLETANDO_HISTORICO';
+  correlations: NewsMarketCorrelation[];
+  warnings: string[];
+  windows?: Partial<Record<'3m' | '6m' | '12m', NewsMarketAnalysis>>;
+}
+
+export interface MacroHistoryStatus {
+  days_recorded: number;
+  latest: {
+    snapshot_date: string;
+    captured_at: string;
+    coverage_pct: number;
+    fresh_count: number;
+    stale_count: number;
+    missing_count: number;
+  } | null;
+  lead_lag_validation: LeadLagValidation[];
+  latest_news_context?: NewsContext | null;
+  news_market_analysis?: NewsMarketAnalysis;
+}
+
+export interface MacroOverview {
+  instruments: MacroInstrument[];
+  trend_watchlist?: MacroInstrument[];
+  correlation_windows?: Partial<Record<'20' | '60' | '3m' | '6m' | '12m', CorrelationWindow>>;
+  relationship_dynamics?: RelationshipDynamic[];
+  lead_lag_candidates?: LeadLagCandidate[];
+  history_status?: MacroHistoryStatus;
+  nasdaq_cross_asset_relevance: CrossAssetRow[];
+}

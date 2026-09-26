@@ -2,25 +2,50 @@ name: Quality
 
 on:
   push:
-    branches: [main]
+    # A branch padrao do repositorio e `master`. Antes so `main` estava listada aqui,
+    # entao nenhum push ao repositorio disparava este workflow -- o CI existia mas nao
+    # rodava. As duas ficam listadas para sobreviver a uma eventual renomeacao.
+    branches: [master, main]
   pull_request:
 
+# Least privilege por padrao: nenhum job aqui escreve no repositorio.
 permissions:
   contents: read
 
 jobs:
   backend:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12"]
+    env:
+      # O boot da aplicacao exige SECRET_KEY quando ENVIRONMENT=production; nos testes
+      # rodamos como development com uma chave fixa e descartavel.
+      ENVIRONMENT: development
+      SECRET_KEY: ci-secret-key-not-used-in-production-0123456789abcdef
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
           cache: pip
-      - run: pip install -r requirements.txt ruff pip-audit
+      - run: python -m pip install --upgrade pip
+      - run: pip install -r requirements.txt
+      # Linters PINADOS: sem pin, uma release nova de ruff/bandit adiciona regras e
+      # quebra o CI de um commit que nao mudou nada. Dependabot atualiza esses pins.
+      - run: pip install "ruff==0.16.5" "bandit==1.8.6" "mypy==1.18.2" pytest-cov pip-audit
       - run: ruff check app tests scripts
-      - run: python -m pytest
-      - run: pip-audit -r requirements.txt
+      - name: mypy (modulos de seguranca)
+        # Escopo deliberadamente estreito: o resto do codigo ainda nao esta anotado, e um
+        # `mypy app` inteiro hoje seria um muro de erros que ninguem leria. Auth, config e
+        # sessao sao onde um erro de tipo vira falha de seguranca.
+        run: mypy --ignore-missing-imports app/auth.py app/config.py app/security.py app/routers/auth.py
+      - name: bandit (analise estatica de seguranca)
+        run: bandit -r app -x app/../tests -ll
+      - run: pytest -q --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=55
+      - name: pip-audit (CVEs nas dependencias)
+        run: pip-audit -r requirements.txt
 
   frontend:
     runs-on: ubuntu-latest
@@ -31,10 +56,73 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
+          # Vite atual exige Node 20.19+ ou 22.12+.
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
-      - run: npm run build
+      - name: typecheck
+        run: npx tsc --noEmit -p tsconfig.app.json
       - run: npm run test
+      - run: npm run build
+      - name: npm audit
+        # Nao bloqueante por ora: advisories transitivos aparecem sem que haja fix
+        # disponivel, e travar todo PR nisso treina o time a ignorar o CI. O sinal fica
+        # visivel no log; promover a bloqueante quando o backlog estiver zerado.
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
+  production-images:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_PASSWORD: ci-compose-validation-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: valida o Compose de producao
+        run: docker compose -f docker-compose.prod.yml config --quiet
+      - name: constroi a imagem do backend
+        run: docker build -t oneb-backend:ci .
+      - name: constroi a imagem do frontend
+        run: docker build -f frontend/Dockerfile.prod --build-arg VITE_API_URL= -t oneb-frontend:ci frontend
+
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: development
+      SECRET_KEY: ci-secret-key-not-used-in-production-0123456789abcdef
+      DATABASE_URL: sqlite:///./e2e.db
+      FRONTEND_ORIGIN: http://localhost:5173
+      RUN_EMBEDDED_SCHEDULER: "false"
+      VITE_API_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: pip install -r requirements.txt
+      - name: sobe a API em background
+        run: |
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:8000/health && break
+            sleep 1
+          done
+      - working-directory: frontend
+        run: npm ci
+      - working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - working-directory: frontend
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7

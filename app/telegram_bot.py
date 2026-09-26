@@ -9,10 +9,9 @@ import io
 import logging
 from datetime import datetime, timezone
 
+from sqlalchemy.orm import Session
 from telegram import InputFile, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
-
-from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import SessionLocal

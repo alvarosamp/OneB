@@ -1,0 +1,27 @@
+.grid {
+  display: grid;
+  gap: var(--sp-6);
+  max-width: 640px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: var(--sp-2) var(--sp-4);
+  margin: 0;
+}
+
+.list dt {
+  color: var(--text-secondary);
+}
+
+.list dd {
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}

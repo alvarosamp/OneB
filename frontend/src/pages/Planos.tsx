@@ -9,7 +9,7 @@ export function Planos() {
         <section className="oneb-section-heading compact">
           <p className="oneb-eyebrow">Planos</p>
           <h1>Escolha como quer entrar na OneB.</h1>
-          <p>Comece pela escola ou combine estudo com o Terminal para aplicar o metodo no dia a dia.</p>
+          <p>Comece pela escola ou combine estudo com o Terminal para aplicar o método no dia a dia.</p>
           <div className="oneb-toggle">
             <span>Mensal</span>
             <span>Anual - 20% OFF</span>
@@ -23,7 +23,7 @@ export function Planos() {
               <p>{plan.description}</p>
               <strong>
                 {plan.price}
-                <small>/mes</small>
+                <small>/mês</small>
               </strong>
               <ul>
                 {plan.benefits.map((benefit) => (
@@ -31,7 +31,7 @@ export function Planos() {
                 ))}
               </ul>
               <Link to="/cadastro" className={plan.featured ? 'oneb-primary' : 'oneb-secondary'}>
-                Comecar agora
+                Começar agora
               </Link>
             </article>
           ))}

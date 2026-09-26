@@ -1,0 +1,70 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-tooltip);
+  width: max-content;
+  max-width: 280px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-popover);
+  color: var(--text-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-normal);
+  text-align: left;
+  pointer-events: none;
+}
+
+.bottom {
+  bottom: auto;
+  top: calc(100% + 6px);
+}
+
+.popover {
+  pointer-events: auto;
+  width: 300px;
+  padding: var(--sp-3);
+}
+
+.popoverTitle {
+  display: block;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  margin-bottom: var(--sp-1);
+}
+
+.popoverBody {
+  display: block;
+  color: var(--text-secondary);
+}
+
+.popoverFooter {
+  display: block;
+  margin-top: var(--sp-3);
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+}
+
+.trigger:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

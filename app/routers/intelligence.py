@@ -7,7 +7,14 @@ from app.auth import get_current_user
 from app.bots import explanation_bot, score_bot
 from app.data_quality import quality_gate, validate_symbol_data, validate_watchlist_data
 from app.db import get_db
-from app.intelligence import DEFAULT_PLAYBOOKS, market_radar, movement_explanation, opportunity_score, signal_quality, weekly_brief
+from app.intelligence import (
+    DEFAULT_PLAYBOOKS,
+    market_radar,
+    movement_explanation,
+    opportunity_score,
+    signal_quality,
+    weekly_brief,
+)
 from app.models import AlertCondition, AlertRule, DecisionJournal, Playbook, RuleLogic, RuleType, WatchlistItem
 from app.saas import user_id_or_none
 from app.schemas import DecisionJournalCreate, DecisionJournalOut, PlaybookCreate, PlaybookOut

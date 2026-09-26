@@ -1,168 +1,137 @@
-import { useEffect, useState } from 'react';
-import { api } from '../api/client';
+import type { ReactNode } from 'react';
+import { useApi } from '../hooks/useApi';
+import { DataAge } from '../components/terminal/DataAge';
+import { AsyncContent, Badge, EmptyState, Section, SkeletonLines, Stat } from '../components/ui';
+import { formatCurrency, formatDateTime, formatNumber } from '../lib/format';
+import { ptBR } from '../lib/text';
 import type { OperationalHealth } from '../types';
+import styles from './Configuracoes.module.css';
 
-function fmt(iso: string | null) {
-  return iso ? new Date(iso).toLocaleString('pt-BR') : '-';
-}
+const pct = (v: number | null) => (v === null ? '—' : `${formatNumber(v * 100, 2)}%`);
 
-function pct(value: number | null) {
-  return value === null ? '-' : `${(value * 100).toFixed(2)}%`;
-}
-
-function money(value: number | null) {
-  return value === null
-    ? '-'
-    : `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-export function Operacoes() {
-  const [health, setHealth] = useState<OperationalHealth | null>(null);
-
-  useEffect(() => {
-    api.get<OperationalHealth>('/api/operations/health').then(setHealth).catch(() => {});
-  }, []);
-
-  if (!health) {
-    return (
-      <div className="container">
-        <h1>Operacoes</h1>
-        <p className="muted">Carregando diagnostico operacional...</p>
-      </div>
-    );
-  }
-
+function Pairs({ rows }: { rows: [string, ReactNode][] }) {
   return (
-    <div className="container dashboard-container">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">Auditoria operacional</p>
-          <h1>Operacoes</h1>
-          <p className="muted">Diagnostico unico: dados, cache, modelo, paper trading, jobs e prontidao.</p>
+    <dl className={styles.pairs}>
+      {rows.map(([k, v]) => (
+        <div key={k}>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
         </div>
-        <span className={`status-pill ${health.status === 'ok' ? 'good' : 'warn'}`}>{health.status}</span>
-      </div>
+      ))}
+    </dl>
+  );
+}
 
-      <section className="metric-grid">
-        <div className="metric-card">
-          <span className="metric-label">Carteira paper</span>
-          <strong>{money(health.paper_simulator.portfolio_value)}</strong>
+/** Configurações › Sistema (antiga página Operações): saúde de dados, jobs, modelo e auditoria. */
+export function Operacoes() {
+  const health = useApi<OperationalHealth>('/api/operations/health', { pollMs: 60_000 });
+  return (
+    <AsyncContent state={health} loading={<SkeletonLines lines={12} />} empty={<EmptyState title="Diagnóstico indisponível" />} errorTitle="Não foi possível carregar o diagnóstico">
+      {(h) => (
+        <div className={styles.stack}>
+          <div className={styles.statsRow}>
+            <Stat
+              label="Status geral"
+              value={<Badge tone={h.status === 'ok' ? 'info' : 'warning'}>{h.status === 'ok' ? 'operacional' : ptBR(h.status)}</Badge>}
+              sub={<DataAge at={h.generated_at} prefix="verificado" />}
+            />
+            <Stat label="Último snapshot de preço" value={formatDateTime(h.latest_snapshot_at)} sub={h.snapshot_age_minutes !== null ? `${h.snapshot_age_minutes} min atrás` : undefined} />
+            <Stat label="Carteira simulada" value={formatCurrency(h.paper_simulator.portfolio_value)} sub={ptBR(h.paper_simulator.status)} />
+            <Stat label="Cache de candles" value={h.market_cache.ready ? 'pronto' : 'incompleto'} />
+          </div>
+          <div className={styles.twoCol}>
+            <Section title="Prontidão">
+              <p className="muted">{ptBR(h.readiness.recommendation)}</p>
+              <Pairs
+                rows={[
+                  ['Nível', ptBR(h.readiness.level)],
+                  ['Automação de ordens', h.readiness.trade_automation_allowed ? 'liberada' : 'bloqueada'],
+                  ['Bloqueios', h.readiness.blockers.length ? h.readiness.blockers.map(ptBR).join('; ') : 'nenhum'],
+                  ['Veredito da automação', ptBR(h.automation.verdict)],
+                ]}
+              />
+            </Section>
+            <Section title="Modelo de probabilidade">
+              <p className="muted">{ptBR(h.probability_model.recommendation)}</p>
+              <Pairs
+                rows={[
+                  ['Status', ptBR(h.probability_model.status)],
+                  ['Amostras de treino', h.probability_model.train_samples ?? '—'],
+                  ['Acerto fora da amostra', pct(h.probability_model.holdout_accuracy)],
+                  ['Linha de base', pct(h.probability_model.holdout_baseline_accuracy)],
+                ]}
+              />
+            </Section>
+            <Section title="Simulação (paper trading)">
+              <Pairs
+                rows={[
+                  ['Capital inicial', formatCurrency(h.paper_simulator.initial_capital)],
+                  ['Caixa', formatCurrency(h.paper_simulator.cash)],
+                  ['Posições abertas', h.paper_simulator.open_positions],
+                  ['Trades fechados', h.paper_simulator.closed_trades],
+                ]}
+              />
+            </Section>
+            <Section title="Qualidade das cotações">
+              <Pairs
+                rows={[
+                  ['Alta', h.data_quality.HIGH],
+                  ['Média', h.data_quality.MEDIUM],
+                  ['Baixa', h.data_quality.LOW],
+                ]}
+              />
+            </Section>
+            <Section title="Fontes de dados">
+              <Pairs rows={Object.entries(h.providers).map(([k, v]) => [k, v ? <Badge tone="info">disponível</Badge> : <Badge tone="warning">indisponível</Badge>])} />
+            </Section>
+            <Section title="Jobs agendados">
+              <Pairs rows={Object.entries(h.jobs).map(([k, v]) => [ptBR(k.replaceAll('_', ' ')), String(v)])} />
+            </Section>
+            <Section title="Banco de dados">
+              <Pairs rows={Object.entries(h.db.counts).map(([k, v]) => [ptBR(k.replaceAll('_', ' ')), formatNumber(v, 0)])} />
+            </Section>
+            <Section title="Cache de candles">
+              <Pairs rows={h.market_cache.rows.map((r) => [r.symbol, `${r.rows} candles${r.has_ohlcv ? '' : ', sem OHLCV'}`])} />
+            </Section>
+          </div>
+          <div className={styles.twoCol}>
+            <Section title="Alertas recentes">
+              {h.recent_alerts.length ? (
+                <ul className={styles.items}>
+                  {h.recent_alerts.map((a) => (
+                    <li key={`${a.symbol}-${a.triggered_at}`}>
+                      <span>
+                        <strong>{a.symbol}</strong> {ptBR(a.message)}
+                      </span>
+                      <span className="muted num">{formatDateTime(a.triggered_at)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted">Nenhum.</p>
+              )}
+            </Section>
+            <Section title="Auditoria">
+              {h.recent_audit_logs.length ? (
+                <ul className={styles.items}>
+                  {h.recent_audit_logs.map((l) => (
+                    <li key={`${l.action}-${l.created_at}-${l.entity_id}`}>
+                      <span>
+                        {ptBR(l.action)} <span className="muted">
+                          {l.entity_type} {l.entity_id}
+                        </span>
+                      </span>
+                      <span className="muted num">{formatDateTime(l.created_at)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted">Nenhum registro.</p>
+              )}
+            </Section>
+          </div>
         </div>
-        <div className="metric-card">
-          <span className="metric-label">Cache OHLCV</span>
-          <strong>{health.market_cache.ready ? 'OK' : 'Atencao'}</strong>
-        </div>
-        <div className="metric-card">
-          <span className="metric-label">Modelo</span>
-          <strong>{health.probability_model.status}</strong>
-        </div>
-        <div className="metric-card">
-          <span className="metric-label">Automacao</span>
-          <strong>{health.automation.verdict}</strong>
-        </div>
-      </section>
-
-      <section className="dashboard-grid">
-        <div className="panel">
-          <h2>Prontidao</h2>
-          <p className="muted">{health.readiness.recommendation}</p>
-          <ul className="source-list">
-            <li><strong>Nivel</strong><span>{health.readiness.level}</span></li>
-            <li><strong>Trade automatico</strong><span>{health.readiness.trade_automation_allowed ? 'liberado' : 'bloqueado'}</span></li>
-            <li><strong>Bloqueios</strong><span>{health.readiness.blockers.length ? health.readiness.blockers.join(', ') : 'nenhum'}</span></li>
-          </ul>
-        </div>
-        <div className="panel">
-          <h2>Paper trading</h2>
-          <ul className="source-list">
-            <li><strong>Capital inicial</strong><span>{money(health.paper_simulator.initial_capital)}</span></li>
-            <li><strong>Caixa</strong><span>{money(health.paper_simulator.cash)}</span></li>
-            <li><strong>Posicoes abertas</strong><span>{health.paper_simulator.open_positions}</span></li>
-            <li><strong>Trades fechados</strong><span>{health.paper_simulator.closed_trades}</span></li>
-          </ul>
-        </div>
-      </section>
-
-      <section className="dashboard-grid">
-        <div className="panel">
-          <h2>Cache de mercado</h2>
-          <ul className="source-list">
-            {health.market_cache.rows.map((row) => (
-              <li key={row.symbol}>
-                <strong>{row.symbol}</strong>
-                <span>{row.rows} candles | close {row.last_close ?? '-'}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="panel">
-          <h2>Modelo de probabilidade</h2>
-          <p className="muted">{health.probability_model.recommendation}</p>
-          <ul className="source-list">
-            <li><strong>Amostras treino</strong><span>{health.probability_model.train_samples ?? '-'}</span></li>
-            <li><strong>Holdout</strong><span>{pct(health.probability_model.holdout_accuracy)}</span></li>
-            <li><strong>Baseline</strong><span>{pct(health.probability_model.holdout_baseline_accuracy)}</span></li>
-          </ul>
-        </div>
-      </section>
-
-      <section className="dashboard-grid">
-        <div className="panel">
-          <h2>Banco</h2>
-          <ul className="source-list">
-            {Object.entries(health.db.counts).map(([key, value]) => (
-              <li key={key}><strong>{key}</strong><span>{value}</span></li>
-            ))}
-          </ul>
-        </div>
-        <div className="panel">
-          <h2>Qualidade</h2>
-          <ul className="source-list">
-            <li><strong>Alta</strong><span>{health.data_quality.HIGH}</span></li>
-            <li><strong>Media</strong><span>{health.data_quality.MEDIUM}</span></li>
-            <li><strong>Baixa</strong><span>{health.data_quality.LOW}</span></li>
-            <li><strong>Ultimo snapshot</strong><span>{fmt(health.latest_snapshot_at)}</span></li>
-          </ul>
-        </div>
-      </section>
-
-      <section className="dashboard-grid">
-        <div className="panel">
-          <h2>Fontes</h2>
-          <ul className="source-list">
-            {Object.entries(health.providers).map(([key, value]) => (
-              <li key={key}><strong>{key}</strong><span>{value ? 'configurada' : 'indisponivel'}</span></li>
-            ))}
-          </ul>
-        </div>
-        <div className="panel">
-          <h2>Jobs</h2>
-          <ul className="source-list">
-            {Object.entries(health.jobs).map(([key, value]) => (
-              <li key={key}><strong>{key}</strong><span>{String(value)}</span></li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="dashboard-grid">
-        <div className="panel">
-          <h2>Alertas recentes</h2>
-          <ul className="source-list">
-            {health.recent_alerts.map((alert) => (
-              <li key={`${alert.symbol}-${alert.triggered_at}`}><strong>{alert.symbol}</strong><span>{alert.message}</span></li>
-            ))}
-          </ul>
-        </div>
-        <div className="panel">
-          <h2>Auditoria</h2>
-          <ul className="source-list">
-            {health.recent_audit_logs.map((log) => (
-              <li key={`${log.action}-${log.created_at}`}><strong>{log.action}</strong><span>{log.entity_type} {log.entity_id}</span></li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    </div>
+      )}
+    </AsyncContent>
   );
 }

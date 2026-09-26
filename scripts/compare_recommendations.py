@@ -6,7 +6,6 @@ from pathlib import Path
 
 from app import paper_simulator as sim
 
-
 DEFAULT_SYMBOLS = sim.DEFAULT_SYMBOLS
 
 

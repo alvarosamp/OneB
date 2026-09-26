@@ -25,9 +25,13 @@ from pathlib import Path
 import numpy as np
 
 MODEL_PATH = Path(os.getenv("PROBABILITY_MODEL_PATH", "data/probability_model.json"))
+CANDIDATE_MODEL_PATH = Path(os.getenv("PROBABILITY_MODEL_CANDIDATE_PATH", "data/probability_model.candidate.json"))
 HISTORY_PATH = Path(os.getenv("PROBABILITY_MODEL_HISTORY_PATH", "data/probability_model_history.json"))
 HISTORY_MAX_ENTRIES = int(os.getenv("PROBABILITY_MODEL_HISTORY_MAX_ENTRIES", "52"))
 DRIFT_ALERT_ACCURACY = float(os.getenv("PROBABILITY_MODEL_DRIFT_ACCURACY", "0.52"))
+PROMOTION_MIN_ACCURACY = float(os.getenv("PROBABILITY_MODEL_PROMOTION_MIN_ACCURACY", "0.52"))
+PROMOTION_MIN_AUC = float(os.getenv("PROBABILITY_MODEL_PROMOTION_MIN_AUC", "0.50"))
+PROMOTION_MIN_HOLDOUT_SAMPLES = int(os.getenv("PROBABILITY_MODEL_PROMOTION_MIN_HOLDOUT_SAMPLES", "500"))
 
 
 def _sigmoid(z: np.ndarray) -> np.ndarray:
@@ -88,6 +92,37 @@ def predict_proba(model: dict, features: list[float]) -> float:
 def save_model(model: dict, path: Path = MODEL_PATH) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(model, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def candidate_promotion_failures(model: dict) -> list[str]:
+    """Return objective reasons why a candidate must not replace production.
+
+    Promotion is deliberately fail-closed: missing metrics are failures, and
+    accuracy must beat both an absolute floor and the majority-class baseline.
+    """
+    failures: list[str] = []
+    samples = int(model.get("holdout_samples") or 0)
+    accuracy = model.get("holdout_accuracy")
+    auc = model.get("holdout_auc")
+    positive_rate = model.get("holdout_positive_rate")
+    baseline = max(float(positive_rate), 1 - float(positive_rate)) if positive_rate is not None else None
+    if samples < PROMOTION_MIN_HOLDOUT_SAMPLES:
+        failures.append(f"holdout_samples<{PROMOTION_MIN_HOLDOUT_SAMPLES}")
+    if accuracy is None:
+        failures.append("holdout_accuracy_missing")
+    else:
+        if float(accuracy) < PROMOTION_MIN_ACCURACY:
+            failures.append(f"holdout_accuracy<{PROMOTION_MIN_ACCURACY}")
+        if baseline is None or float(accuracy) <= baseline:
+            failures.append("holdout_accuracy<=majority_baseline")
+    if auc is None:
+        failures.append("holdout_auc_missing")
+    elif float(auc) < PROMOTION_MIN_AUC:
+        failures.append(f"holdout_auc<{PROMOTION_MIN_AUC}")
+    for key in ("trained_at", "git_commit", "dataset_sha256", "config_sha256", "holdout_brier", "calibration_error"):
+        if model.get(key) is None:
+            failures.append(f"{key}_missing")
+    return failures
 
 
 def load_model(path: Path = MODEL_PATH) -> dict | None:

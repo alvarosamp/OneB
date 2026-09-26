@@ -1,4 +1,6 @@
 node_modules
 dist
 .vite
+e2e
+.env
 npm-debug.log*

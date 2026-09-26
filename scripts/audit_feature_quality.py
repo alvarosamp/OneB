@@ -6,7 +6,6 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-
 DATA_DIR = Path("data")
 DB_PATH = DATA_DIR / "nasdaq_monitor.db"
 

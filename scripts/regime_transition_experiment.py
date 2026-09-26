@@ -40,8 +40,8 @@ from app import indicators
 from app import probability_model as pm
 from app.market_data import fred_client, macro_data
 from scripts.calibrate_decision_strategy import EMBARGO_DAYS, WALK_FORWARD_FOLDS, WALK_FORWARD_WINDOW_DAYS
-from scripts.research_folds import date_based_folds
 from scripts.compare_recommendations import DEFAULT_SYMBOLS, _load_prepared, _symbols
+from scripts.research_folds import date_based_folds
 
 pd.set_option("display.width", 140)
 

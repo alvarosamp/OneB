@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, String, Float, Integer, Boolean, DateTime, ForeignKey, Enum, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -19,6 +19,42 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class LoginAttempt(Base):
+    """Tentativa de login malsucedida, usada pelo rate limit em app/auth.py.
+
+    Persistida no banco (em vez de um dict em memória) para que o lockout
+    sobreviva a restart/redeploy do processo da API e valha para todas as
+    réplicas, não só a que recebeu as tentativas.
+    """
+
+    __tablename__ = "login_attempts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(64), index=True)
+    attempted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class RefreshToken(Base):
+    """Refresh token opaco, guardado com hash e rotacionado a cada uso.
+
+    Só o hash sha256 fica no banco: um dump do banco não devolve credenciais
+    utilizáveis. `family_id` amarra todas as rotações de um mesmo login; se um
+    token já rotacionado (revogado) reaparecer, isso significa que alguém copiou
+    a credencial, e a família inteira é revogada de uma vez (detecção de reuso).
+    """
+
+    __tablename__ = "refresh_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    family_id: Mapped[str] = mapped_column(String(36), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    replaced_by_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class WatchlistItem(Base):
@@ -114,6 +150,21 @@ class MacroSnapshot(Base):
     price: Mapped[float] = mapped_column(Float)
     change_pct: Mapped[float] = mapped_column(Float, default=0.0)
     taken_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class MacroIntelligenceSnapshot(Base):
+    """One idempotent daily capture of the complete cross-asset state."""
+
+    __tablename__ = "macro_intelligence_snapshots"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    snapshot_date: Mapped[str] = mapped_column(String(10), unique=True, index=True)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    coverage_pct: Mapped[float] = mapped_column(Float, default=0.0)
+    fresh_count: Mapped[int] = mapped_column(Integer, default=0)
+    stale_count: Mapped[int] = mapped_column(Integer, default=0)
+    missing_count: Mapped[int] = mapped_column(Integer, default=0)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 class AlertLog(Base):

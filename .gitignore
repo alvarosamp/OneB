@@ -4,8 +4,18 @@ __pycache__/
 *.pyc
 .pytest_cache/
 pytest-cache-files-*/
+.pytest-audit-tmp/
+.coverage
+.coverage.*
 tmp/
 data/
 .venv/
 venv/
 .claude
+frontend/playwright-report/
+frontend/test-results/
+Claude outputs/
+output/
+*.bundle
+*.patch
+*.ex5

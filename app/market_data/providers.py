@@ -6,8 +6,8 @@ from typing import Protocol
 
 import pandas as pd
 
-from app.market_data import tiingo_client, yfinance_client
 from app.config import settings
+from app.market_data import tiingo_client, yfinance_client
 
 
 @dataclass(frozen=True)

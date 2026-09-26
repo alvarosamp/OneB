@@ -1,0 +1,11 @@
+{
+  "period": "15y",
+  "horizon": 5,
+  "holdout_years": 2,
+  "development_folds": 5,
+  "cost_bps_per_side": 7.0,
+  "min_train_bars": 756,
+  "min_trades": 25,
+  "feature_quantile": 0.8,
+  "seed": 20260910
+}

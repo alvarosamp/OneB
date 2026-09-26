@@ -15,7 +15,6 @@ os.environ.setdefault("MARKET_DATA_CACHE_ONLY", "true")
 from app import paper_simulator
 from app.market_data import service as market_data_service
 
-
 SYMBOLS = ["AAPL", "MSFT", "NVDA", "SNAP"]
 REPORT_PATH = Path(os.getenv("SIM_VALIDATION_REPORT", "data/simulation_validation_report.json"))
 DEEP_CALIBRATION = os.getenv("SIM_VALIDATION_DEEP_CALIBRATION", "false").lower() == "true"

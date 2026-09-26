@@ -1,0 +1,153 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--topbar-h);
+  padding: 0 var(--sp-4);
+  color: var(--text-primary);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.mark {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+
+.mark i {
+  width: 3px;
+  background: var(--brand);
+  border-radius: 1px;
+}
+
+.mark i:nth-child(1) {
+  height: 6px;
+}
+
+.mark i:nth-child(2) {
+  height: 10px;
+}
+
+.mark i:nth-child(3) {
+  height: 16px;
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-2) var(--sp-2) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.groupLabel {
+  padding: 0 var(--sp-3) var(--sp-1);
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: 32px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.active {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--brand);
+}
+
+.active svg {
+  color: var(--brand);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: var(--sp-2);
+  border-top: 1px solid var(--border);
+}
+
+.collapseButton {
+  composes: link;
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+
+/* Recolhida */
+.collapsed .brand {
+  justify-content: center;
+  padding: 0;
+}
+
+.collapsed .brandName,
+.collapsed .label,
+.collapsed .groupLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.collapsed .group + .group {
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+
+.collapsed .link {
+  justify-content: center;
+  padding: 0;
+}

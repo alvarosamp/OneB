@@ -1,3 +1,11 @@
+[project]
+name = "oneb-market"
+version = "0.1.0"
+description = "OneB Market - monitoramento de mercado (nao executa ordens)"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 120
@@ -5,4 +13,19 @@ extend-exclude = ["data", "tmp", ".venv"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
-ignore = ["E501"]
+ignore = [
+    "E501",
+    # Depends()/Header()/Cookie() em default de argumento e o idioma padrao do FastAPI:
+    # a alternativa que o B008 sugere quebraria a injecao de dependencia.
+    "B008",
+    # UP017 (timezone.utc -> datetime.UTC) e UP042 (str+Enum -> StrEnum) sao mudancas
+    # estilisticas que atingem centenas de linhas do codigo existente sem alterar
+    # comportamento. Ficam de fora ate haver uma limpeza dedicada.
+    "UP017",
+    "UP042",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# scripts/ sao experimentos de pesquisa (EDA, backtests exploratorios), nao codigo de
+# producao: import nao usado ou zip() sem strict= ali nao deve travar o CI da aplicacao.
+"scripts/*" = ["F401", "F841", "B905", "B007", "E402", "E731", "F541"]

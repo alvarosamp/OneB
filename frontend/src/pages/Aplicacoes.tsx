@@ -7,11 +7,10 @@ export function Aplicacoes() {
     <MarketingLayout>
       <main className="oneb-page oneb-section">
         <section className="oneb-section-heading compact">
-          <p className="oneb-eyebrow">Aplicacoes OneB</p>
-          <h1>O MVP funcionando como rotina de estudo e decisao.</h1>
+          <p className="oneb-eyebrow">Ferramentas OneB</p>
+          <h1>O essencial para transformar informação em decisão.</h1>
           <p>
-            A OneB combina escola, terminal financeiro e explicacao por IA em poucos fluxos bem definidos:
-            aprender, monitorar, receber alerta e revisar risco.
+            Aprenda, acompanhe o que importa e registre suas decisões em um fluxo simples — sem excesso de telas ou promessa de sinal certo.
           </p>
         </section>
 

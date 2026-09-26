@@ -1,0 +1,38 @@
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.label {
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+}
+
+.value {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.lg .value {
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+}
+
+.sub {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.right {
+  align-items: flex-end;
+  text-align: right;
+}

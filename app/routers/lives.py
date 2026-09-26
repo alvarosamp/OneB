@@ -47,7 +47,7 @@ def update_live_status(
     try:
         live.status = LiveStatus(payload.status)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Status inválido.")
+        raise HTTPException(status_code=400, detail="Status inválido.") from None
     if payload.replay_url:
         live.replay_url = payload.replay_url
     db.commit()

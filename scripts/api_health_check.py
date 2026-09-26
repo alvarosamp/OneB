@@ -20,7 +20,8 @@ from datetime import date, timedelta
 import pandas as pd
 
 from app.config import settings
-from app.market_data import finnhub_client, fmp_client, fred_client, service as market_data_service, tiingo_client, yfinance_client
+from app.market_data import finnhub_client, fmp_client, fred_client, tiingo_client, yfinance_client
+from app.market_data import service as market_data_service
 
 CHECK_SYMBOL = "AAPL"
 

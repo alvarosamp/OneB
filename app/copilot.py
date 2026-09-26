@@ -9,7 +9,15 @@ from sqlalchemy.orm import Session
 
 from app import indicators
 from app.market_data import service as market_data_service
-from app.models import AlertLog, EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem, PriceSnapshot, Transaction, TransactionSide, WatchlistItem
+from app.models import (
+    AlertLog,
+    EconomicEvent,
+    GlobalNewsItem,
+    NewsItem,
+    PriceSnapshot,
+    Transaction,
+    WatchlistItem,
+)
 from app.positions import compute_position
 from app.trader_profile import analyze_trader_profile
 

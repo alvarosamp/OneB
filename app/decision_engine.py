@@ -302,7 +302,7 @@ def evaluate_pending_outcomes(db: Session) -> int:
         if start is None:
             continue
 
-        def observed_return(horizon: int) -> float | None:
+        def observed_return(horizon: int, start=start, history=history, row=row) -> float | None:
             target = start + horizon
             if target >= len(history):
                 return None
@@ -744,7 +744,7 @@ async def _attach_ai_narratives(rows: list[dict]) -> None:
         *(llm_client.generate_recommendation_thesis(context) for context in contexts),
         return_exceptions=True,
     )
-    for row, narrative in zip(targets, narratives):
+    for row, narrative in zip(targets, narratives, strict=False):
         row["ai_narrative"] = narrative if isinstance(narrative, str) else None
 
 

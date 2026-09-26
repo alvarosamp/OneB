@@ -1,54 +1,109 @@
+name: oneb
+
+x-app-environment: &app-environment
+  ENVIRONMENT: production
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-oneb}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:-oneb}
+  RUN_EMBEDDED_SCHEDULER: "false"
+
+x-app-common: &app-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: oneb-backend:${APP_VERSION:-latest}
+  env_file:
+    - path: .env
+      required: false
+  environment: *app-environment
+  init: true
+  restart: unless-stopped
+
 services:
-  api:
-    build: .
-    command: sh -c "RUN_EMBEDDED_SCHEDULER=false uvicorn app.main:app --host 0.0.0.0 --port 8000"
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    volumes:
-      - ./data:/app/data
+  db:
+    image: postgres:16-alpine
     environment:
-      - DATABASE_URL=sqlite:////app/data/nasdaq_monitor.db
-      - RUN_EMBEDDED_SCHEDULER=false
+      POSTGRES_USER: ${POSTGRES_USER:-oneb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-oneb}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
     restart: unless-stopped
+    stop_grace_period: 30s
+
+  migrate:
+    <<: *app-common
+    command: alembic upgrade head
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *app-common
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips=*
+    volumes:
+      - appdata:/app/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    stop_grace_period: 30s
 
   worker:
-    build: .
+    <<: *app-common
     command: python -m app.worker
-    env_file:
-      - .env
     volumes:
-      - ./data:/app/data
-    environment:
-      - DATABASE_URL=sqlite:////app/data/nasdaq_monitor.db
-      - RUN_EMBEDDED_SCHEDULER=false
+      - appdata:/app/data
     depends_on:
-      - api
-    restart: unless-stopped
+      migrate:
+        condition: service_completed_successfully
+    stop_grace_period: 30s
 
   paper-simulator:
-    build: .
+    <<: *app-common
     command: python -m app.paper_simulator
-    env_file:
-      - .env
-    volumes:
-      - ./data:/app/data
     environment:
-      - DATABASE_URL=sqlite:////app/data/nasdaq_monitor.db
-      - PAPER_SIM_INTERVAL_SECONDS=300
+      <<: *app-environment
+      PAPER_SIM_INTERVAL_SECONDS: ${PAPER_SIM_INTERVAL_SECONDS:-300}
+      PAPER_SIM_DATA_DIR: /app/data
+    volumes:
+      - appdata:/app/data
     depends_on:
-      - api
-    restart: unless-stopped
+      migrate:
+        condition: service_completed_successfully
+    stop_grace_period: 30s
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+        # Vazio = chamadas /api no mesmo dominio, encaminhadas pelo Nginx.
+        VITE_API_URL: ""
+    image: oneb-frontend:${APP_VERSION:-latest}
     ports:
-      - "5173:80"
+      - "${APP_PORT:-80}:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    init: true
     restart: unless-stopped
+    stop_grace_period: 15s
+
+volumes:
+  pgdata:
+  appdata:

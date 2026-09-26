@@ -1,110 +1,110 @@
-import { useEffect, useState } from 'react';
-import { api } from '../api/client';
+import { Link, useSearchParams } from 'react-router-dom';
+import { BellPlus, MessagesSquare } from 'lucide-react';
+import { useApi } from '../hooks/useApi';
 import { RULE_META } from '../hooks/useRuleConditions';
+import { DataAge } from '../components/terminal/DataAge';
+import { AsyncContent, Badge, EmptyState, ICON, PageHeader, Select, SkeletonLines, Table, type Column } from '../components/ui';
+import { buttonClass } from '../components/ui/buttonClass';
+import { formatDateTime } from '../lib/format';
+import { ruleTypeLabel } from '../lib/rules';
+import { ptBR } from '../lib/text';
+import { assetHref } from '../lib/watchlist';
 import type { AlertLog, WatchlistItem } from '../types';
+import styles from './Alertas.module.css';
 
-function fmtTime(iso: string) {
-  return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' UTC';
-}
-
+/** Histórico de alertas disparados, filtrável por ativo e tipo de regra (?symbol=, ?tipo=). */
 export function Alertas() {
-  const [symbols, setSymbols] = useState<string[]>([]);
-  const [alerts, setAlerts] = useState<AlertLog[]>([]);
-  const [symbolFilter, setSymbolFilter] = useState('');
-  const [ruleTypeFilter, setRuleTypeFilter] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const symbol = params.get('symbol') ?? '';
+  const ruleType = params.get('tipo') ?? '';
+  const query = new URLSearchParams({ limit: '100' });
+  if (symbol) query.set('symbol', symbol);
+  if (ruleType) query.set('rule_type', ruleType);
+  const alerts = useApi<AlertLog[]>(`/api/alerts?${query.toString()}`, { pollMs: 60_000 });
+  const watchlist = useApi<WatchlistItem[]>('/api/watchlist');
 
-  useEffect(() => {
-    api
-      .get<WatchlistItem[]>('/api/watchlist')
-      .then((items) => setSymbols(items.map((i) => i.symbol).sort()))
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Não foi possível carregar a watchlist.'));
-  }, []);
-
-  async function loadAlerts() {
-    setLoading(true);
-    const params = new URLSearchParams({ limit: '100' });
-    if (symbolFilter) params.set('symbol', symbolFilter);
-    if (ruleTypeFilter) params.set('rule_type', ruleTypeFilter);
-    try {
-      setAlerts(await api.get<AlertLog[]>(`/api/alerts?${params.toString()}`));
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível carregar os alertas.');
-    } finally {
-      setLoading(false);
-    }
+  function setFilter(key: string, value: string) {
+    const p = new URLSearchParams(params);
+    if (value) p.set(key, value);
+    else p.delete(key);
+    setParams(p, { replace: true });
   }
 
-  useEffect(() => {
-    loadAlerts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [symbolFilter, ruleTypeFilter]);
+  const columns: Column<AlertLog>[] = [
+    { key: 'quando', header: 'Quando', sortValue: (a) => a.triggered_at, render: (a) => <time className="num" dateTime={a.triggered_at}>{formatDateTime(a.triggered_at)}</time> },
+    { key: 'ativo', header: 'Ativo', sortValue: (a) => a.symbol, render: (a) => <Link to={assetHref(a.symbol)} onClick={(e) => e.stopPropagation()}><strong>{a.symbol}</strong></Link> },
+    { key: 'mensagem', header: 'Mensagem', wrap: true, render: (a) => ptBR(a.message) },
+    { key: 'regra', header: 'Regra', render: (a) => <span className="muted">{ruleTypeLabel(a.rule_type)}</span> },
+    { key: 'telegram', header: 'Telegram', render: (a) => (a.delivered_telegram ? <Badge tone="info">enviado</Badge> : <span className="muted">—</span>) },
+    {
+      key: 'explicar',
+      header: <span className="sr-only">Ações</span>,
+      align: 'right',
+      render: (a) => (
+        <Link to={`/assistente?modo=alerta&alerta=${a.id}`} className={buttonClass({ size: 'sm', variant: 'ghost' })} onClick={(e) => e.stopPropagation()}>
+          <MessagesSquare {...ICON} aria-hidden="true" />
+          Explicar alerta
+        </Link>
+      ),
+    },
+  ];
 
   return (
-    <div className="container">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">Sinais disparados</p>
-          <h1>Alertas</h1>
-          <p className="muted">Histórico de alertas gerados pelas suas regras de watchlist.</p>
-        </div>
-      </div>
-
-      <section className="panel">
-        <div className="panel-title">
-          <h2>Filtrar</h2>
-          <button type="button" className="link-btn" onClick={() => void loadAlerts()} disabled={loading}>
-            Atualizar
-          </button>
-        </div>
-        <div className="filters" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <select value={symbolFilter} onChange={(e) => setSymbolFilter(e.target.value)}>
-            <option value="">Todos os símbolos</option>
-            {symbols.map((s) => (
+    <div className={styles.page}>
+      <PageHeader
+        title="Alertas"
+        description="Alertas disparados pelas regras da sua watchlist. São sinais técnicos, não recomendação."
+        actions={
+          <Link to="/watchlist?regra=" className={buttonClass({ size: 'sm', variant: 'primary' })}>
+            <BellPlus {...ICON} aria-hidden="true" />
+            Criar alerta
+          </Link>
+        }
+      />
+      <div className={styles.filters}>
+        <Select label="Ativo" value={symbol} onChange={(e) => setFilter('symbol', e.target.value)} className={styles.filter}>
+          <option value="">Todos os ativos</option>
+          {(watchlist.data ?? [])
+            .map((w) => w.symbol)
+            .sort()
+            .map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
             ))}
-          </select>
-          <select value={ruleTypeFilter} onChange={(e) => setRuleTypeFilter(e.target.value)}>
-            <option value="">Todos os tipos</option>
-            {Object.keys(RULE_META).map((rt) => (
-              <option key={rt} value={rt}>
-                {rt}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {error && <p className="data-warning" role="status">{error}</p>}
-
-        <ul className="compact-list">
-          {loading ? (
-            <li className="muted">Carregando...</li>
-          ) : alerts.length === 0 ? (
-            <li className="muted">Nenhum alerta encontrado com esse filtro.</li>
+        </Select>
+        <Select label="Tipo de regra" value={ruleType} onChange={(e) => setFilter('tipo', e.target.value)} className={styles.filter}>
+          <option value="">Todos os tipos</option>
+          {Object.entries(RULE_META).map(([rt, m]) => (
+            <option key={rt} value={rt}>
+              {m.name}
+            </option>
+          ))}
+        </Select>
+        {alerts.lastUpdated && <DataAge at={alerts.lastUpdated} refreshing={alerts.refreshing} />}
+      </div>
+      <AsyncContent
+        state={alerts}
+        loading={<SkeletonLines lines={8} height={20} />}
+        empty={
+          symbol || ruleType ? (
+            <EmptyState title="Nenhum alerta com esses filtros" description="Limpe os filtros para ver todos os alertas." />
           ) : (
-            alerts.map((a) => (
-              <li key={a.id}>
-                <span className="mini-symbol">{a.symbol}</span>
-                <div>
-                  <strong>{a.message}</strong>
-                  <span>
-                    {fmtTime(a.triggered_at)} · [{a.rule_type}]
-                    {a.delivered_telegram ? ' · Telegram enviado' : ''}
-                  </span>
-                </div>
-              </li>
-            ))
-          )}
-        </ul>
-      </section>
-
-      <p className="disclaimer">
-        Alertas são sinais técnicos calculados a partir das suas regras. Apenas informativo — não constitui recomendação de investimento.
-      </p>
+            <EmptyState
+              title="Nenhum alerta disparado"
+              description="Crie regras na watchlist para ser avisado quando preço, RSI, médias ou volume cruzarem seus níveis."
+              action={
+                <Link to="/watchlist?regra=" className={buttonClass({ size: 'sm' })}>
+                  Criar alerta
+                </Link>
+              }
+            />
+          )
+        }
+        errorTitle="Não foi possível carregar os alertas"
+      >
+        {(list) => <Table caption="Alertas disparados" columns={columns} rows={list} rowKey={(a) => a.id} initialSort={{ key: 'quando', dir: 'desc' }} stickyFirstColumn />}
+      </AsyncContent>
     </div>
   );
 }

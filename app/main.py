@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth import ensure_admin_bootstrap
 from app.config import settings
 from app.db import SessionLocal, init_db
 from app.routers import (
@@ -43,6 +44,7 @@ async def lifespan(app: FastAPI):
     with SessionLocal() as db:
         lms.seed_default_courses(db)
         lives.seed_default_lives(db)
+        ensure_admin_bootstrap(db)
 
     telegram_app = None
     scheduler = None
@@ -81,7 +83,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_origin],
-    allow_credentials=False,  # não usa cookie — o token vai explícito no header Authorization
+    allow_credentials=True,  # sessão vive num cookie httpOnly (ver app/auth.py)
     allow_methods=["*"],
     allow_headers=["*"],
 )

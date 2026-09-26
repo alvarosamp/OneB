@@ -1,0 +1,88 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh var(--sp-4) var(--sp-4);
+  background: var(--overlay);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 520px;
+  max-height: 76vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-popover);
+  overflow: hidden;
+}
+
+.wide {
+  max-width: 640px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: var(--fs-lg);
+}
+
+.body {
+  padding: var(--sp-4);
+  overflow-y: auto;
+}
+
+.bare .body {
+  padding: 0;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+
+/* Sheet: sobe da borda inferior (mobile). */
+.sheetOverlay {
+  align-items: flex-end;
+  padding: 0;
+}
+
+.sheet {
+  max-width: none;
+  max-height: 85vh;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Drawer lateral */
+.drawerOverlay {
+  justify-content: flex-end;
+  align-items: stretch;
+  padding: 0;
+}
+
+.drawer {
+  max-width: min(360px, 88vw);
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom: 0;
+}

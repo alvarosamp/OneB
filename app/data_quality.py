@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from app.market_data import finnhub_client, service as market_data_service, yfinance_client  # noqa: F401 legacy monkeypatch compatibility
+from app.market_data import finnhub_client, yfinance_client  # noqa: F401 legacy monkeypatch compatibility
+from app.market_data import service as market_data_service
 from app.models import PriceSnapshot, WatchlistItem
 
 STALE_LIMIT_MINUTES = {

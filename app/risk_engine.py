@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from app.models import PriceSnapshot, Transaction, TransactionSide, WatchlistItem
 
-
 MAX_POSITION_PCT = float(os.getenv("RISK_MAX_POSITION_PCT", "20"))
 MAX_SINGLE_SYMBOL_EXPOSURE_PCT = float(os.getenv("RISK_MAX_SINGLE_SYMBOL_EXPOSURE_PCT", "35"))
 MAX_DATA_AGE_MINUTES = float(os.getenv("RISK_MAX_DATA_AGE_MINUTES", "1440"))

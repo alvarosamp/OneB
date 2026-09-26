@@ -17,7 +17,6 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "pdf" / "oneb_market_guia_projeto.pdf"
 

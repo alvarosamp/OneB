@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from app.models import Transaction, TransactionSide
 
-
 TECH_SYMBOLS = {"NVDA", "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "META", "TSLA", "AMD", "AVGO", "NFLX"}
 
 

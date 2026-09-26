@@ -1,265 +1,222 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
+import { Trash2 } from 'lucide-react';
 import { api } from '../api/client';
+import { useApi } from '../hooks/useApi';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../components/ConfirmModal';
+import { AsyncContent, Badge, Button, EmptyState, ICON, Input, Section, Select, SkeletonLines } from '../components/ui';
 import type { NotificationChannelType, SaasOverview, SubscriptionPlan } from '../types';
+import styles from './Configuracoes.module.css';
 
-const planLabels: Record<SubscriptionPlan, string> = {
-  FREE: 'Free',
-  PRO: 'Pro',
-  ADVISOR: 'Advisor',
+const PLAN: Record<SubscriptionPlan, { label: string; text: string }> = {
+  FREE: { label: 'Free', text: 'Uso individual e validação.' },
+  PRO: { label: 'Pro', text: 'Investidores ativos: mais ativos, regras e perguntas.' },
+  ADVISOR: { label: 'Advisor', text: 'Assessores, criadores e grupos: segmentos e relatórios.' },
 };
 
-const usageLabels: Record<string, string> = {
-  watchlist_items: 'Ativos',
-  alert_rules: 'Regras',
-  notification_channels: 'Canais',
-  report_templates: 'Templates',
+const USAGE: Record<string, string> = {
+  watchlist_items: 'Ativos na watchlist',
+  alert_rules: 'Regras de alerta',
+  notification_channels: 'Canais de entrega',
+  report_templates: 'Modelos de relatório',
   client_segments: 'Segmentos',
-  ai_questions_per_month: 'Perguntas IA',
+  ai_questions_per_month: 'Perguntas ao Assistente por mês',
 };
 
-function pct(used: number, limit: number) {
-  if (limit <= 0) return 100;
-  return Math.min(100, Math.round((used / limit) * 100));
+const CHANNEL: Record<NotificationChannelType, { label: string; placeholder: string }> = {
+  TELEGRAM: { label: 'Telegram', placeholder: '@usuario ou ID do chat' },
+  EMAIL: { label: 'E-mail', placeholder: 'nome@exemplo.com' },
+  WEBHOOK: { label: 'Webhook', placeholder: 'https://…' },
+};
+
+/** Configurações › Workspace e canais (antiga página SaaS). */
+export function Saas() {
+  const overview = useApi<SaasOverview>('/api/saas/overview');
+  return (
+    <AsyncContent state={overview} loading={<SkeletonLines lines={10} />} empty={<EmptyState title="Workspace não encontrado" />} errorTitle="Não foi possível carregar o workspace">
+      {(o) => <Workspace o={o} set={overview.mutate} reload={overview.retry} />}
+    </AsyncContent>
+  );
 }
 
-export function Saas() {
+function Workspace({ o, set, reload }: { o: SaasOverview; set: (o: SaasOverview) => void; reload: () => void }) {
   const toast = useToast();
-  const [overview, setOverview] = useState<SaasOverview | null>(null);
-  const [loading, setLoading] = useState(true);
+  const confirm = useConfirm();
+  const [ws, setWs] = useState({ name: o.workspace.name, brand_name: o.workspace.brand_name });
+  const [channel, setChannel] = useState<{ type: NotificationChannelType; destination: string }>({ type: 'TELEGRAM', destination: '' });
+  const [template, setTemplate] = useState({ title: '', audience: '', include_ai_summary: true, include_backtest: false });
+  const [segment, setSegment] = useState({ name: '', description: '' });
 
-  async function load() {
+  async function run(fn: () => Promise<unknown>, ok: string, fail: string) {
     try {
-      setOverview(await api.get<SaasOverview>('/api/saas/overview'));
-    } catch {
-      toast('Erro ao carregar configurações SaaS', 'error');
-    } finally {
-      setLoading(false);
+      await fn();
+      toast(ok, 'success');
+      reload();
+      return true;
+    } catch (err) {
+      toast(err instanceof Error ? `${fail}: ${err.message}` : fail, 'error');
+      return false;
     }
   }
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   async function changePlan(plan: SubscriptionPlan) {
     try {
-      setOverview(await api.put<SaasOverview>('/api/saas/plan', { plan }));
-      toast(`Plano alterado para ${planLabels[plan]}`, 'success');
-    } catch {
-      toast('Erro ao alterar plano', 'error');
-    }
-  }
-
-  async function saveWorkspace(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    try {
-      await api.put('/api/saas/workspace', {
-        name: form.get('name'),
-        brand_name: form.get('brand_name'),
-      });
-      toast('Workspace atualizado', 'success');
-      load();
-    } catch {
-      toast('Erro ao salvar workspace', 'error');
-    }
-  }
-
-  async function addChannel(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    try {
-      await api.post('/api/saas/channels', {
-        channel_type: form.get('channel_type') as NotificationChannelType,
-        destination: form.get('destination'),
-      });
-      e.currentTarget.reset();
-      toast('Canal adicionado', 'success');
-      load();
+      set(await api.put<SaasOverview>('/api/saas/plan', { plan }));
+      toast(`Plano alterado para ${PLAN[plan].label}`, 'success');
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'Erro ao criar canal', 'error');
+      toast(err instanceof Error ? `Não foi possível alterar o plano: ${err.message}` : 'Não foi possível alterar o plano', 'error');
     }
-  }
-
-  async function addTemplate(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    try {
-      await api.post('/api/saas/report-templates', {
-        title: form.get('title'),
-        audience: form.get('audience'),
-        include_ai_summary: form.get('include_ai_summary') === 'on',
-        include_backtest: form.get('include_backtest') === 'on',
-      });
-      e.currentTarget.reset();
-      toast('Template criado', 'success');
-      load();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Erro ao criar template', 'error');
-    }
-  }
-
-  async function addSegment(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    try {
-      await api.post('/api/saas/segments', {
-        name: form.get('name'),
-        description: form.get('description'),
-      });
-      e.currentTarget.reset();
-      toast('Segmento criado', 'success');
-      load();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Erro ao criar segmento', 'error');
-    }
-  }
-
-  if (loading || !overview) {
-    return (
-      <div className="container">
-        <h1>SaaS</h1>
-        <p className="muted">Carregando painel comercial...</p>
-      </div>
-    );
   }
 
   return (
-    <div className="container dashboard-container">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">Produto SaaS</p>
-          <h1>{overview.workspace.brand_name}</h1>
-          <p className="muted">
-            Configure assinatura, limites, canais de entrega, relatórios e segmentos sem transformar o produto em fintech.
-          </p>
+    <div className={styles.stack}>
+      <Section title="Plano e uso" meta={`plano atual: ${PLAN[o.workspace.plan].label}`}>
+        <div className={styles.plans} role="radiogroup" aria-label="Plano">
+          {(Object.keys(PLAN) as SubscriptionPlan[]).map((p) => (
+            <button key={p} type="button" role="radio" aria-checked={o.workspace.plan === p} className={styles.plan} onClick={() => changePlan(p)}>
+              <strong>{PLAN[p].label}</strong>
+              <span>{PLAN[p].text}</span>
+            </button>
+          ))}
         </div>
-        <strong className="status-pill good">{planLabels[overview.workspace.plan]}</strong>
-      </div>
+        <dl className={styles.usage}>
+          {Object.entries(o.limits).map(([k, limit]) => {
+            const used = o.usage[k] ?? 0;
+            return (
+              <div key={k}>
+                <dt>{USAGE[k] ?? k}</dt>
+                <dd className="num">
+                  {used} de {limit} {used >= limit && <Badge tone="warning">no limite</Badge>}
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+      </Section>
 
-      <section className="metric-grid">
-        {Object.entries(overview.limits).map(([key, limit]) => {
-          const used = overview.usage[key] ?? 0;
-          return (
-            <div className="metric-card" key={key}>
-              <span className="metric-label">{usageLabels[key] ?? key}</span>
-              <strong>{used}/{limit}</strong>
-              <meter min={0} max={100} value={pct(used, limit)} />
-            </div>
-          );
-        })}
-      </section>
+      <Section title="Marca" divided>
+        <form
+          className={styles.form}
+          onSubmit={(e: FormEvent) => {
+            e.preventDefault();
+            void run(() => api.put('/api/saas/workspace', ws), 'Workspace atualizado', 'Não foi possível salvar');
+          }}
+        >
+          <Input label="Nome do workspace" value={ws.name} onChange={(e) => setWs((w) => ({ ...w, name: e.target.value }))} className={styles.w260} />
+          <Input label="Marca exibida nos relatórios" value={ws.brand_name} onChange={(e) => setWs((w) => ({ ...w, brand_name: e.target.value }))} className={styles.w260} />
+          <Button type="submit">Salvar marca</Button>
+        </form>
+      </Section>
 
-      <section className="dashboard-grid">
-        <div className="panel">
-          <h2>Planos</h2>
-          <div className="plan-grid">
-            {(['FREE', 'PRO', 'ADVISOR'] as SubscriptionPlan[]).map((plan) => (
-              <button
-                type="button"
-                className={`plan-card ${overview.workspace.plan === plan ? 'active' : ''}`}
-                key={plan}
-                onClick={() => changePlan(plan)}
-              >
-                <strong>{planLabels[plan]}</strong>
-                <span>
-                  {plan === 'FREE' && 'Para validação e uso individual.'}
-                  {plan === 'PRO' && 'Para investidores ativos e traders.'}
-                  {plan === 'ADVISOR' && 'Para assessores, criadores e grupos.'}
-                </span>
-              </button>
+      <Section title="Canais de entrega de alertas" divided>
+        <form
+          className={styles.form}
+          onSubmit={async (e: FormEvent) => {
+            e.preventDefault();
+            if (!channel.destination.trim()) return;
+            if (await run(() => api.post('/api/saas/channels', { channel_type: channel.type, destination: channel.destination }), 'Canal adicionado', 'Não foi possível adicionar o canal'))
+              setChannel((c) => ({ ...c, destination: '' }));
+          }}
+        >
+          <Select label="Tipo" value={channel.type} onChange={(e) => setChannel((c) => ({ ...c, type: e.target.value as NotificationChannelType }))} className={styles.w180}>
+            {(Object.keys(CHANNEL) as NotificationChannelType[]).map((t) => (
+              <option key={t} value={t}>
+                {CHANNEL[t].label}
+              </option>
             ))}
-          </div>
-        </div>
-
-        <div className="panel">
-          <h2>Marca</h2>
-          <form className="stack-form" onSubmit={saveWorkspace}>
-            <input name="name" defaultValue={overview.workspace.name} placeholder="Workspace" />
-            <input name="brand_name" defaultValue={overview.workspace.brand_name} placeholder="Marca exibida" />
-            <button type="submit">Salvar</button>
-          </form>
-        </div>
-      </section>
-
-      <section className="dashboard-grid">
-        <div className="panel">
-          <h2>Canais de alerta</h2>
-          <form onSubmit={addChannel}>
-            <select name="channel_type" defaultValue="TELEGRAM">
-              <option value="TELEGRAM">Telegram</option>
-              <option value="EMAIL">Email</option>
-              <option value="WEBHOOK">Webhook</option>
-            </select>
-            <input name="destination" placeholder="@usuario, email ou URL" required />
-            <button type="submit">Adicionar</button>
-          </form>
-          <ul className="source-list">
-            {overview.channels.length === 0 ? (
-              <li className="muted">Nenhum canal configurado.</li>
-            ) : (
-              overview.channels.map((channel) => (
-                <li key={channel.id}>
-                  <strong>{channel.channel_type}</strong>
-                  <span>{channel.destination}</span>
-                </li>
-              ))
-            )}
-          </ul>
-        </div>
-
-        <div className="panel">
-          <h2>Templates de relatório</h2>
-          <form className="stack-form" onSubmit={addTemplate}>
-            <input name="title" placeholder="Resumo semanal Nasdaq" required />
-            <input name="audience" placeholder="Investidores iniciantes" />
-            <label className="checkbox-row">
-              <input type="checkbox" name="include_ai_summary" defaultChecked />
-              Resumo IA
-            </label>
-            <label className="checkbox-row">
-              <input type="checkbox" name="include_backtest" />
-              Backtest
-            </label>
-            <button type="submit">Criar</button>
-          </form>
-          <ul className="source-list">
-            {overview.report_templates.map((template) => (
-              <li key={template.id}>
-                <strong>{template.title}</strong>
-                <span>{template.audience}</span>
+          </Select>
+          <Input label="Destino" value={channel.destination} onChange={(e) => setChannel((c) => ({ ...c, destination: e.target.value }))} placeholder={CHANNEL[channel.type].placeholder} className={styles.w260} />
+          <Button type="submit">Adicionar canal</Button>
+        </form>
+        {o.channels.length ? (
+          <ul className={styles.items}>
+            {o.channels.map((c) => (
+              <li key={c.id}>
+                <span>
+                  <strong>{CHANNEL[c.channel_type]?.label ?? c.channel_type}</strong> <span className="muted">{c.destination}</span>
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  iconOnly
+                  icon={<Trash2 {...ICON} />}
+                  aria-label={`Remover canal ${c.destination}`}
+                  onClick={async () => {
+                    if (await confirm(`Remover o canal ${c.destination}?`)) void run(() => api.delete(`/api/saas/channels/${c.id}`), 'Canal removido', 'Não foi possível remover o canal');
+                  }}
+                />
               </li>
             ))}
           </ul>
-        </div>
-      </section>
+        ) : (
+          <p className="muted">Nenhum canal configurado. Sem canal, os alertas aparecem só no OneB.</p>
+        )}
+      </Section>
 
-      <section className="panel">
-        <h2>Segmentos</h2>
-        <form onSubmit={addSegment}>
-          <input name="name" placeholder="Swing trade" required />
-          <input name="description" placeholder="Perfil, objetivo ou lista modelo" />
-          <button type="submit">Adicionar</button>
+      <Section title="Modelos de relatório" divided>
+        <form
+          className={styles.form}
+          onSubmit={async (e: FormEvent) => {
+            e.preventDefault();
+            if (!template.title.trim()) return;
+            if (await run(() => api.post('/api/saas/report-templates', template), 'Modelo criado', 'Não foi possível criar o modelo'))
+              setTemplate({ title: '', audience: '', include_ai_summary: true, include_backtest: false });
+          }}
+        >
+          <Input label="Título" value={template.title} onChange={(e) => setTemplate((t) => ({ ...t, title: e.target.value }))} placeholder="Resumo semanal Nasdaq" className={styles.w260} />
+          <Input label="Público" value={template.audience} onChange={(e) => setTemplate((t) => ({ ...t, audience: e.target.value }))} placeholder="Investidores iniciantes" className={styles.w260} />
+          <label className={styles.check}>
+            <input type="checkbox" checked={template.include_ai_summary} onChange={(e) => setTemplate((t) => ({ ...t, include_ai_summary: e.target.checked }))} />
+            Incluir resumo do Assistente
+          </label>
+          <label className={styles.check}>
+            <input type="checkbox" checked={template.include_backtest} onChange={(e) => setTemplate((t) => ({ ...t, include_backtest: e.target.checked }))} />
+            Incluir backtest
+          </label>
+          <Button type="submit">Criar modelo</Button>
         </form>
-        <div className="table-scroll compact-scroll">
-          <table className="table dense-table">
-            <thead>
-              <tr><th>Nome</th><th>Descrição</th></tr>
-            </thead>
-            <tbody>
-              {overview.segments.length === 0 ? (
-                <tr><td colSpan={2} className="muted">Disponível no plano Advisor.</td></tr>
-              ) : (
-                overview.segments.map((segment) => (
-                  <tr key={segment.id}><td>{segment.name}</td><td className="muted">{segment.description}</td></tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+        {o.report_templates.length ? (
+          <ul className={styles.items}>
+            {o.report_templates.map((t) => (
+              <li key={t.id}>
+                <span>
+                  <strong>{t.title}</strong> <span className="muted">{t.audience}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">Nenhum modelo criado.</p>
+        )}
+      </Section>
+
+      <Section title="Segmentos" divided>
+        <form
+          className={styles.form}
+          onSubmit={async (e: FormEvent) => {
+            e.preventDefault();
+            if (!segment.name.trim()) return;
+            if (await run(() => api.post('/api/saas/segments', segment), 'Segmento criado', 'Não foi possível criar o segmento')) setSegment({ name: '', description: '' });
+          }}
+        >
+          <Input label="Nome" value={segment.name} onChange={(e) => setSegment((s) => ({ ...s, name: e.target.value }))} placeholder="Swing trade" className={styles.w260} />
+          <Input label="Descrição" value={segment.description} onChange={(e) => setSegment((s) => ({ ...s, description: e.target.value }))} placeholder="Perfil, objetivo ou lista modelo" className={styles.w260} />
+          <Button type="submit">Criar segmento</Button>
+        </form>
+        {o.segments.length ? (
+          <ul className={styles.items}>
+            {o.segments.map((s) => (
+              <li key={s.id}>
+                <span>
+                  <strong>{s.name}</strong> <span className="muted">{s.description}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">Nenhum segmento criado.</p>
+        )}
+      </Section>
     </div>
   );
 }

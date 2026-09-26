@@ -30,9 +30,37 @@ class Settings(BaseSettings):
     # conta. Vazio = usa o primeiro admin cadastrado.
     telegram_acts_as_username: str = ""
 
-    # Auth (JWT, ver app/auth.py)
+    # Ambiente de execução ("development" ou "production"). Controla exigências de
+    # segurança que não fazem sentido travar o dev local (ver SECRET_KEY abaixo e o
+    # atributo "secure" do cookie de sessão em app/auth.py).
+    environment: str = "development"
+
+    # Auth (ver app/auth.py). Modelo de sessão em duas partes:
+    #   - access token: JWT curto, devolvido no corpo da resposta e guardado APENAS em
+    #     memória pelo SPA (nunca em localStorage — um XSS lê localStorage, não lê uma
+    #     variável de módulo que morre no reload);
+    #   - refresh token: string opaca de 30 dias, guardada com hash no banco e entregue
+    #     num cookie httpOnly. É rotacionada a cada uso, com detecção de reuso.
+    # Antes era um único JWT de 7 dias em localStorage: um XSS roubava uma credencial
+    # válida por uma semana, sem nenhuma forma de revogar.
     secret_key: str = ""
-    jwt_expire_hours: int = 168  # 7 dias
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 30
+
+    # Cookie httpOnly que carrega o refresh token. Path restrito a /api/auth porque é o
+    # único lugar que precisa dele, e SameSite=strict + header obrigatório
+    # (X-Refresh-Request) fecham o vetor de CSRF nas duas rotas que dependem do cookie.
+    refresh_cookie_name: str = "oneb_refresh"
+
+    # Bootstrap do admin inicial. Antes, o primeiro usuário a se cadastrar virava admin
+    # automaticamente — qualquer visitante que chegasse primeiro no /cadastro ganhava
+    # controle total (ver app/routers/auth.py). Cadastro público agora NUNCA concede
+    # is_admin; se essas duas variáveis estiverem preenchidas no .env, esse usuário é
+    # criado como admin no startup (app.auth.ensure_admin_bootstrap), somente se o banco
+    # ainda não tiver nenhum usuário. Depois disso, promova outros com
+    # `python -m scripts.promote_admin <usuario>`.
+    admin_bootstrap_username: str = ""
+    admin_bootstrap_password: str = ""
 
     # CORS - origem do front-end React separado (Vite dev server por padrão)
     frontend_origin: str = "http://localhost:5173"
@@ -48,6 +76,7 @@ class Settings(BaseSettings):
     news_refresh_seconds: int = 1800
     global_news_refresh_seconds: int = 900
     macro_refresh_seconds: int = 900
+    macro_intelligence_hour_utc: int = 23
     global_news_categories: str = "general,forex"
     calendar_refresh_hour_utc: int = 6
     radar_bot_hour_utc: int = 13
@@ -91,13 +120,24 @@ class Settings(BaseSettings):
 settings = Settings()
 
 if not settings.secret_key:
+    if settings.environment == "production":
+        # Em produção, uma SECRET_KEY ausente não deve degradar silenciosamente para uma
+        # chave efêmera — ela derruba todas as sessões a cada restart/deploy e, pior, se
+        # o processo tiver múltiplas réplicas cada uma gera a SUA própria chave, então um
+        # token emitido por uma réplica é rejeitado pelas outras. Falha alto e cedo.
+        raise RuntimeError(
+            "SECRET_KEY não configurada no .env com ENVIRONMENT=production. Gere uma chave "
+            "fixa com `python -c \"import secrets; print(secrets.token_hex(32))\"`, coloque "
+            "em SECRET_KEY no .env e reinicie."
+        )
     # Sem SECRET_KEY no .env: gera uma chave efêmera pra não travar o dev local, mas ela muda
-    # a cada restart (derruba todas as sessões ativas) — inaceitável em produção.
+    # a cada restart (derruba todas as sessões ativas) — inaceitável em produção (por isso o
+    # bloco acima falha o boot quando ENVIRONMENT=production).
     settings.secret_key = secrets.token_hex(32)
     logger.warning(
         "SECRET_KEY não configurada no .env — usando uma chave temporária gerada agora. "
         "Isso invalida todos os tokens JWT emitidos a cada restart do servidor (todo mundo "
         "precisa logar de novo). Gere uma chave fixa com "
         "`python -c \"import secrets; print(secrets.token_hex(32))\"` e coloque em SECRET_KEY "
-        "no .env antes de ir pra produção."
+        "no .env antes de ir pra produção (com ENVIRONMENT=production)."
     )

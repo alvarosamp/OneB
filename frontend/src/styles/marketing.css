@@ -1,0 +1,2167 @@
+/*
+ * Marketing (landing, catálogo e páginas institucionais).
+ * Extraído do antigo global.css só com as regras ainda usadas; cores convertidas
+ * para tokens. Carregado apenas pelo MarketingLayout.
+ */
+
+.oneb-primary {
+  border-color: var(--brand);
+  background: linear-gradient(180deg, var(--brand), var(--brand));
+  color: var(--text-primary);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.oneb-secondary {
+  border-color: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  color: var(--text-primary);
+}
+
+.oneb-hero-redesign {
+  min-height: min(780px, calc(100vh - 70px));
+  grid-template-columns: minmax(0, 0.88fr) minmax(460px, 1.12fr);
+  align-items: center;
+  padding-top: clamp(4rem, 7vw, 6rem);
+}
+
+.oneb-hero-redesign h1 {
+  max-width: 720px;
+  font-size: clamp(3rem, 6vw, 6.6rem);
+  line-height: 0.98;
+}
+
+.oneb-terminal-visual {
+  position: relative;
+  min-height: 620px;
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 62% 18%, color-mix(in srgb, var(--brand) 20%, transparent), transparent 18rem),
+    linear-gradient(180deg, var(--bg-0), var(--bg-0) 72%);
+  box-shadow: 0 38px 90px color-mix(in srgb, var(--bg-0) 48%, transparent);
+}
+
+.oneb-terminal-visual::after {
+  content: '';
+  position: absolute;
+  inset: auto 3% 7% 3%;
+  height: 160px;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--text-primary) 12%, transparent), transparent 66%);
+  transform: perspective(600px) rotateX(58deg);
+}
+
+.terminal-glass-window {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-0) 78%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 24px 70px color-mix(in srgb, var(--bg-0) 45%, transparent);
+}
+
+.terminal-window-main {
+  left: 8%;
+  right: 9%;
+  top: 12%;
+  padding: 1rem;
+  transform: perspective(900px) rotateY(-7deg) rotateX(3deg);
+}
+
+.terminal-window-side {
+  right: 8%;
+  bottom: 18%;
+  width: 220px;
+  padding: 1rem;
+}
+
+.terminal-glass-window header,
+.terminal-glass-window footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.terminal-candle-board {
+  display: flex;
+  align-items: end;
+  gap: 0.65rem;
+  height: 260px;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border-radius: 8px;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.terminal-candle-board i {
+  flex: 1;
+  position: relative;
+  max-width: 34px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--surface), var(--text-primary) 46%, var(--surface) 58%, var(--bg-0));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.terminal-candle-board i::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  bottom: -26px;
+  width: 2px;
+  background: color-mix(in srgb, var(--text-primary) 72%, transparent);
+  transform: translateX(-50%);
+}
+
+.metal-candles {
+  position: absolute;
+  left: 10%;
+  bottom: 8%;
+  z-index: 3;
+  display: flex;
+  align-items: end;
+  gap: 1.2rem;
+}
+
+.metal-candles span {
+  position: relative;
+  width: 48px;
+  height: calc(112px + var(--i) * 28px);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 36%, transparent);
+  background: linear-gradient(100deg, var(--surface), var(--text-primary) 43%, var(--text-tertiary) 58%, var(--bg-0));
+  box-shadow: 0 0 26px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.metal-candles span i {
+  position: absolute;
+  left: 50%;
+  top: -44px;
+  bottom: -44px;
+  width: 3px;
+  background: linear-gradient(180deg, transparent, var(--text-primary) 20%, var(--text-primary) 80%, transparent);
+  transform: translateX(-50%);
+}
+
+.ecosystem-section .oneb-section-heading > p {
+  max-width: 560px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.ecosystem-grid-pro {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ecosystem-card-pro,
+.product-preview-grid article {
+  border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+  border-radius: 10px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bg-0) 96%, transparent), color-mix(in srgb, var(--bg-0) 98%, transparent));
+}
+
+.ecosystem-card-pro {
+  display: flex;
+  flex-direction: column;
+  min-height: 390px;
+  padding: 1.4rem;
+}
+
+.ecosystem-card-pro h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.ecosystem-card-pro ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  margin: 2rem 0;
+  list-style: none;
+}
+
+.ecosystem-card-pro li {
+  padding: 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border-radius: 7px;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+.ecosystem-card-pro a {
+  margin-top: auto;
+}
+
+.product-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.product-preview-grid article {
+  min-height: 230px;
+  padding: 1.2rem;
+}
+
+.product-preview-grid span {
+  color: var(--brand);
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.product-preview-grid h3 {
+  color: var(--text-primary);
+  font-size: 1.45rem;
+}
+
+.product-preview-grid p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.final-cta-redesign h2 {
+  max-width: 820px;
+}
+
+@media (max-width: 1100px) {
+  .oneb-hero-redesign {
+    grid-template-columns: 1fr;
+  }
+
+  .oneb-terminal-visual {
+    min-height: 520px;
+  }
+
+  .product-preview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .ecosystem-grid-pro,
+  .product-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oneb-hero-redesign h1 {
+    font-size: 3rem;
+  }
+
+  .oneb-terminal-visual {
+    min-height: 430px;
+  }
+
+  .metal-candles {
+    gap: 0.7rem;
+  }
+
+  .metal-candles span {
+    width: 34px;
+  }
+}
+
+.oneb-site {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 72% 12%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 26%),
+    radial-gradient(circle at 20% 72%, color-mix(in srgb, var(--text-primary) 6%, transparent), transparent 24%),
+    var(--bg-0);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.oneb-site a {
+  text-decoration: none;
+}
+
+.oneb-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.05rem clamp(1rem, 4vw, 4rem);
+  background: color-mix(in srgb, var(--bg-0) 78%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.oneb-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 1.55rem;
+}
+
+.oneb-logo small {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.42rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.oneb-logo-mark {
+  display: inline-flex;
+  align-items: end;
+  gap: 3px;
+  height: 38px;
+}
+
+.oneb-logo-mark i {
+  display: block;
+  width: 5px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--text-primary), var(--text-secondary));
+}
+
+.oneb-logo-mark i:nth-child(1) {
+  height: 16px;
+}
+
+.oneb-logo-mark i:nth-child(2) {
+  height: 28px;
+}
+
+.oneb-logo-mark i:nth-child(3) {
+  height: 22px;
+}
+
+.oneb-logo-mark i:nth-child(4) {
+  height: 34px;
+}
+
+.oneb-header nav {
+  justify-content: center;
+  gap: 1.6rem;
+}
+
+.oneb-header nav a,
+.oneb-login {
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.oneb-header nav a {
+  position: relative;
+  padding: 0.35rem 0;
+  background: transparent;
+}
+
+.oneb-header nav a.active::after,
+.oneb-header nav a:hover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.28rem;
+  height: 2px;
+  background: var(--brand);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--brand) 75%, transparent);
+}
+
+.oneb-header-actions,
+.oneb-hero-actions,
+.oneb-community-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.oneb-primary,
+.oneb-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 5px;
+  font-weight: 800;
+  font-size: 0.86rem;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.oneb-primary {
+  border: 1px solid var(--brand);
+  background: linear-gradient(135deg, var(--brand), var(--brand));
+  color: var(--text-primary);
+  box-shadow: 0 10px 34px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.oneb-secondary {
+  border: 1px solid color-mix(in srgb, var(--text-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  color: var(--text-primary);
+}
+
+.oneb-primary:hover,
+.oneb-secondary:hover,
+.oneb-strategy-card:hover,
+.oneb-pricing-grid article:hover {
+  transform: translateY(-2px);
+}
+
+.oneb-menu-btn {
+  display: none;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 18%, transparent);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-primary);
+  min-height: 40px;
+}
+
+.oneb-section {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 5.8rem) clamp(1rem, 4vw, 4rem);
+}
+
+.oneb-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(420px, 1.12fr);
+  min-height: calc(100vh - 76px);
+  align-items: center;
+  gap: 2rem;
+  padding-top: 2.5rem;
+}
+
+.oneb-eyebrow {
+  margin: 0 0 1rem;
+  color: var(--brand);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.oneb-hero h1,
+.oneb-page h1,
+.oneb-section-heading h1,
+.oneb-section-heading h2,
+.oneb-community-section h1,
+.oneb-community-section h2,
+.oneb-about-hero h1,
+.oneb-final-cta h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.oneb-hero h1 {
+  max-width: 640px;
+  font-size: clamp(3rem, 5.7vw, 5.8rem);
+  line-height: 1.03;
+  text-shadow: 0 0 34px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.oneb-hero-copy p:not(.oneb-eyebrow),
+.oneb-page-hero p,
+.oneb-section-heading p,
+.oneb-community-section p,
+.oneb-about-hero p,
+.oneb-final-cta p {
+  max-width: 620px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.oneb-candle-scene {
+  position: relative;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: clamp(1rem, 2vw, 2rem);
+  min-height: 560px;
+  overflow: hidden;
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse at 50% 78%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 48%),
+    linear-gradient(180deg, transparent 42%, color-mix(in srgb, var(--text-primary) 6%, transparent));
+}
+
+.oneb-course-track-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.oneb-course-track {
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  border-radius: 10px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 96%, transparent), color-mix(in srgb, var(--bg-0) 96%, transparent));
+  padding: 1rem;
+}
+
+.oneb-app-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.oneb-app-grid.compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.oneb-app-card {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1fr);
+  min-height: 320px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  border-radius: 12px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 98%, transparent), color-mix(in srgb, var(--bg-0) 98%, transparent));
+  box-shadow: 0 22px 70px color-mix(in srgb, var(--bg-0) 32%, transparent);
+}
+
+.oneb-app-grid.compact .oneb-app-card {
+  grid-template-columns: 1fr;
+}
+
+.oneb-app-preview {
+  position: relative;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 70% 20%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 30%),
+    linear-gradient(135deg, color-mix(in srgb, var(--text-primary) 8%, transparent), color-mix(in srgb, var(--text-primary) 2%, transparent));
+}
+
+.app-preview-top,
+.app-preview-body {
+  position: relative;
+  z-index: 1;
+}
+
+.app-preview-top {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.app-preview-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 80px;
+  gap: 1rem;
+  align-items: stretch;
+  height: 220px;
+  margin-top: 1rem;
+}
+
+.app-preview-chart {
+  display: flex;
+  align-items: end;
+  gap: 0.45rem;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  border-radius: 8px;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text-primary) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text-primary) 5%, transparent) 1px, transparent 1px);
+  background-size: 38px 38px;
+}
+
+.app-preview-chart i {
+  flex: 1;
+  min-width: 12px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--text-primary), var(--brand));
+}
+
+.app-preview-side {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.app-preview-side span {
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.oneb-app-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.oneb-app-category {
+  color: var(--brand);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.oneb-app-content h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.45rem;
+}
+
+.oneb-app-content p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.oneb-app-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: auto;
+}
+
+.oneb-app-metrics small {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-radius: 5px;
+  color: var(--text-primary);
+}
+
+.oneb-app-content a {
+  color: var(--brand);
+  font-weight: 900;
+}
+
+.oneb-course-track-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.oneb-course-track {
+  display: grid;
+  grid-template-rows: 150px minmax(0, 1fr);
+  overflow: hidden;
+  padding: 0;
+}
+
+.oneb-course-track.locked {
+  opacity: 0.72;
+}
+
+.course-track-thumb {
+  display: flex;
+  align-items: end;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 70% 30%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 34%),
+    linear-gradient(135deg, color-mix(in srgb, var(--text-primary) 9%, transparent), color-mix(in srgb, var(--text-primary) 2%, transparent));
+}
+
+.course-track-thumb span,
+.course-track-top span,
+.course-track-top small {
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.course-track-body {
+  padding: 1rem;
+}
+
+.course-track-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.course-track-body h2 {
+  margin: 0.7rem 0 0.45rem;
+  color: var(--text-primary);
+}
+
+.course-track-body p {
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.course-track-body a {
+  display: inline-flex;
+  margin-top: 0.9rem;
+  color: var(--brand);
+  font-weight: 900;
+}
+
+.oneb-candle-scene::after {
+  content: '';
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 8%;
+  height: 180px;
+  background:
+    linear-gradient(135deg, transparent 40%, color-mix(in srgb, var(--text-primary) 8%, transparent)),
+    radial-gradient(ellipse, color-mix(in srgb, var(--bg-0) 10%, transparent), var(--bg-0) 68%);
+  transform: perspective(500px) rotateX(58deg);
+}
+
+.oneb-candle {
+  position: relative;
+  z-index: 1;
+  width: clamp(42px, 5vw, 78px);
+  margin-bottom: calc(var(--i) * 22px);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 38%, transparent);
+  background: linear-gradient(100deg, var(--surface), var(--text-primary) 42%, var(--text-tertiary) 58%, var(--surface));
+  box-shadow: 0 0 30px color-mix(in srgb, var(--brand) 32%, transparent), inset 0 0 18px color-mix(in srgb, var(--text-primary) 20%, transparent);
+}
+
+.oneb-candle i {
+  position: absolute;
+  left: 50%;
+  top: -58px;
+  bottom: -58px;
+  width: 4px;
+  background: linear-gradient(180deg, transparent, var(--text-primary) 22%, var(--text-primary) 78%, transparent);
+  transform: translateX(-50%);
+}
+
+.oneb-results {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.oneb-results,
+.oneb-final-cta {
+  border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--surface) 96%, transparent), color-mix(in srgb, var(--bg-0) 94%, transparent));
+  box-shadow: 0 18px 60px color-mix(in srgb, var(--bg-0) 28%, transparent);
+}
+
+.oneb-strategy-card h3 {
+  margin: 0 0 0.45rem;
+  color: var(--text-primary);
+}
+
+.oneb-strategy-card span,
+.oneb-strategy-card footer small {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.oneb-results {
+  padding: 1.6rem;
+  border-radius: 10px;
+}
+
+.oneb-results article {
+  text-align: center;
+}
+
+.oneb-results strong {
+  display: block;
+  color: var(--brand);
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
+}
+
+.oneb-results span {
+  color: var(--text-secondary);
+}
+
+.oneb-section-heading {
+  margin-bottom: 1.8rem;
+}
+
+.oneb-section-heading.split,
+.oneb-final-cta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.oneb-section-heading h2,
+.oneb-page h1,
+.oneb-community-section h1,
+.oneb-about-hero h1 {
+  max-width: 760px;
+  font-size: clamp(2.2rem, 4vw, 4rem);
+  line-height: 1.08;
+}
+
+.oneb-strategy-grid,
+.oneb-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.oneb-strategy-card,
+.oneb-progress-card,
+.oneb-pricing-grid article,
+.oneb-community-phone,
+.oneb-trader-visual,
+.oneb-value-list article {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  border-radius: 10px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--bg-0) 94%, transparent));
+}
+
+.oneb-strategy-card {
+  min-height: 210px;
+  padding: 1.15rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.oneb-strategy-card:hover {
+  border-color: color-mix(in srgb, var(--brand) 50%, transparent);
+}
+
+.oneb-strategy-card > p {
+  margin: 0 0 0.7rem;
+  color: var(--brand);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.oneb-strategy-card footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.4rem;
+}
+
+.oneb-strategy-card footer button {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--brand) 50%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--text-primary);
+}
+
+.oneb-card-chart {
+  position: absolute;
+  inset: 0 0 auto auto;
+  display: flex;
+  align-items: end;
+  gap: 0.45rem;
+  width: 46%;
+  height: 100%;
+  padding: 1rem;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.oneb-card-chart span {
+  width: 14%;
+  background: var(--text-secondary);
+}
+
+.oneb-card-chart span:nth-child(1) {
+  height: 38%;
+}
+
+.oneb-card-chart span:nth-child(2) {
+  height: 62%;
+}
+
+.oneb-card-chart span:nth-child(3) {
+  height: 44%;
+}
+
+.oneb-card-chart span:nth-child(4) {
+  height: 76%;
+}
+
+.oneb-card-chart span:nth-child(5) {
+  height: 55%;
+}
+
+.oneb-card-chart.chart-1 span {
+  background: var(--brand);
+}
+
+.oneb-card-chart.chart-2 span {
+  background: var(--positive);
+}
+
+.oneb-community-section,
+.oneb-about-hero,
+.oneb-page-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  gap: 2rem;
+  align-items: center;
+}
+
+.oneb-community-stats {
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+
+.oneb-community-stats strong {
+  color: var(--brand);
+  font-size: 1.4rem;
+}
+
+.oneb-community-stats span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.oneb-community-phone {
+  max-width: 380px;
+  min-height: 520px;
+  padding: 1rem;
+  justify-self: center;
+}
+
+.oneb-community-phone header,
+.oneb-post,
+.oneb-progress-card,
+.oneb-final-cta,
+.oneb-pricing-grid article,
+.oneb-value-list article {
+  padding: 1rem;
+}
+
+.oneb-community-phone header {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-primary);
+}
+
+.oneb-post {
+  margin-top: 0.8rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.oneb-post b {
+  color: var(--brand);
+}
+
+.oneb-post p {
+  margin: 0.3rem 0 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.oneb-mini-chart,
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  margin-top: 1rem;
+  min-height: 120px;
+  align-items: end;
+}
+
+.oneb-mini-chart span,
+.monitor-grid span::after {
+  display: block;
+  height: 60%;
+  background: linear-gradient(180deg, var(--brand), var(--positive));
+}
+
+.oneb-mini-chart span:nth-child(2) {
+  height: 86%;
+}
+
+.oneb-mini-chart span:nth-child(3) {
+  height: 52%;
+}
+
+.oneb-mini-chart span:nth-child(4) {
+  height: 94%;
+}
+
+.oneb-mini-chart span:nth-child(5) {
+  height: 72%;
+}
+
+.oneb-final-cta {
+  align-items: center;
+  padding: 1.8rem;
+  border-radius: 10px;
+}
+
+.oneb-page {
+  padding-top: 3rem;
+}
+
+.oneb-progress-card {
+  padding: 1.4rem;
+}
+
+.oneb-progress-card strong {
+  display: block;
+  margin: 0.5rem 0;
+  color: var(--text-primary);
+  font-size: 3rem;
+}
+
+.oneb-progress-card a {
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.oneb-progress-card.circular {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.oneb-circle {
+  display: grid;
+  place-items: center;
+  width: 98px;
+  height: 98px;
+  border-radius: 999px;
+  background: conic-gradient(var(--brand) 65%, color-mix(in srgb, var(--text-primary) 10%, transparent) 0);
+  color: var(--text-primary);
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.oneb-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.oneb-filters button,
+.oneb-toggle span {
+  min-height: 34px;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.oneb-filters button.active,
+.oneb-toggle span:last-child {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: var(--text-primary);
+}
+
+.oneb-section-heading.compact {
+  text-align: center;
+}
+
+.oneb-section-heading.compact h1,
+.oneb-section-heading.compact p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.oneb-toggle {
+  display: inline-flex;
+  gap: 0.3rem;
+  margin-top: 1rem;
+  padding: 0.25rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.oneb-pricing-grid article {
+  min-height: 460px;
+}
+
+.oneb-plan-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.45rem 1.2rem;
+  border-radius: 0 0 6px 6px;
+  background: var(--brand);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.oneb-pricing-grid h2 {
+  margin-top: 1.2rem;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.oneb-pricing-grid article > strong {
+  display: block;
+  margin: 1rem 0;
+  color: var(--text-primary);
+  font-size: 2.5rem;
+}
+
+.oneb-pricing-grid small {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.oneb-pricing-grid ul {
+  display: grid;
+  gap: 0.65rem;
+  min-height: 160px;
+  padding: 0;
+  margin: 1rem 0;
+  color: var(--text-primary);
+  list-style: none;
+}
+
+.oneb-pricing-grid .oneb-primary,
+.oneb-pricing-grid .oneb-secondary {
+  width: 100%;
+}
+
+.oneb-trust-row {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  margin-top: 2rem;
+  color: var(--text-primary);
+}
+
+.oneb-trader-visual {
+  min-height: 560px;
+  padding: 1.2rem;
+  background:
+    radial-gradient(circle at 50% 75%, color-mix(in srgb, var(--text-primary) 13%, transparent), transparent 25%),
+    linear-gradient(135deg, var(--bg-0), var(--surface));
+}
+
+.monitor-grid {
+  grid-template-columns: repeat(2, 1fr);
+  min-height: 260px;
+}
+
+.monitor-grid span {
+  border: 1px solid color-mix(in srgb, var(--text-primary) 11%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--text-primary) 8%, transparent), color-mix(in srgb, var(--text-primary) 2%, transparent));
+  padding: 0.8rem;
+}
+
+.monitor-grid span::after {
+  content: '';
+  height: 80px;
+}
+
+.oneb-trader-visual strong {
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  color: color-mix(in srgb, var(--text-primary) 70%, transparent);
+  font-size: 3rem;
+}
+
+.oneb-value-list {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.oneb-value-list article {
+  display: flex;
+  gap: 1rem;
+}
+
+.oneb-value-list h2 {
+  margin: 0 0 0.2rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.oneb-footer {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.4fr) minmax(160px, 0.5fr) minmax(160px, 0.5fr);
+  gap: 2rem;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 2.5rem clamp(1rem, 4vw, 4rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  color: var(--text-secondary);
+}
+
+.oneb-footer a,
+.oneb-footer strong {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: var(--text-primary);
+}
+
+.oneb-risk {
+  grid-column: 1 / -1;
+  max-width: 920px;
+  font-size: 0.82rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .oneb-reveal,
+  .oneb-strategy-card,
+  .oneb-results article {
+    animation: onebFadeUp 0.7s ease both;
+  }
+}
+
+@media (max-width: 1024px) {
+  .oneb-header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .oneb-menu-btn {
+    display: block;
+  }
+
+  .oneb-header nav,
+  .oneb-header-actions {
+    display: none;
+  }
+
+  .oneb-header nav.open {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--bg-0) 96%, transparent);
+  }
+
+  .oneb-header nav.open + .oneb-header-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    padding: 0 0.75rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    background: color-mix(in srgb, var(--bg-0) 96%, transparent);
+  }
+
+  .oneb-header nav.open a {
+    padding: 0.75rem 0.85rem;
+    border-radius: 7px;
+    background: transparent;
+  }
+
+  .oneb-header nav.open a.active {
+    color: var(--brand);
+    background: color-mix(in srgb, var(--brand) 9%, transparent);
+  }
+
+  .oneb-header nav.open a::after,
+  .oneb-header nav.open a.active::after,
+  .oneb-header nav.open a:hover::after {
+    display: none;
+  }
+
+  .oneb-header nav.open + .oneb-header-actions .oneb-login {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .oneb-hero,
+  .oneb-community-section,
+  .oneb-about-hero,
+  .oneb-page-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .oneb-candle-scene {
+    min-height: 460px;
+  }
+
+  .oneb-results,
+  .oneb-strategy-grid,
+  .oneb-pricing-grid,
+  .oneb-course-track-grid,
+  .oneb-app-grid,
+  .oneb-app-grid.compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .oneb-app-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .oneb-section {
+    padding: 2.5rem 1rem;
+  }
+
+  .oneb-hero {
+    min-height: auto;
+  }
+
+  .oneb-hero h1,
+  .oneb-page h1,
+  .oneb-section-heading h2,
+  .oneb-community-section h1,
+  .oneb-about-hero h1 {
+    font-size: 2.45rem;
+  }
+
+  .oneb-hero-actions,
+  .oneb-section-heading.split,
+  .oneb-final-cta,
+  .oneb-trust-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .oneb-primary,
+  .oneb-secondary {
+    width: 100%;
+  }
+
+  .oneb-candle-scene {
+    min-height: 340px;
+    gap: 0.65rem;
+  }
+
+  .oneb-candle {
+    width: 34px;
+  }
+
+  .oneb-results,
+  .oneb-strategy-grid,
+  .oneb-pricing-grid,
+  .oneb-course-track-grid,
+  .oneb-app-grid,
+  .oneb-app-grid.compact,
+  .oneb-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .oneb-app-card {
+    min-height: auto;
+  }
+
+  .app-preview-body {
+    height: 190px;
+  }
+
+  .oneb-progress-card.circular {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.oneb-site {
+  background:
+    radial-gradient(circle at 78% -12%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 34rem),
+    linear-gradient(180deg, var(--bg-0) 0%, var(--bg-0) 58%, var(--bg-0) 100%);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ecosystem-card-pro,
+.product-preview-grid article {
+  border-color: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border-radius: 8px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bg-0) 92%, transparent), color-mix(in srgb, var(--bg-0) 96%, transparent));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 4%, transparent), 0 20px 70px color-mix(in srgb, var(--bg-0) 38%, transparent);
+}
+
+.oneb-eyebrow {
+  color: var(--brand);
+  letter-spacing: 0.08em;
+}
+
+.oneb-primary {
+  border-color: var(--brand);
+  background: linear-gradient(180deg, var(--brand), var(--brand));
+  color: var(--text-primary);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.oneb-secondary {
+  border-color: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  color: var(--text-primary);
+}
+
+.oneb-hero-redesign {
+  min-height: min(780px, calc(100vh - 70px));
+  grid-template-columns: minmax(0, 0.88fr) minmax(460px, 1.12fr);
+  align-items: center;
+  padding-top: clamp(4rem, 7vw, 6rem);
+}
+
+.oneb-hero-redesign h1 {
+  max-width: 720px;
+  font-size: clamp(3rem, 6vw, 6.6rem);
+  line-height: 0.98;
+}
+
+.oneb-terminal-visual {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: radial-gradient(circle at 62% 18%, color-mix(in srgb, var(--brand) 20%, transparent), transparent 18rem), linear-gradient(180deg, var(--bg-0), var(--bg-0) 72%);
+  box-shadow: 0 38px 90px color-mix(in srgb, var(--bg-0) 48%, transparent);
+}
+
+.oneb-terminal-visual::after {
+  content: '';
+  position: absolute;
+  inset: auto 3% 7% 3%;
+  height: 160px;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--text-primary) 12%, transparent), transparent 66%);
+  transform: perspective(600px) rotateX(58deg);
+}
+
+.terminal-glass-window {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-0) 78%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 24px 70px color-mix(in srgb, var(--bg-0) 45%, transparent);
+}
+
+.terminal-window-main {
+  left: 8%;
+  right: 9%;
+  top: 12%;
+  padding: 1rem;
+  transform: perspective(900px) rotateY(-7deg) rotateX(3deg);
+}
+
+.terminal-window-side {
+  right: 8%;
+  bottom: 18%;
+  width: 220px;
+  padding: 1rem;
+}
+
+.terminal-glass-window header,
+.terminal-glass-window footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.terminal-candle-board {
+  display: flex;
+  align-items: end;
+  gap: 0.65rem;
+  height: 260px;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border-radius: 8px;
+  background-image: linear-gradient(color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.terminal-candle-board i {
+  flex: 1;
+  position: relative;
+  max-width: 34px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--surface), var(--text-primary) 46%, var(--surface) 58%, var(--bg-0));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.terminal-candle-board i::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  bottom: -26px;
+  width: 2px;
+  background: color-mix(in srgb, var(--text-primary) 72%, transparent);
+  transform: translateX(-50%);
+}
+
+.metal-candles {
+  position: absolute;
+  left: 10%;
+  bottom: 8%;
+  z-index: 3;
+  display: flex;
+  align-items: end;
+  gap: 1.2rem;
+}
+
+.metal-candles span {
+  position: relative;
+  width: 48px;
+  height: calc(112px + var(--i) * 28px);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 36%, transparent);
+  background: linear-gradient(100deg, var(--surface), var(--text-primary) 43%, var(--text-tertiary) 58%, var(--bg-0));
+  box-shadow: 0 0 26px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.metal-candles span i {
+  position: absolute;
+  left: 50%;
+  top: -44px;
+  bottom: -44px;
+  width: 3px;
+  background: linear-gradient(180deg, transparent, var(--text-primary) 20%, var(--text-primary) 80%, transparent);
+  transform: translateX(-50%);
+}
+
+.ecosystem-grid-pro,
+.product-preview-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.ecosystem-grid-pro {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ecosystem-card-pro {
+  display: flex;
+  flex-direction: column;
+  min-height: 390px;
+  padding: 1.4rem;
+}
+
+.ecosystem-card-pro h3,
+.product-preview-grid h3 {
+  color: var(--text-primary);
+}
+
+.ecosystem-card-pro h3 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.ecosystem-card-pro ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  margin: 2rem 0;
+  list-style: none;
+}
+
+.ecosystem-card-pro li {
+  padding: 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border-radius: 7px;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+.ecosystem-card-pro a {
+  margin-top: auto;
+}
+
+.product-preview-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.product-preview-grid article {
+  min-height: 230px;
+  padding: 1.2rem;
+}
+
+.product-preview-grid span {
+  color: var(--brand);
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.product-preview-grid p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+@media (max-width: 1100px) {
+  .oneb-hero-redesign {
+    grid-template-columns: 1fr;
+  }
+
+  .product-preview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .oneb-terminal-visual {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 760px) {
+  .ecosystem-grid-pro,
+  .ecosystem-card-pro ul,
+  .product-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oneb-hero-redesign h1 {
+    font-size: 3rem;
+  }
+
+  .oneb-terminal-visual {
+    min-height: 430px;
+  }
+
+  .metal-candles {
+    gap: 0.7rem;
+  }
+
+  .metal-candles span {
+    width: 34px;
+  }
+}
+
+@keyframes onebFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+/* Atualização das páginas públicas (jornada, trilhas, princípios e cards). */
+.terminal-window-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.terminal-window-side > span {
+  color: var(--brand);
+  font-size: .66rem;
+  font-weight: var(--fw-semibold);
+  letter-spacing: .1em;
+}
+
+.terminal-window-side > strong {
+  color: var(--text-primary);
+  font-size: 1.05rem;
+}
+
+.terminal-window-side > small {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+
+
+/* Public experience refresh: clearer navigation and an honest product story. */
+.oneb-header {
+  width: 100%;
+  max-width: none;
+  padding-inline: max(clamp(1rem, 4vw, 4rem), calc((100vw - 1440px) / 2 + 3rem));
+}
+
+.oneb-header nav {
+  gap: clamp(1.2rem, 2.2vw, 2.25rem);
+}
+
+.oneb-header nav a {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+}
+
+.oneb-header nav a.active,
+.oneb-header nav a:hover {
+  color: var(--text-primary);
+}
+
+.oneb-journey-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.oneb-journey-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 90% 5%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 11rem),
+    linear-gradient(150deg, var(--surface), var(--bg-0));
+  box-shadow: none;
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.oneb-journey-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--brand) 34%, transparent);
+}
+
+.oneb-journey-top,
+.oneb-journey-footer,
+.oneb-app-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.oneb-journey-top {
+  margin-bottom: 4rem;
+  color: var(--brand);
+}
+
+.oneb-journey-top span,
+.oneb-app-card-top b {
+  color: var(--text-tertiary);
+  font: 700 0.75rem/1 'IBM Plex Mono', monospace;
+  letter-spacing: .12em;
+}
+
+.oneb-journey-card .oneb-eyebrow {
+  margin-bottom: .55rem;
+  font-size: .68rem;
+}
+
+.oneb-journey-card h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  line-height: 1;
+}
+
+.oneb-journey-card > p:not(.oneb-eyebrow) {
+  margin: .9rem 0 2rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.oneb-journey-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.oneb-journey-footer small {
+  color: var(--text-secondary);
+  font-weight: var(--fw-semibold);
+}
+
+.oneb-journey-footer a,
+.oneb-strategy-card footer a {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, transparent);
+  border-radius: 999px;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+}
+
+.oneb-journey-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 1rem;
+  padding: 1.3rem 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text-primary) 2.5%, transparent);
+}
+
+.oneb-journey-summary span {
+  display: block;
+  margin-bottom: .25rem;
+  color: var(--brand);
+  font-size: .68rem;
+  font-weight: var(--fw-semibold);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.oneb-journey-summary strong {
+  color: var(--text-primary);
+  font-size: 1.15rem;
+}
+
+.oneb-journey-summary p {
+  margin: .25rem 0 0;
+  color: var(--text-secondary);
+}
+
+.final-cta-redesign {
+  align-items: center;
+  max-width: min(1192px, calc(100% - 2rem));
+  margin: clamp(2rem, 5vw, 5rem) auto;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 85% 30%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 18rem),
+    linear-gradient(135deg, var(--surface), var(--bg-0));
+}
+
+.final-cta-redesign > div:first-child {
+  min-width: 0;
+}
+
+.final-cta-redesign .oneb-eyebrow {
+  margin-bottom: .6rem;
+}
+
+.final-cta-redesign h2 {
+  max-width: 720px;
+  font-size: clamp(2rem, 4vw, 3.7rem);
+  line-height: 1.05;
+}
+
+.oneb-final-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: .7rem;
+}
+
+.oneb-learning-method,
+.oneb-principles-card {
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 85% 5%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 10rem),
+    linear-gradient(145deg, var(--surface), var(--bg-0));
+  box-shadow: none;
+}
+
+.oneb-learning-method > div {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: 1rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
+  color: var(--brand);
+}
+
+.oneb-learning-method span,
+.oneb-learning-method small {
+  display: block;
+}
+
+.oneb-learning-method b {
+  color: var(--text-primary);
+}
+
+.oneb-learning-method small {
+  margin-top: .2rem;
+  color: var(--text-secondary);
+}
+
+.oneb-curriculum-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+  align-items: end;
+  gap: 2rem;
+  margin: clamp(4rem, 8vw, 7rem) 0 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+}
+
+.oneb-curriculum-intro h2 {
+  margin: 0;
+  max-width: 720px;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 3.8vw, 3.6rem);
+  line-height: 1.08;
+}
+
+.oneb-curriculum-intro > p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.oneb-learning-page .oneb-filters {
+  margin-bottom: 1.5rem;
+}
+
+.oneb-course-track-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.oneb-course-track {
+  grid-template-columns: 150px minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  min-height: 250px;
+  border-radius: 12px;
+}
+
+.course-track-thumb {
+  position: relative;
+  align-items: flex-start;
+  background:
+    linear-gradient(color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px),
+    radial-gradient(circle at 70% 25%, color-mix(in srgb, var(--brand) 27%, transparent), transparent 55%),
+    var(--bg-1);
+  background-size: 32px 32px, 32px 32px, auto, auto;
+}
+
+.course-track-thumb::after {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1.2rem;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand), transparent);
+  box-shadow: none;
+}
+
+.course-track-body {
+  display: flex;
+  flex-direction: column;
+  padding: 1.35rem;
+}
+
+.course-track-body a {
+  align-items: center;
+  gap: .4rem;
+  margin-top: auto;
+}
+
+.oneb-empty-filter {
+  color: var(--text-secondary);
+}
+
+.oneb-principles-card > div {
+  display: flex;
+  gap: .65rem;
+  align-items: center;
+  padding: .75rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
+  color: var(--text-primary);
+}
+
+.oneb-principles-card svg {
+  color: var(--positive);
+}
+
+.oneb-principles-card small {
+  display: block;
+  margin-top: 1rem;
+  color: var(--text-tertiary);
+}
+
+.oneb-app-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.oneb-app-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+  padding: 1.4rem;
+  overflow: hidden;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 90% 5%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 12rem),
+    linear-gradient(150deg, var(--surface), var(--bg-0));
+}
+
+.oneb-app-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 4rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 25%, transparent);
+  border-radius: 14px;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 9%, transparent);
+}
+
+.oneb-app-content {
+  flex: 1;
+  padding: 0;
+}
+
+.oneb-app-card-top b {
+  color: var(--text-tertiary);
+}
+
+.oneb-app-content h3 {
+  font-size: 1.75rem;
+}
+
+.oneb-app-content a {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.oneb-strategy-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.oneb-strategy-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+  padding: 1.5rem;
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 95% 0, color-mix(in srgb, var(--brand) 10%, transparent), transparent 12rem),
+    linear-gradient(145deg, var(--surface), var(--bg-0));
+}
+
+.oneb-strategy-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.oneb-strategy-card-top p {
+  margin: 0;
+  color: var(--brand);
+  font-size: .7rem;
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+}
+
+.oneb-strategy-card-top span {
+  color: var(--text-tertiary);
+  font: 700 .72rem/1 'IBM Plex Mono', monospace;
+}
+
+.oneb-strategy-card h3 {
+  max-width: 420px;
+  font-size: 1.75rem;
+}
+
+.oneb-strategy-description {
+  max-width: 520px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.oneb-strategy-card footer {
+  margin-top: auto;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
+}
+
+.oneb-strategy-card footer a {
+  margin-left: auto;
+}
+
+@media (max-width: 980px) {
+  .oneb-journey-grid,
+  .oneb-app-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oneb-journey-card,
+  .oneb-app-card {
+    min-height: 300px;
+  }
+
+  .oneb-journey-top,
+  .oneb-app-icon {
+    margin-bottom: 2.5rem;
+  }
+
+  .oneb-course-track-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .oneb-header {
+    padding-inline: 1rem;
+  }
+
+  .oneb-journey-summary,
+  .final-cta-redesign,
+  .oneb-final-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .oneb-curriculum-intro {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .oneb-course-track {
+    grid-template-columns: 1fr;
+    grid-template-rows: 110px minmax(0, 1fr);
+  }
+
+  .oneb-strategy-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dashboard polish: executive hierarchy, connection state and responsive metrics. */
+
+/* Ajustes pós-migração: navegação em linha, botão primário legível nos dois temas e brilho contido. */
+.oneb-header nav {
+  display: flex;
+  align-items: center;
+}
+
+.oneb-primary,
+a.oneb-primary {
+  border-color: var(--brand-strong);
+  background: var(--brand-strong);
+  color: var(--text-on-brand);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--brand) 16%, transparent);
+}
+
+.oneb-primary:hover {
+  background: var(--brand-hover);
+  text-decoration: none;
+}
+
+.oneb-secondary:hover,
+.oneb-login:hover {
+  text-decoration: none;
+}
+
+ol.oneb-course-track-grid {
+  margin: var(--sp-8) 0 0;
+  padding: 0;
+  list-style: none;
+}

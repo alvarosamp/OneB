@@ -17,10 +17,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from app.technical_edge import FEATURE_DIRECTIONS, feature_frame
 from app.market_data import service as market_data_service
+from app.technical_edge import FEATURE_DIRECTIONS, feature_frame
 from scripts.compare_recommendations import DEFAULT_SYMBOLS
-
 
 HOLD_DAYS = 5
 TOP_QUANTILE = 0.20
