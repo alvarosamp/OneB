@@ -77,10 +77,14 @@ jobs:
     runs-on: ubuntu-latest
     env:
       POSTGRES_PASSWORD: ci-compose-validation-only
+      DOMAIN: ci.example.invalid
+      APP_ENV_FILE: .env.production.example
     steps:
       - uses: actions/checkout@v4
       - name: valida o Compose de producao
         run: docker compose -f docker-compose.prod.yml config --quiet
+      - name: valida o proxy HTTPS
+        run: docker run --rm -e DOMAIN=ci.example.invalid -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile
       - name: constroi a imagem do backend
         run: docker build -t oneb-backend:ci .
       - name: constroi a imagem do frontend

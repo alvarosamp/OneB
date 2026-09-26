@@ -92,32 +92,34 @@ O ambiente de produÃ§Ã£o publica somente o Nginx. Ele serve o SPA e encaminh
 FastAPI pela rede interna. PostgreSQL, API, worker e simulador nÃ£o expÃµem portas ao host.
 
 ```bash
-cp .env.production.example .env
-# edite .env e substitua todos os valores CHANGE_ME
-docker compose -f docker-compose.prod.yml config --quiet
-docker compose -f docker-compose.prod.yml up -d --build
-docker compose -f docker-compose.prod.yml ps
+cp .env.production.example .env.production
+# edite .env.production, ajuste DOMAIN/FRONTEND_ORIGIN e substitua todos os CHANGE_ME
+docker compose --env-file .env.production -f docker-compose.prod.yml config --quiet
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.production -f docker-compose.prod.yml ps
 ```
 
-No Windows PowerShell, use `Copy-Item .env.production.example .env` no primeiro comando.
-A aplicaÃ§Ã£o fica em `http://localhost` (ou na porta definida por `APP_PORT`). Os dados do
-PostgreSQL ficam no volume `pgdata`; modelos, caches e estado do simulador ficam em `appdata`.
+No Windows PowerShell, use `Copy-Item .env.production.example .env.production` no primeiro comando.
+Na VPS, o Caddy publica as portas 80/443, obtÃ©m e renova o certificado TLS automaticamente e
+encaminha o trÃ¡fego para o frontend. O registro A do `DOMAIN` precisa apontar para a VPS antes
+do primeiro boot. Os dados do PostgreSQL ficam no volume `pgdata`; modelos, caches e estado do
+simulador ficam em `appdata`.
 
 Para acompanhar o primeiro deploy:
 
 ```bash
-docker compose -f docker-compose.prod.yml logs -f migrate api frontend
+docker compose --env-file .env.production -f docker-compose.prod.yml logs -f migrate api frontend caddy
 ```
 
 O serviÃ§o `migrate` aplica o Alembic e precisa terminar com cÃ³digo 0 antes dos demais processos.
 O `worker` Ã© o Ãºnico processo que roda automaÃ§Ãµes; nÃ£o o escale, pois isso duplicaria alertas,
-coletas e mensagens. Em um servidor pÃºblico, termine HTTPS num load balancer ou reverse proxy e
-configure `FRONTEND_ORIGIN=https://seu-dominio.com`; o cookie de refresh Ã© `Secure` em produÃ§Ã£o.
+coletas e mensagens. Libere TCP 80/443 e UDP 443 no firewall da VPS. Configure `DOMAIN` sem
+protocolo e `FRONTEND_ORIGIN` com `https://`; o cookie de refresh Ã© `Secure` em produÃ§Ã£o.
 
 Backup bÃ¡sico do banco:
 
 ```bash
-docker compose -f docker-compose.prod.yml exec -T db \
+docker compose --env-file .env.production -f docker-compose.prod.yml exec -T db \
   pg_dump -U oneb -d oneb -Fc > oneb.dump
 ```
 
