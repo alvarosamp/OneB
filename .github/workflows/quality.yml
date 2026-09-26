@@ -25,7 +25,7 @@ jobs:
       ENVIRONMENT: development
       SECRET_KEY: ci-secret-key-not-used-in-production-0123456789abcdef
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
@@ -53,7 +53,7 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           # Vite atual exige Node 20.19+ ou 22.12+.
@@ -80,7 +80,7 @@ jobs:
       DOMAIN: ci.example.invalid
       APP_ENV_FILE: .env.production.example
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: valida o Compose de producao
         run: docker compose -f docker-compose.prod.yml config --quiet
       - name: valida o proxy HTTPS
@@ -100,7 +100,7 @@ jobs:
       RUN_EMBEDDED_SCHEDULER: "false"
       VITE_API_URL: http://localhost:8000
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
