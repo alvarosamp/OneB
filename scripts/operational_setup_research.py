@@ -41,8 +41,8 @@ from scripts.nasdaq_gold_feature_research import (  # noqa: E402
     TARGETS,
     ResearchConfig,
     _bh_adjust,
-    buy_and_hold_metrics,
     build_dataset,
+    buy_and_hold_metrics,
     load_market_data,
     temporal_split,
 )

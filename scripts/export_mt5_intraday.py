@@ -15,7 +15,6 @@ from pathlib import Path
 import MetaTrader5 as mt5
 import pandas as pd
 
-
 TIMEFRAMES = {"M1": mt5.TIMEFRAME_M1, "M5": mt5.TIMEFRAME_M5}
 DISCOVERY_TERMS = ("XAU", "GOLD", "NAS", "USTEC", "US100", "NQ", "GC")
 

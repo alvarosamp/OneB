@@ -55,10 +55,10 @@ rolling, com aviso explícito.
 
 from __future__ import annotations
 
-import warnings
 import dataclasses
+import warnings
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Callable, Iterable, Sequence
 
 import numpy as np
 import pandas as pd
@@ -68,8 +68,12 @@ try:
     from sklearn.feature_selection import mutual_info_classif, mutual_info_regression
     from sklearn.inspection import permutation_importance
     from sklearn.metrics import (
-        roc_auc_score, precision_score, recall_score, balanced_accuracy_score,
-        matthews_corrcoef, brier_score_loss,
+        balanced_accuracy_score,
+        brier_score_loss,
+        matthews_corrcoef,
+        precision_score,
+        recall_score,
+        roc_auc_score,
     )
     _SKLEARN_OK = True
 except ImportError:  # pragma: no cover

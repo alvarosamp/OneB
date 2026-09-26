@@ -6,10 +6,8 @@ import json
 from pathlib import Path
 
 import pandas as pd
-
 from intraday_setup_research import load_intraday_csv, resample_bars
 from vendor_strategy_backtest import COSTS, features, grids, metrics, simulate
-
 
 PRESCRIBED = {
     "gold_fakeout": 10,
@@ -27,7 +25,8 @@ def main() -> None:
     ap.add_argument("--xau-m5", type=Path, required=True)
     ap.add_argument("--selected", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
-    args = ap.parse_args(); args.output.mkdir(parents=True, exist_ok=True)
+    args = ap.parse_args()
+    args.output.mkdir(parents=True, exist_ok=True)
     selected_rows = json.loads(args.selected.read_text(encoding="utf-8"))
     selected = {row["family"]: row["parameters"] for row in selected_rows}
     # Gap Drive did not complete in v1; use a declared, frozen OHLC baseline.
@@ -42,11 +41,16 @@ def main() -> None:
         native = 1 if symbol == "NQ" else 5
         for minutes in periods:
             bars = base[symbol] if minutes == native else resample_bars(base[symbol], minutes)
-            f = features(bars); dates = sorted(pd.unique(f.date)); holdout = set(dates[int(.8 * len(dates)):])
+            f = features(bars)
+            dates = sorted(pd.unique(f.date))
+            holdout = set(dates[int(.8 * len(dates)):])
             for family, (required_symbol, fn) in functions.items():
                 portable = family in {"13x", "100_pips", "duck"}
-                if required_symbol != symbol and not portable: continue
-                p = selected[family]; signal = fn(f, p); result = metrics(simulate(f, signal, COSTS[symbol], p, holdout))
+                if required_symbol != symbol and not portable:
+                    continue
+                p = selected[family]
+                signal = fn(f, p)
+                result = metrics(simulate(f, signal, COSTS[symbol], p, holdout))
                 rows.append({"family": family, "symbol": symbol, "timeframe_minutes": minutes,
                              "prescribed_timeframe": PRESCRIBED[family], "is_prescribed": PRESCRIBED[family] in (None, minutes),
                              **result})
@@ -57,4 +61,5 @@ def main() -> None:
     print(table.to_string(index=False))
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()

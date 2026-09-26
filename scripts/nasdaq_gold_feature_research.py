@@ -19,10 +19,10 @@ import importlib.metadata
 import json
 import math
 import sys
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import pandas as pd

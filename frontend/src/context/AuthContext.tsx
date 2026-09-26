@@ -13,7 +13,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   cadastro: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -22,11 +22,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    // Aguarda o servidor remover o cookie httpOnly antes de desmontar a área autenticada.
+    // logoutRequest trata falhas de rede e sempre limpa o access token local.
+    await logoutRequest();
     setUser(null);
-    // O refresh token é httpOnly — só o servidor consegue revogá-lo. O estado local já
-    // foi limpo acima, então a UI reage na hora mesmo que a chamada falhe.
-    void logoutRequest();
   }, []);
 
   useEffect(() => {

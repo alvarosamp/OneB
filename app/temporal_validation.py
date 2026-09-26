@@ -27,8 +27,8 @@ em dias corridos: 5 dias corridos podem ser 3 pregoes.
 
 from __future__ import annotations
 
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
-from typing import Iterator, Sequence
 
 import numpy as np
 import pandas as pd
@@ -376,7 +376,7 @@ def assert_no_label_leakage(
         bounds[name] = (int(positions.min()), int(positions.max()))
 
     violations = []
-    for left, right in zip(present, present[1:]):
+    for left, right in zip(present, present[1:], strict=False):
         gap_bars = bounds[right][0] - bounds[left][1] - 1
         if gap_bars < required:
             violations.append(

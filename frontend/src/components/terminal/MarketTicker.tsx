@@ -94,7 +94,7 @@ export function MarketTicker() {
 
   if (macro.status === 'loading' && fx.status === 'loading') {
     return (
-      <div className={styles.ticker} aria-busy="true" aria-label="Carregando cotações">
+      <section className={styles.ticker} aria-busy="true" aria-label="Carregando cotações">
         {TICKER.map((t) => (
           <div key={t.id} className={styles.item}>
             <span className={styles.skeleton}>
@@ -104,7 +104,7 @@ export function MarketTicker() {
             </span>
           </div>
         ))}
-      </div>
+      </section>
     );
   }
 

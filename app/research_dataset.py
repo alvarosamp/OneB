@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import math
 import os
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -10,8 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from app import indicators
-from app import research_provenance
+from app import indicators, research_provenance
 from app.market_data import service as market_data_service
 from app.temporal_validation import purged_three_way_split
 

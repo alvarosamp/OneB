@@ -162,7 +162,7 @@ def test_correlated_symbols_reduce_effective_sample():
     shared = np.random.default_rng(1).normal(0, 1, len(dates))
     rows = []
     for symbol in ["A", "B", "C", "D"]:
-        for date, value in zip(dates, shared):
+        for date, value in zip(dates, shared, strict=True):
             rows.append({"symbol": symbol, "date": date, "fwd_return_5d": value})
     identical = pd.DataFrame(rows)
 

@@ -142,8 +142,8 @@ describe('AuthContext', () => {
       await result.current.login('pai', 'senha12345');
     });
 
-    act(() => {
-      result.current.logout();
+    await act(async () => {
+      await result.current.logout();
     });
 
     expect(result.current.user).toBeNull();

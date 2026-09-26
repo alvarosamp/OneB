@@ -3,7 +3,13 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from scripts.nasdaq_gold_feature_research import ResearchConfig, _base_features, _context_features, build_dataset, temporal_split
+from scripts.nasdaq_gold_feature_research import (
+    ResearchConfig,
+    _base_features,
+    _context_features,
+    build_dataset,
+    temporal_split,
+)
 
 
 def _history(rows: int = 1400) -> pd.DataFrame:

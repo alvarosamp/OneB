@@ -66,8 +66,8 @@ export function Topbar({ onOpenMenu, status }: { onOpenMenu: () => void; status?
     }
   }
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     navigate('/login');
   }
 

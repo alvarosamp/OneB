@@ -113,11 +113,11 @@ def newey_west_t(values: np.ndarray, lag: int) -> float:
     mean = x.mean()
     err = x - mean
     variance = (err @ err) / n
-    for l in range(1, max(1, lag) + 1):
-        if l >= n:
+    for lag_index in range(1, max(1, lag) + 1):
+        if lag_index >= n:
             break
-        weight = 1.0 - l / (lag + 1)
-        variance += 2.0 * weight * (err[l:] @ err[:-l]) / n
+        weight = 1.0 - lag_index / (lag + 1)
+        variance += 2.0 * weight * (err[lag_index:] @ err[:-lag_index]) / n
     se = np.sqrt(max(variance, 1e-18) / n)
     return float(mean / se)
 

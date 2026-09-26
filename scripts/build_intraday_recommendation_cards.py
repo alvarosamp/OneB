@@ -13,7 +13,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 DEFAULT_BROKER = Path(r"D:\OneB\market-data\mt5\HonorPro\synced-2026-09-25")
 DEFAULT_RESEARCH = Path("output/vendor_indicator_research/prescribed_timeframes_v1/results.json")
 

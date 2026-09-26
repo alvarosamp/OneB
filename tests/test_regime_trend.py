@@ -10,8 +10,8 @@ from app import regime_engine
 from app.regime_engine import (
     LocalRegime,
     _period_change,
-    macro_correlation_window,
     macro_correlation_analysis,
+    macro_correlation_window,
     macro_lead_lag_candidates,
     macro_relationship_dynamics,
     trend_analysis,

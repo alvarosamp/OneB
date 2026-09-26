@@ -9,15 +9,14 @@ import argparse
 import hashlib
 import json
 import math
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import pandas as pd
-from scipy import stats
-
 from intraday_setup_research import _adx, _true_range, load_intraday_csv, resample_bars
+from scipy import stats
 
 NY = "America/New_York"
 
@@ -148,12 +147,17 @@ def simulate(f: pd.DataFrame, signal: pd.Series, cost: CostSpec, p: dict, allowe
         stop, target = entry - side * risk, entry + side * reward
         exit_pos, exit_price, reason = entry_pos, entry, "time"
         for j in range(entry_pos, min(len(f), entry_pos + max_bars)):
-            if dates[j] != dates[i]: break
+            if dates[j] != dates[i]:
+                break
             exit_pos, exit_price = j, float(f.close.iloc[j])
             stop_hit = f.low.iloc[j] <= stop if side == 1 else f.high.iloc[j] >= stop
             target_hit = f.high.iloc[j] >= target if side == 1 else f.low.iloc[j] <= target
-            if stop_hit: exit_price, reason = stop, "stop"; break
-            if target_hit: exit_price, reason = target, "target"; break
+            if stop_hit:
+                exit_price, reason = stop, "stop"
+                break
+            if target_hit:
+                exit_price, reason = target, "target"
+                break
         pnl = side * (exit_price - entry) * cost.point_value - cost.round_trip_cost
         out.append({"decision_time": f.index[i].isoformat(), "date": str(dates[i]), "side": side, "entry": entry,
                     "exit": exit_price, "reason": reason, "net_pnl": pnl, "net_r": pnl / (risk * cost.point_value)})
@@ -162,9 +166,14 @@ def simulate(f: pd.DataFrame, signal: pd.Series, cost: CostSpec, p: dict, allowe
 
 
 def metrics(trades: list[dict]) -> dict:
-    if not trades: return {"trades": 0, "net_pnl": 0.0, "expectancy": None, "profit_factor": None, "win_rate": None, "sharpe": None, "max_drawdown": 0.0, "p_value": None}
-    d = pd.DataFrame(trades); pnl = d.net_pnl; daily = d.groupby("date").net_pnl.sum(); equity = daily.cumsum()
-    losses = -pnl[pnl < 0].sum(); sd = daily.std(ddof=1)
+    if not trades:
+        return {"trades": 0, "net_pnl": 0.0, "expectancy": None, "profit_factor": None, "win_rate": None, "sharpe": None, "max_drawdown": 0.0, "p_value": None}
+    d = pd.DataFrame(trades)
+    pnl = d.net_pnl
+    daily = d.groupby("date").net_pnl.sum()
+    equity = daily.cumsum()
+    losses = -pnl[pnl < 0].sum()
+    sd = daily.std(ddof=1)
     test = stats.ttest_1samp(pnl, 0, alternative="greater") if len(pnl) > 2 and pnl.std(ddof=1) > 0 else None
     return {"trades": len(d), "net_pnl": round(pnl.sum(), 2), "expectancy": round(pnl.mean(), 3),
             "profit_factor": round(pnl[pnl > 0].sum() / losses, 3) if losses else None,
@@ -192,13 +201,20 @@ def grids() -> dict[str, tuple[str, Callable, list[dict]]]:
 
 
 def bh(values: pd.Series) -> pd.Series:
-    out = pd.Series(np.nan, index=values.index); valid = values.dropna().sort_values()
-    if len(valid): out.loc[valid.index] = (valid * len(valid) / np.arange(1, len(valid) + 1)).iloc[::-1].cummin().iloc[::-1].clip(upper=1)
+    out = pd.Series(np.nan, index=values.index)
+    valid = values.dropna().sort_values()
+    if len(valid):
+        out.loc[valid.index] = (valid * len(valid) / np.arange(1, len(valid) + 1)).iloc[::-1].cummin().iloc[::-1].clip(upper=1)
     return out
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(); ap.add_argument("--nq", type=Path, required=True); ap.add_argument("--xau", type=Path, required=True); ap.add_argument("--output", type=Path, required=True); ap.add_argument("--family", action="append", default=[]); args = ap.parse_args()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--nq", type=Path, required=True)
+    ap.add_argument("--xau", type=Path, required=True)
+    ap.add_argument("--output", type=Path, required=True)
+    ap.add_argument("--family", action="append", default=[])
+    args = ap.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     raw = {"NQ": load_intraday_csv(args.nq, "UTC"), "XAUUSD": load_intraday_csv(args.xau, "UTC")}
     data = {"NQ": features(raw["NQ"]), "XAUUSD": features(raw["XAUUSD"])}
@@ -207,7 +223,9 @@ def main() -> None:
         if args.family and family not in args.family:
             continue
         print(f"START {family}: {len(candidates)} candidates", flush=True)
-        f = data[symbol]; dates = sorted(pd.unique(f.date)); cut1, cut2 = int(.6 * len(dates)), int(.8 * len(dates))
+        f = data[symbol]
+        dates = sorted(pd.unique(f.date))
+        cut1, cut2 = int(.6 * len(dates)), int(.8 * len(dates))
         train, validate, holdout = set(dates[:cut1]), set(dates[cut1:cut2]), set(dates[cut2:])
         scored = []
         signal_cache = {}
@@ -215,19 +233,25 @@ def main() -> None:
             signal_key = json.dumps({k: v for k, v in p.items() if k not in {"stop_atr", "reward_r", "hold_minutes", "fixed_stop", "fixed_target"}}, sort_keys=True)
             if signal_key not in signal_cache:
                 signal_cache[signal_key] = fn(f, p)
-            sig = signal_cache[signal_key]; mt = metrics(simulate(f, sig, COSTS[symbol], p, train)); mv = metrics(simulate(f, sig, COSTS[symbol], p, validate))
+            sig = signal_cache[signal_key]
+            mt = metrics(simulate(f, sig, COSTS[symbol], p, train))
+            mv = metrics(simulate(f, sig, COSTS[symbol], p, validate))
             stable = int((mt["expectancy"] or -1e99) > 0) + int((mv["expectancy"] or -1e99) > 0)
             scored.append((stable, mv["expectancy"] or -1e99, mt["expectancy"] or -1e99, p, sig, mt, mv))
         best = max(scored, key=lambda x: (x[0], x[1], x[2]))
-        _, _, _, p, sig, mt, mv = best; trades = simulate(f, sig, COSTS[symbol], p, holdout); mh = metrics(trades)
+        _, _, _, p, sig, mt, mv = best
+        trades = simulate(f, sig, COSTS[symbol], p, holdout)
+        mh = metrics(trades)
         row = {"family": family, "symbol": symbol, "parameters": p, "development": mt, "validation": mv, "holdout": mh,
                "candidates_tested": len(candidates), "holdout_start": str(dates[cut2]), "holdout_end": str(dates[-1])}
         all_rows.append(row)
-        for t in trades: holdout_trades.append({"family": family, **t})
+        for trade in trades:
+            holdout_trades.append({"family": family, **trade})
         (args.output / "partial_results.json").write_text(json.dumps(all_rows, ensure_ascii=False, indent=2), encoding="utf-8")
         pd.DataFrame(holdout_trades).to_csv(args.output / "partial_holdout_trades.csv", index=False)
         print(f"DONE {family}: holdout={mh}", flush=True)
-    pvals = pd.Series([r["holdout"]["p_value"] for r in all_rows]); qvals = bh(pvals)
+    pvals = pd.Series([row["holdout"]["p_value"] for row in all_rows])
+    qvals = bh(pvals)
     for i, row in enumerate(all_rows):
         row["holdout"]["bh_q_value"] = None if pd.isna(qvals.iloc[i]) else float(qvals.iloc[i])
         h = row["holdout"]
@@ -241,4 +265,5 @@ def main() -> None:
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()

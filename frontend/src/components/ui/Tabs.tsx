@@ -55,8 +55,8 @@ export function Tabs<V extends string>({ items, value, onChange, label, variant 
             }}
             type="button"
             role="tab"
-            id={`${base}-tab-${item.value}`}
-            aria-controls={`${base}-panel-${item.value}`}
+            id={idBase ? `${base}-tab-${item.value}` : undefined}
+            aria-controls={idBase ? `${base}-panel-${item.value}` : undefined}
             aria-selected={selected}
             tabIndex={selected ? 0 : -1}
             className={segmented ? styles.segment : styles.tab}

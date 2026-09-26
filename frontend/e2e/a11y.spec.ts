@@ -11,17 +11,23 @@ async function violacoesSerias(page: import('@playwright/test').Page) {
   return violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
 }
 
+function resumirViolacoes(violations: Awaited<ReturnType<typeof violacoesSerias>>) {
+  return violations.flatMap((violation) =>
+    violation.nodes.map((node) => `${violation.id}: ${violation.help} — ${node.target.join(' ')}`),
+  );
+}
+
 test('a tela de login não tem violações sérias de acessibilidade', async ({ page }) => {
   await page.goto('/login');
   const serias = await violacoesSerias(page);
-  expect(serias.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  expect(resumirViolacoes(serias)).toEqual([]);
 });
 
 test('o início não tem violações sérias de acessibilidade', async ({ page }) => {
   await cadastrar(page, uniqueUser('a11y'));
   await esperarLogado(page);
   const serias = await violacoesSerias(page);
-  expect(serias.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  expect(resumirViolacoes(serias)).toEqual([]);
 });
 
 test('dá para logar só com o teclado', async ({ page }) => {

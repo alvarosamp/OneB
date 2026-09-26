@@ -6,7 +6,6 @@ from pathlib import Path
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
-
 VIDEOS = {
     "gold_fakeout": "JypPCU-lFv0",
     "13x": "ynUHlFKvfvM",

@@ -10,10 +10,10 @@ decisions (tracked as a follow-up, not solved here).
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date, datetime, time, timedelta, timezone
 import json
 import math
+from dataclasses import dataclass
+from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -607,7 +607,7 @@ def news_market_relationships(
     for snapshot in ordered:
         if ((snapshot.payload or {}).get("news_context") or {}).get("article_count"):
             news_days += 1
-    for previous, current in zip(ordered, ordered[1:]):
+    for previous, current in zip(ordered, ordered[1:], strict=False):
         if (date.fromisoformat(current.snapshot_date) - date.fromisoformat(previous.snapshot_date)).days > 4:
             continue
         news = (previous.payload or {}).get("news_context") or {}
