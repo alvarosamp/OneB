@@ -95,3 +95,26 @@
 .block {
   width: 100%;
 }
+
+/* Tela de toque: alvo de pelo menos ~36-44 px (dedo, não cursor). */
+@media (pointer: coarse) {
+  .button {
+    height: 40px;
+  }
+
+  .sm {
+    height: 36px;
+  }
+
+  .lg {
+    height: 44px;
+  }
+
+  .iconOnly {
+    width: 40px;
+  }
+
+  .sm.iconOnly {
+    width: 36px;
+  }
+}

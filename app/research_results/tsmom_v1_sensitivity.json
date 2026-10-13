@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-10-10T10:54:56.952651+00:00",
+  "test": "tsmom_v1_sensitivity",
+  "spec_sha256": "a0b4101948c3412453cd413ae1a01df8cd2a91a9b1cade4f69710bc4405096c4",
+  "status": "DESCRIPTIVE_ONLY: não substitui o resultado primário pré-registrado",
+  "substitutes": {
+    "ausidxaud": "^AXJO",
+    "hkgidxhkd": "^HSI",
+    "eusidxeur": "^STOXX50E",
+    "brentcmdusd": "BZ=F",
+    "gascmdusd": "NG=F",
+    "coppercmdusd": "HG=F"
+  },
+  "assumed_relative_spread": {
+    "equity_index": 0.00022698352649871351,
+    "commodity": 0.0007069298697438924
+  },
+  "primary_for_reference": {
+    "combined": {
+      "months": 164,
+      "mean_monthly": -0.00083,
+      "ci95": [
+        -0.00229,
+        0.00061
+      ],
+      "sharpe_annual": -0.28,
+      "annual_return": -0.0106,
+      "max_drawdown": -0.2246
+    },
+    "verdict": {
+      "status": "NOT_SIGNIFICANT",
+      "reason": "IC 95% contém zero: sem evidência de tendência após custos."
+    }
+  },
+  "plus_3_indices": {
+    "universe": [
+      "audusd",
+      "ausidxaud",
+      "deuidxeur",
+      "eurusd",
+      "eusidxeur",
+      "fraidxeur",
+      "gbpusd",
+      "gbridxgbp",
+      "hkgidxhkd",
+      "jpnidxjpy",
+      "lightcmdusd",
+      "nzdusd",
+      "usa30idxusd",
+      "usa500idxusd",
+      "usatechidxusd",
+      "usdcad",
+      "usdchf",
+      "usdjpy",
+      "xagusd",
+      "xauusd"
+    ],
+    "combined": {
+      "months": 164,
+      "mean_monthly": -0.00097,
+      "ci95": [
+        -0.0023,
+        0.00036
+      ],
+      "sharpe_annual": -0.338,
+      "annual_return": -0.0121,
+      "max_drawdown": -0.2203
+    },
+    "recent_window": {
+      "months": 44,
+      "mean_monthly": -0.00019,
+      "ci95": [
+        -0.00273,
+        0.00247
+      ],
+      "sharpe_annual": -0.074,
+      "annual_return": -0.0027,
+      "max_drawdown": -0.0449
+    },
+    "long_only": {
+      "months": 164,
+      "mean_monthly": 0.00109,
+      "ci95": [
+        -0.00097,
+        0.00305
+      ],
+      "sharpe_annual": 0.268,
+      "annual_return": 0.0119,
+      "max_drawdown": -0.152
+    },
+    "beyond_long_only": {
+      "alpha_monthly": -0.00093,
+      "beta": -0.032,
+      "alpha_ci95": [
+        -0.00231,
+        0.0003
+      ],
+      "correlation": -0.045
+    },
+    "by_class": {
+      "equity_index": {
+        "months": 164,
+        "mean_monthly": -0.0008,
+        "ci95": [
+          -0.00269,
+          0.00111
+        ],
+        "sharpe_annual": -0.211,
+        "annual_return": -0.0106,
+        "max_drawdown": -0.2359
+      },
+      "commodity": {
+        "months": 164,
+        "mean_monthly": 0.00144,
+        "ci95": [
+          -0.00135,
+          0.00457
+        ],
+        "sharpe_annual": 0.312,
+        "annual_return": 0.0159,
+        "max_drawdown": -0.1363
+      },
+      "fx": {
+        "months": 164,
+        "mean_monthly": -0.00222,
+        "ci95": [
+          -0.00356,
+          -0.00071
+        ],
+        "sharpe_annual": -0.569,
+        "annual_return": -0.0274,
+        "max_drawdown": -0.3561
+      }
+    },
+    "by_instrument": {
+      "ausidxaud": -0.00292,
+      "hkgidxhkd": 0.00025,
+      "eusidxeur": -0.00233
+    },
+    "verdict": {
+      "status": "NOT_SIGNIFICANT",
+      "reason": "IC 95% contém zero: sem evidência de tendência após custos."
+    }
+  },
+  "plus_all_6": {
+    "universe": [
+      "audusd",
+      "ausidxaud",
+      "brentcmdusd",
+      "coppercmdusd",
+      "deuidxeur",
+      "eurusd",
+      "eusidxeur",
+      "fraidxeur",
+      "gascmdusd",
+      "gbpusd",
+      "gbridxgbp",
+      "hkgidxhkd",
+      "jpnidxjpy",
+      "lightcmdusd",
+      "nzdusd",
+      "usa30idxusd",
+      "usa500idxusd",
+      "usatechidxusd",
+      "usdcad",
+      "usdchf",
+      "usdjpy",
+      "xagusd",
+      "xauusd"
+    ],
+    "combined": {
+      "months": 164,
+      "mean_monthly": -0.00069,
+      "ci95": [
+        -0.00191,
+        0.0005
+      ],
+      "sharpe_annual": -0.252,
+      "annual_return": -0.0088,
+      "max_drawdown": -0.1805
+    },
+    "recent_window": {
+      "months": 44,
+      "mean_monthly": -0.00034,
+      "ci95": [
+        -0.00254,
+        0.00202
+      ],
+      "sharpe_annual": -0.155,
+      "annual_return": -0.0044,
+      "max_drawdown": -0.0427
+    },
+    "long_only": {
+      "months": 164,
+      "mean_monthly": 0.00106,
+      "ci95": [
+        -0.00105,
+        0.00309
+      ],
+      "sharpe_annual": 0.271,
+      "annual_return": 0.0117,
+      "max_drawdown": -0.1526
+    },
+    "beyond_long_only": {
+      "alpha_monthly": -0.00059,
+      "beta": -0.091,
+      "alpha_ci95": [
+        -0.00193,
+        0.00061
+      ],
+      "correlation": -0.131
+    },
+    "by_class": {
+      "equity_index": {
+        "months": 164,
+        "mean_monthly": -0.0008,
+        "ci95": [
+          -0.00269,
+          0.00111
+        ],
+        "sharpe_annual": -0.211,
+        "annual_return": -0.0106,
+        "max_drawdown": -0.2359
+      },
+      "commodity": {
+        "months": 164,
+        "mean_monthly": 0.00128,
+        "ci95": [
+          -0.00045,
+          0.00308
+        ],
+        "sharpe_annual": 0.344,
+        "annual_return": 0.0145,
+        "max_drawdown": -0.0907
+      },
+      "fx": {
+        "months": 164,
+        "mean_monthly": -0.00222,
+        "ci95": [
+          -0.00356,
+          -0.00071
+        ],
+        "sharpe_annual": -0.569,
+        "annual_return": -0.0274,
+        "max_drawdown": -0.3561
+      }
+    },
+    "by_instrument": {
+      "ausidxaud": -0.00292,
+      "hkgidxhkd": 0.00025,
+      "eusidxeur": -0.00233,
+      "brentcmdusd": 0.00248,
+      "gascmdusd": 2e-05,
+      "coppercmdusd": 0.00087
+    },
+    "verdict": {
+      "status": "NOT_SIGNIFICANT",
+      "reason": "IC 95% contém zero: sem evidência de tendência após custos."
+    }
+  },
+  "caveats": "- Índices (^AXJO, ^HSI, ^STOXX50E) são o índice à vista, como os CFDs: sem problema de rolagem.\n- Brent, gás e cobre (BZ=F, NG=F, HG=F) são futuros contínuos SEM ajuste de rolagem: o salto\n  na troca de contrato entra como retorno falso. Por isso há duas variantes (+3 índices; +6).\n- Sem bid/ask no Yahoo: o spread é a mediana relativa da mesma classe nos CFDs da Dukascopy."
+}

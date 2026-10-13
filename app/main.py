@@ -11,6 +11,7 @@ from app.config import settings
 from app.db import SessionLocal, init_db
 from app.routers import (
     api,
+    asset_brief,
     assistant,
     auth,
     copilot,
@@ -20,6 +21,7 @@ from app.routers import (
     lms,
     morning_report,
     operations,
+    opportunities,
     positions,
     profile,
     regime,
@@ -27,6 +29,7 @@ from app.routers import (
     saas,
     share,
     technical,
+    trend,
     watchlist,
 )
 from app.scheduler import build_scheduler
@@ -99,6 +102,7 @@ app.include_router(positions.router)
 app.include_router(assistant.router)
 app.include_router(copilot.router)
 app.include_router(decision_desk.router)
+app.include_router(opportunities.router)
 app.include_router(profile.router)
 app.include_router(regime.router)
 app.include_router(reports.router)
@@ -106,6 +110,8 @@ app.include_router(morning_report.router)
 app.include_router(api.router)
 app.include_router(lms.router)
 app.include_router(lives.router)
+app.include_router(trend.router)
+app.include_router(asset_brief.router)
 
 
 @app.get("/health")

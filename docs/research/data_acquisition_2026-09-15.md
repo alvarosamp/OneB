@@ -45,6 +45,28 @@ testes. Portanto, nenhum sinal foi promovido para paper trading.
 
 ## Retomada em 2026-09-25
 
+### Consolidação e interface em 2026-09-26
+
+- QQQ parcial: 313.660 barras M5, 1.308 sessões; 3.399 duplicatas e 724
+  registros OHLC inválidos removidos. Último bloco completo termina antes de
+  2025-04-01. Arquivo em `D:\OneB\market-data\research-ready\intermarket-v2\partial`.
+- Dukascopy: 89 blocos bid; coleta interrompida por HTTP 429. Ask e consolidação
+  final indisponíveis. Tiingo também retornou HTTP 429; preservar cache.
+- MT5 sincronizado: 32.834 barras XAUUSD.s (145 sessões) e 2.510 US100.s
+  (11 sessões). Esses CFDs não substituem futuros NQ/GC individuais.
+- Auditoria ao vivo em 2026-09-25 encontrou tick do broker +180 minutos
+  em relação ao UTC do computador. Não aplicar deslocamento fixo retrospectivo
+  sem verificar horário de verão e histórico do servidor.
+- Cartões na Mesa IA e endpoint `/api/technical/intraday-cards` apresentam
+  evidência e bloqueios. Preço é ocultado quando o horário não foi verificado;
+  entradas, stops, alvos e probabilidades permanecem vazios. Snapshot vencido
+  sempre retorna NO_TRADE. Não existe sinal aprovado para paper trading.
+- Reprodução London Box: holdout 158 trades, PF 1,107, q=0,705.
+  Gap Drive proxy: 331 trades, PF 0,748, q=0,982. Resultados não constituem
+  validação dos binários proprietários originais nem vantagem robusta.
+
+Os números abaixo registram inspeções anteriores, não o estado final atual.
+
 - A unidade `D:\` foi reconectada. A coleta Dukascopy tinha parado no bid
   de abril de 2025 e foi retomada pelos blocos já salvos. Na última inspeção
   havia 78 blocos bid de 14 dias; o ask e o arquivo consolidado ainda não

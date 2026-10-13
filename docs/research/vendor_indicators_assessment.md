@@ -2,6 +2,12 @@
 
 ## Escopo e limitações
 
+Atualização: a inspeção direta de 2026-09-26 está em
+`vendor_original_parameters_2026-09-26.md`. O original 100 Pips 3.00 declara
+EMA5/EMA10 + RSI(10) HL/2 e H1 recomendado. A hipótese RSI14 abaixo pertence
+à reprodução anterior, não ao original. 13X/100 Pips não expõem inputs e
+DuckV4 expõe somente tema visual. Não apresentar as réplicas como equivalentes.
+
 Os sete pacotes entregues contêm somente binários MetaTrader 5 `.ex5`. Não há
 fontes `.mq5`, documentação de parâmetros ou PDFs nos ZIPs. Portanto, a fórmula
 exata, o uso de barra ainda aberta e eventual repaint não podem ser certificados

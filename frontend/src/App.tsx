@@ -35,11 +35,16 @@ const Watchlist = lazyPage(() => import('./pages/Watchlist'), 'Watchlist');
 const Alertas = lazyPage(() => import('./pages/Alertas'), 'Alertas');
 const Carteira = lazyPage(() => import('./pages/Carteira'), 'Carteira');
 const Assistente = lazyPage(() => import('./pages/Assistente'), 'Assistente');
+const IntradayResearch = lazy(async () => {
+  const { MesaIA } = await import('./pages/MesaIA');
+  return { default: () => <MesaIA intradayOnly /> };
+});
 const AtivoDetalhe = lazyPage(() => import('./pages/AtivoDetalhe'), 'AtivoDetalhe');
 const AcademiaHome = lazyPage(() => import('./pages/academia/AcademiaHome'), 'AcademiaHome');
 const Trilha = lazyPage(() => import('./pages/academia/Trilha'), 'Trilha');
 const Aula = lazyPage(() => import('./pages/academia/Aula'), 'Aula');
 const Lives = lazyPage(() => import('./pages/academia/Lives'), 'Lives');
+const Laboratorio = lazyPage(() => import('./pages/academia/Laboratorio'), 'Laboratorio');
 const Configuracoes = lazyPage(() => import('./pages/Configuracoes'), 'Configuracoes');
 const Ajuda = lazyPage(() => import('./pages/Ajuda'), 'Ajuda');
 
@@ -99,10 +104,12 @@ function AppRoutes() {
           <Route path="/alertas" element={<Alertas />} />
           <Route path="/carteira" element={<Carteira />} />
           <Route path="/assistente" element={<Assistente />} />
+          <Route path="/pesquisa-intraday" element={<IntradayResearch />} />
           <Route path="/ativo/:symbol" element={<AtivoDetalhe />} />
           <Route path="/academia" element={<AcademiaHome />} />
           <Route path="/academia/trilhas/:slug" element={<Trilha />} />
           <Route path="/academia/lives" element={<Lives />} />
+          <Route path="/academia/laboratorio" element={<Laboratorio />} />
           <Route path="/aulas/:slug" element={<Aula />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/ajuda" element={<Ajuda />} />

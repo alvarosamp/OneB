@@ -1,0 +1,5 @@
+Family=3
+BufferCount=4
+ClosedBarLookback=12
+MaxObjects=1000
+RunLabel=pilot27matrix_100pips_M15

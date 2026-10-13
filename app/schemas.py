@@ -380,6 +380,7 @@ class DecisionDeskRecommendationOut(BaseModel):
     quality_gate: dict | None = None
     prediction: dict | None = None
     risk: dict | None = None
+    reliability: dict | None = None
     decision_card: dict | None = None
 
 
@@ -427,10 +428,22 @@ class ReliabilityTrendPointOut(BaseModel):
     ends_at: datetime
 
 
+class ReliabilityGradeOutcomeOut(BaseModel):
+    grade: str
+    samples: int
+    actual_win_rate_pct: float
+    ci_low_pct: float
+    ci_high_pct: float
+
+
 class ReliabilityScoreboardOut(BaseModel):
     total_samples: int
     overall_win_rate_pct: float
+    overall_ci_low_pct: float | None = None
+    overall_ci_high_pct: float | None = None
+    confidence_brier_score: float | None = None
     calibration: list[ReliabilityCalibrationBucketOut]
+    by_reliability_grade: list[ReliabilityGradeOutcomeOut] = []
     trend: list[ReliabilityTrendPointOut]
 
 
@@ -576,6 +589,8 @@ class LessonOut(BaseModel):
     checklist: list[str] = Field(default_factory=list)
     exercise: str = ""
     required: bool = True
+    # Texto da aula (markdown simples: parágrafos, "## " subtítulos e "- " listas).
+    body: str = ""
 
 
 class ModuleOut(BaseModel):
@@ -631,10 +646,37 @@ class CertificateStatusOut(BaseModel):
     next_requirement: str
 
 
+class LastLessonOut(BaseModel):
+    course_slug: str
+    lesson_id: int
+    lesson_title: str
+    visited_at: datetime
+
+
 class LearningStateOut(BaseModel):
     courses: list[CourseSummaryOut]
     recommendation: LearningRecommendationOut | None = None
     certificate: CertificateStatusOut
+    last_lesson: LastLessonOut | None = None
+
+
+class LessonStateOut(BaseModel):
+    lesson_id: int
+    note: str = ""
+    exercise_passed: bool = False
+    visited_at: datetime | None = None
+
+
+class LessonNoteIn(BaseModel):
+    note: str = Field(default="", max_length=20_000)
+
+
+class QuizAnswerIn(BaseModel):
+    choice: int = Field(ge=0, le=20)
+
+
+class OpenExerciseIn(BaseModel):
+    answer: str = Field(default="", max_length=20_000)
 
 
 class LiveSessionOut(BaseModel):

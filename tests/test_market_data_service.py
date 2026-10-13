@@ -217,3 +217,44 @@ def test_tiingo_primary_is_skipped_for_yahoo_native_futures_symbol():
     assert primary.calls == 0
     assert fallback.calls == 1
     assert bars.attrs["provider"] == "fake"
+
+
+def test_stale_disk_cache_is_refetched_and_fresh_cache_is_reused(tmp_path):
+    import json
+
+    provider = FakeProvider()
+    service = MarketDataService(provider=provider, data_root=tmp_path)
+    service.fallback_provider = provider  # sem rede no teste
+    service.get_bars("NQ=F", period="6mo", interval="1d")
+    service.get_bars("NQ=F", period="6mo", interval="1d")
+    assert provider.calls == 1  # cache recente: não busca de novo
+    meta = next(tmp_path.rglob("*.meta.json"))
+    data = json.loads(meta.read_text(encoding="utf-8"))
+    data["fetched_at"] = "2026-08-13T21:14:23+00:00"  # o caso real: diário congelado desde agosto
+    meta.write_text(json.dumps(data), encoding="utf-8")
+    service.get_bars("NQ=F", period="6mo", interval="1d")
+    assert provider.calls == 2
+
+
+def test_stale_cache_is_returned_marked_when_provider_fails(tmp_path):
+    import json
+
+    good = FakeProvider()
+    first = MarketDataService(provider=good, data_root=tmp_path)
+    first.fallback_provider = good
+    first.get_bars("NQ=F", period="6mo", interval="1d")
+    meta = next(tmp_path.rglob("*.meta.json"))
+    data = json.loads(meta.read_text(encoding="utf-8"))
+    data["fetched_at"] = "2026-08-13T21:14:23+00:00"
+    meta.write_text(json.dumps(data), encoding="utf-8")
+
+    class Down(FakeProvider):
+        def get_bars(self, *a, **k):
+            raise ConnectionError("fora do ar")
+
+    down = Down()
+    down.name = good.name
+    service = MarketDataService(provider=down, data_root=tmp_path)
+    service.fallback_provider = down
+    bars = service.get_bars("NQ=F", period="6mo", interval="1d")
+    assert len(bars) == 3 and bars.attrs.get("cache_fallback") is True

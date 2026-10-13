@@ -169,6 +169,14 @@
   align-items: start;
 }
 
+/* Linha sem coluna de data: texto à esquerda, selo à direita. */
+.pairRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  align-items: start;
+}
+
 .eventDate {
   color: var(--text-secondary);
   font-size: var(--fs-xs);

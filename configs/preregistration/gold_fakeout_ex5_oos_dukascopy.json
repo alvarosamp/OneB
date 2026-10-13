@@ -1,0 +1,43 @@
+{
+  "test": "gold_fakeout_ex5_oos_dukascopy",
+  "registered_at": "2026-10-06",
+  "registered_before_results": true,
+  "purpose": "Testar o EX5 ORIGINAL (Purchased GOLD Fakeout CRAZY v4, defaults inalterados) em 2019-2026 via símbolo personalizado com dados Dukascopy. Nenhuma ordem; Algotrading não é habilitado.",
+  "indicator": "Purchased/GOLD Fakeout CRAZY v4, inputs default",
+  "audit_expert": "Research/VendorSignalAudit.ex5, Family=GOLD_FAKEOUT, BufferCount=4, CalculateEveryTick=true",
+  "timeframe": "M10",
+  "steps": {
+    "A_tick_model": {
+      "question": "O EX5 gera os mesmos sinais no modelo '1 minuto OHLC' (Model=1) que em ticks reais (Model=4)?",
+      "data": "XAUUSD.s HonorPro, 04-08/05/2026 e 11-15/05/2026",
+      "reference": "capturas Model=4 existentes: pilot28week e pilot29verify (objetos GFC_*_e)",
+      "match": "mesmo lado, first_seen dentro de 10 min, stop e alvo dentro de US$ 0,50",
+      "pass": "recall >= 0,90 E precisão >= 0,90 sobre as entradas novas",
+      "on_failure": "PARAR: sem ticks reais históricos o EX5 não pode ser testado com confiabilidade em 2019-2026."
+    },
+    "B_custom_symbol": {
+      "question": "O EX5 no símbolo personalizado Dukascopy reproduz os sinais do EX5 na HonorPro?",
+      "custom_symbol": "XAUUSD.dk: barras M1 bid Dukascopy, especificação copiada de XAUUSD.s. O spread do tester não afeta os sinais do indicador (que lê o bid); custos são aplicados depois, em Python, sobre barras M5 com ask real.",
+      "timestamps": "Dukascopy UTC convertido para o relógio típico de servidor MT5: UTC+3 durante o horário de verão dos EUA (2º domingo de março a 1º domingo de novembro) e UTC+2 fora dele. UTC+3 foi MEDIDO na HonorPro em abr-set/2026; o inverno é premissa não verificada e fica registrado como limitação.",
+      "comparison_period": "04-08/05/2026 e 11-15/05/2026, mesmo modelo de ticks do passo A",
+      "pass": "recall >= 0,80 E precisão >= 0,80",
+      "on_failure": "Resultado de 2019-2026 só descritivo, sem veredito."
+    },
+    "C_out_of_sample": {
+      "period": {
+        "from_inclusive": "2019-03-01",
+        "to_exclusive": "2026-04-01"
+      },
+      "signals": "entradas novas GFC_*_e com stop/alvo absolutos congelados na primeira observação (mesma extração de scripts/backtest_original_gold_ticks.py)",
+      "execution": "app.execution_sim sobre barras M5 Dukascopy: entrada na abertura da barra M5 seguinte ao first_seen; compra no ask, venda no bid; stop/alvo absolutos do vendedor; saída máx. 4 h; uma posição por vez",
+      "costs": "por barra o MAIOR spread entre Dukascopy e mediana HonorPro da mesma hora; slippage 0,05/lado; comissão 0,10 ida-volta",
+      "decision_rule": ">=250 sessões, >=100 trades, IC 95% bootstrap da expectância em R > 0 e acima do p95 da entrada aleatória",
+      "recency_requirement": "expectância em abr/2025-mar/2026 > 0 e nenhum ano com IC 95% inteiramente negativo; senão DEGRADED",
+      "baseline": "entrada aleatória na mesma janela de horários dos sinais, mesmas distâncias de stop/alvo, 200 seeds"
+    }
+  },
+  "prohibit_optimization": true,
+  "scope_of_conclusion": "Diz se o indicador original tem vantagem no ouro spot com custos realistas. Não certifica execução na conta.",
+  "amended_at": "2026-10-06",
+  "amendment_note": "Emenda antes de qualquer execução do passo B/C: relógio do servidor com regra de horário de verão em vez de +3h fixo."
+}

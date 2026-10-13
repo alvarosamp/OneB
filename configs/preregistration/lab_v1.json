@@ -1,0 +1,195 @@
+{
+  "test": "lab_v1",
+  "registered_at": "2026-10-06",
+  "registered_before_results": true,
+  "purpose": "Laboratório de indicadores: famílias clássicas de regras, propostas pela IA, testadas em 5 ativos com descoberta e confirmação separadas e correção para múltiplos testes. Nenhuma ordem.",
+  "assets": {
+    "XAUUSD": {
+      "source": "Dukascopy xauusd",
+      "honorpro_spread_symbol": "XAUUSD.s"
+    },
+    "NAS100": {
+      "source": "Dukascopy usatechidxusd",
+      "honorpro_spread_symbol": "US100.s"
+    },
+    "SPX500": {
+      "source": "Dukascopy usa500idxusd",
+      "honorpro_spread_symbol": "US500.s"
+    },
+    "EURUSD": {
+      "source": "Dukascopy eurusd",
+      "honorpro_spread_symbol": null
+    },
+    "WTI": {
+      "source": "Dukascopy lightcmdusd",
+      "honorpro_spread_symbol": null
+    }
+  },
+  "data": "M5 bid OHLC + ask (spread) Dukascopy, 2019-03-01 a 2026-09-26, auditado dia a dia; timestamps UTC",
+  "split": {
+    "discovery": {
+      "from_inclusive": "2019-03-01",
+      "to_exclusive": "2023-01-01"
+    },
+    "confirmation": {
+      "from_inclusive": "2023-01-01",
+      "to_exclusive": "2026-04-01"
+    },
+    "recent_window": {
+      "from_inclusive": "2025-04-01",
+      "to_exclusive": "2026-04-01"
+    },
+    "rule": "A confirmação só é calculada para os sobreviventes da descoberta, uma única vez. Nota: o período de confirmação do XAUUSD já foi usado para testar Gold Fakeout e 13X (regras diferentes); divulgado."
+  },
+  "signal_timing": "sinal no FECHAMENTO da barra do timeframe; entrada na abertura da primeira barra M5 seguinte; compra no ask, venda no bid; uma posição por vez por candidato",
+  "families": {
+    "F1_donchian_breakout": {
+      "tf": "H1",
+      "grid": {
+        "n": [
+          20,
+          55
+        ]
+      },
+      "rule": "fecha acima da máxima das n barras anteriores = compra; abaixo da mínima = venda",
+      "exit": {
+        "stop_atr": 1.5,
+        "target_atr": 3.0,
+        "max_hold_hours": 72
+      }
+    },
+    "F2_ema_cross": {
+      "tf": "H1",
+      "grid": {
+        "fast_slow": [
+          [
+            20,
+            50
+          ],
+          [
+            50,
+            200
+          ]
+        ]
+      },
+      "rule": "cruzamento da EMA rápida sobre a lenta = compra; abaixo = venda",
+      "exit": {
+        "stop_atr": 2.0,
+        "target_atr": 4.0,
+        "max_hold_hours": 120
+      }
+    },
+    "F3_bollinger_reversion": {
+      "tf": "M15",
+      "grid": {
+        "z": [
+          2.0,
+          2.5
+        ]
+      },
+      "rule": "fecha abaixo da média(20) - z*desvio = compra; acima de média + z*desvio = venda",
+      "exit": {
+        "stop_atr": 1.5,
+        "target_atr": 1.0,
+        "max_hold_hours": 8
+      }
+    },
+    "F4_rsi2_pullback": {
+      "tf": "H1",
+      "grid": {
+        "threshold": [
+          5,
+          10
+        ]
+      },
+      "rule": "RSI(2) < limiar com fechamento acima da SMA(200) = compra; RSI(2) > 100-limiar abaixo da SMA(200) = venda",
+      "exit": {
+        "stop_atr": 2.0,
+        "target_atr": 1.0,
+        "max_hold_hours": 24
+      }
+    },
+    "F5_squeeze_breakout": {
+      "tf": "H1",
+      "grid": {
+        "width_pct": [
+          10,
+          20
+        ]
+      },
+      "rule": "largura de Bollinger(20,2) no percentil <= width_pct das 120 barras anteriores, e fechamento fora da banda = rompimento na direção",
+      "exit": {
+        "stop_atr": 1.5,
+        "target_atr": 3.0,
+        "max_hold_hours": 48
+      }
+    },
+    "F6_opening_range_breakout": {
+      "tf": "M5",
+      "grid": {
+        "range_minutes": [
+          15,
+          30
+        ]
+      },
+      "rule": "abertura de sessão (índices EUA: 09:30 Nova York; demais: 08:00 Londres, horário local com DST); faixa dos primeiros N minutos; primeiro fechamento M5 fora da faixa em até 3 h = rompimento; 1 trade por dia",
+      "exit": {
+        "stop": "lado oposto da faixa",
+        "target": "2x a altura da faixa a partir da entrada",
+        "max_hold_hours": 6
+      }
+    },
+    "F7_intraday_momentum": {
+      "tf": "M5",
+      "grid": {
+        "signal_window": [
+          "first30",
+          "open_to_1500"
+        ]
+      },
+      "rule": "sessão de Nova York: retorno (fechamento anterior às 16:00 -> 10:00, ou abertura 09:30 -> 15:00, hora de NY) define a direção; entrada às 15:00 NY; saída às 16:00 NY",
+      "exit": {
+        "stop_atr": 1.5,
+        "target_atr": 10.0,
+        "max_hold_hours": 1
+      }
+    },
+    "F8_duck_sma60": {
+      "tf": "M5 com direção de H4 e H1",
+      "grid": {
+        "target_atr": [
+          2.0,
+          4.0
+        ]
+      },
+      "rule": "Duck Duck Duck v4, sinal objetivo mínimo: último H4 E último H1 FECHADOS do mesmo lado da SMA(60) do próprio timeframe; o fechamento M5 cruza a SMA(60) do M5 na direção da tendência (cruzamento fresco). H4 em blocos UTC 00/04/08/12/16/20. A parte discricionária do vídeo não é usada.",
+      "exit": {
+        "stop_atr": 1.5,
+        "target_atr": "grid",
+        "atr": "ATR(14) do H1 (não do M5: o Duck é de tendência longa)",
+        "max_hold_hours": 48
+      },
+      "source": "docs/research/vendor_indicators_assessment.md, item 6"
+    }
+  },
+  "atr": "ATR(14) do timeframe do sinal, conhecido no fechamento da barra",
+  "candidates": "8 famílias x 2 parâmetros x 4 ativos = 64 candidatos; todos contam na correção",
+  "costs": {
+    "spread": "por barra o MAIOR entre spread Dukascopy (ask-bid na abertura) e mediana HonorPro da mesma hora UTC quando o símbolo existir",
+    "slippage_per_side": "0,25 x spread mediano Dukascopy do ativo",
+    "commission_roundtrip": "0,25 x spread mediano Dukascopy do ativo"
+  },
+  "selection": {
+    "discovery_metric": "expectância líquida em R; p-valor bootstrap unilateral (H0: média <= 0), 10.000 reamostragens",
+    "min_trades_discovery": 100,
+    "multiple_testing": "Benjamini-Hochberg sobre os 64 candidatos, q <= 0,10",
+    "survivors": "candidatos com q <= 0,10 e >= 100 trades"
+  },
+  "confirmation_pass": "IC 95% bootstrap da expectância > 0 na confirmação E expectância > 0 na janela recente",
+  "deliverable": "Sobreviventes confirmados viram indicador MQL5 (somente sinais, sem ordens) e entram no shadow; nada vai a paper sem forward.",
+  "prohibit_optimization": true,
+  "assets_excluded": {
+    "WTI": "Falha de fonte, não de resultado: o lado ask do M5 tem semanas faltando (jul-ago/2020 e outros dias), causadas pelo desafio antirrobô do jetta.dukascopy.com e, depois, pelo bloqueio do nosso IP no feed clássico (09-10/10/2026). Sem ask não há custo real."
+  },
+  "amendment_2026-10-10": "Emenda antes de qualquer cálculo do laboratório (D:/OneB/research/lab_v1 não existia): (1) WTI excluído por falha de fonte (ver assets_excluded); (2) família F8 (Duck) acrescentada, totalizando 64 candidatos; (3) XAUUSD M5 remontado a partir do M1 normalizado do mesmo download (scripts/build_m5_from_m1.py), idêntico ao M5 anterior nas 535.197 barras em comum, com 1.740 barras a mais (dias que o M5 tinha perdido por lacuna falsa)."
+}

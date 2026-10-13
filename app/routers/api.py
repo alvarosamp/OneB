@@ -4,6 +4,7 @@ import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app import calendar_risk
 from app import indicators
 from app.auth import get_current_user
 from app.db import get_db
@@ -31,6 +32,18 @@ def _json_list(series: pd.Series, decimals: int) -> list[float | None]:
     return [None if pd.isna(v) else float(v) for v in rounded]
 
 
+def price_decimals(price: float) -> int:
+    """Casas decimais para exibir um preço sem perder o movimento (índice 2, ouro 2, câmbio 5)."""
+    price = abs(price)
+    if price >= 100:
+        return 2
+    if price >= 10:
+        return 3
+    if price >= 0.5:
+        return 5
+    return 6
+
+
 @router.get("/chart/{symbol}")
 def chart_data(symbol: str, period: str = "5d", interval: str = "15m"):
     history = market_data_service.get_bars(symbol.upper(), period=period, interval=interval)
@@ -38,6 +51,8 @@ def chart_data(symbol: str, period: str = "5d", interval: str = "15m"):
         raise HTTPException(status_code=404, detail="Sem dados históricos para este símbolo")
 
     close = history["close"]
+    # Câmbio (~1,1) precisa de 5 casas; arredondar a 2 deformava as velas do EURUSD.
+    dp = price_decimals(float(close.dropna().median())) if close.notna().any() else 2
     rsi_series = indicators.rsi(close)
     macd_df = indicators.macd(close)
     ema_fast = indicators.ema(close, 9)
@@ -46,16 +61,16 @@ def chart_data(symbol: str, period: str = "5d", interval: str = "15m"):
     return {
         "symbol": symbol.upper(),
         "timestamps": [ts.isoformat() for ts in history.index],
-        "open": _json_list(history["open"], 2),
-        "high": _json_list(history["high"], 2),
-        "low": _json_list(history["low"], 2),
-        "close": _json_list(close, 2),
+        "open": _json_list(history["open"], dp),
+        "high": _json_list(history["high"], dp),
+        "low": _json_list(history["low"], dp),
+        "close": _json_list(close, dp),
         "volume": _json_list(history["volume"], 0),
         "rsi": _json_list(rsi_series, 2),
         "macd": _json_list(macd_df["macd"], 3),
         "macd_signal": _json_list(macd_df["signal"], 3),
-        "ema_fast": _json_list(ema_fast, 2),
-        "ema_slow": _json_list(ema_slow, 2),
+        "ema_fast": _json_list(ema_fast, dp),
+        "ema_slow": _json_list(ema_slow, dp),
     }
 
 
@@ -162,6 +177,7 @@ def list_economic_events(days_ahead: int = 7, limit: int = 50, db: Session = Dep
             "impact": e.impact,
             "forecast": e.forecast,
             "previous": e.previous,
+            "risk": calendar_risk.risk_for(e.event_name),
         }
         for e in events
     ]

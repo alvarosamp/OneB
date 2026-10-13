@@ -1,0 +1,33 @@
+{
+  "test": "f7_honor_v1",
+  "registered_at": "2026-10-10",
+  "registered_before_results": true,
+  "question": "O momentum intradiário (retorno 09:30->15:00 de NY define a direção da última hora) paga no Nasdaq com o custo REAL da corretora do usuário (HonorPro US100.s)?",
+  "why_this_rule": "Única regra do lab_v1 com vantagem bruta (diagnóstico sem custo da descoberta 2019-2022: +0,11R, IC +0,05 a +0,17) e com respaldo na literatura (Gao, Han, Li e Zhou, 2018, Market Intraday Momentum). Foi escolhida OLHANDO a descoberta; por isso só é avaliada no período de confirmação, que nenhum teste do lab_v1 usou. Na descoberta, com o custo Dukascopy (spread mediano 3,07 pontos), deu ~0R líquido.",
+  "rule": "Idêntica a F7_mom_open_to_1500 do lab_v1 (app/lab/families.py, f7_intraday_momentum): sinal = fechamento antes das 15:00 de NY contra o fechamento antes das 09:30 de NY; entrada às 15:00 de NY na direção; stop 1,5 x ATR(14) do M15; alvo 10 x ATR; saída por tempo após 60 minutos. Um trade por dia.",
+  "asset": "NAS100 (Dukascopy usatechidxusd M5, preços bid)",
+  "period": {
+    "from_inclusive": "2023-01-01",
+    "to_exclusive": "2026-04-01"
+  },
+  "recent_window": {
+    "from_inclusive": "2025-04-01",
+    "to_exclusive": "2026-04-01"
+  },
+  "costs_primary": {
+    "spread_points": 0.7,
+    "source": "HonorPro US100.s: mediana por hora UTC de abr-set/2026 = 0,7 em todas as horas; ao vivo em 10/10/2026 = 0,7",
+    "slippage_points_per_side": 0.5,
+    "commission": 0.0,
+    "commission_note": "Conta Standard (.s): comissão embutida no spread (não exposta pelo MT5). Divulgado."
+  },
+  "costs_stress": {
+    "spread_points": 1.4,
+    "slippage_points_per_side": 1.0,
+    "note": "custo dobrado; só descritivo"
+  },
+  "assumption": "O spread de 2026 é aplicado a 2023-2025 (não há histórico de spread HonorPro anterior). Divulgado.",
+  "pass_criteria": "IC 95% bootstrap (10.000 reamostragens, semente 7) da expectância em R > 0 no período E expectância > 0 na janela recente, com custo primário.",
+  "single_test": "Um único teste, sem grade e sem outros ativos; nenhuma correção múltipla necessária. Resultado definitivo: não será refeito com outros parâmetros.",
+  "deliverable": "Se aprovado: vira indicador somente de sinal (sem ordens) e entra em acompanhamento ao vivo (shadow) antes de qualquer uso. Se reprovado: encerrado."
+}

@@ -17,7 +17,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { lastValue, type Bar } from '../../lib/indicators';
 import { prepareChart } from '../../lib/chartData';
 import { type Timeframe } from '../../lib/timeframes';
-import { formatNumber } from '../../lib/format';
+import { formatNumber, priceDigits } from '../../lib/format';
 import type { ChartData } from '../../types';
 import styles from './ChartPanel.module.css';
 
@@ -132,6 +132,8 @@ export function ChartPanel({ data, timeframe, panels = ['volume'], levels = [], 
     const crosshair = crosshairPlugin(shared, c.cross);
     const n = bars.length;
     const fmtTick = tickFormatter(bars, timeframe);
+    const digits = priceDigits(bars[bars.length - 1]?.c);
+    const fmtPrice = (v: number | null | undefined) => formatNumber(v, digits);
     const xs = bars.map((_, i) => i);
     const line = (values: (number | null)[]) => values.map((y, i) => ({ x: xs[i], y }));
     const baseFont = { family: c.font, size: 11 };
@@ -149,7 +151,7 @@ export function ChartPanel({ data, timeframe, panels = ['volume'], levels = [], 
       position: 'right' as const,
       grid: { color: c.grid, drawTicks: false },
       border: { color: c.axis },
-      ticks: { color: c.text, font: baseFont, maxTicksLimit: 6, padding: 6, callback: (v: number | string) => formatNumber(Number(v), 2) },
+      ticks: { color: c.text, font: baseFont, maxTicksLimit: 6, padding: 6, callback: (v: number | string) => fmtPrice(Number(v)) },
       afterFit: (scale: { width: number }) => {
         scale.width = AXIS_WIDTH;
       },
@@ -236,9 +238,9 @@ export function ChartPanel({ data, timeframe, panels = ['volume'], levels = [], 
               label: (item: { dataset: { label?: string }; raw: unknown }) => {
                 const raw = item.raw as { o?: number; h?: number; l?: number; c?: number; y?: number | null };
                 if (raw.o !== undefined) {
-                  return [`Abertura ${formatNumber(raw.o)}`, `Máxima ${formatNumber(raw.h)}`, `Mínima ${formatNumber(raw.l)}`, `Fechamento ${formatNumber(raw.c)}`];
+                  return [`Abertura ${fmtPrice(raw.o)}`, `Máxima ${fmtPrice(raw.h)}`, `Mínima ${fmtPrice(raw.l)}`, `Fechamento ${fmtPrice(raw.c)}`];
                 }
-                return raw.y === null || raw.y === undefined ? '' : `${item.dataset.label} ${formatNumber(raw.y)}`;
+                return raw.y === null || raw.y === undefined ? '' : `${item.dataset.label} ${fmtPrice(raw.y)}`;
               },
             },
           },
@@ -345,22 +347,23 @@ export function ChartPanel({ data, timeframe, panels = ['volume'], levels = [], 
 
   const { bars } = prepared;
   const lastBar = bars[bars.length - 1];
+  const digits = priceDigits(lastBar?.c);
   const ariaLabel = lastBar
-    ? `Gráfico de candles${label ? ` de ${label}` : ''}, ${timeframe.label}, ${bars.length} candles. Último fechamento ${formatNumber(lastBar.c)}.`
+    ? `Gráfico de candles${label ? ` de ${label}` : ''}, ${timeframe.label}, ${bars.length} candles. Último fechamento ${formatNumber(lastBar.c, digits)}.`
     : 'Gráfico sem dados';
 
   return (
     <div className={styles.panel}>
       <div className={styles.legend} aria-hidden="true">
-        <LegendItem colorVar="--chart-ema-fast" label="EMA 20" value={lastValue(prepared.ema20)} />
+        <LegendItem colorVar="--chart-ema-fast" label="EMA 20" value={lastValue(prepared.ema20)} digits={digits} />
         {prepared.hasEma200 ? (
-          <LegendItem colorVar="--chart-ema-slow" label="EMA 200" value={lastValue(prepared.ema200)} />
+          <LegendItem colorVar="--chart-ema-slow" label="EMA 200" value={lastValue(prepared.ema200)} digits={digits} />
         ) : (
           <span className={styles.legendNote}>EMA 200 precisa de 200 candles</span>
         )}
-        {prepared.vwap && <LegendItem colorVar="--chart-vwap" label="VWAP" value={lastValue(prepared.vwap)} dashed />}
+        {prepared.vwap && <LegendItem colorVar="--chart-vwap" label="VWAP" value={lastValue(prepared.vwap)} digits={digits} dashed />}
         {levels.map((l) => (
-          <LegendItem key={l.label} colorVar={l.colorVar} label={l.label} value={l.value} dashed />
+          <LegendItem key={l.label} colorVar={l.colorVar} label={l.label} value={l.value} digits={digits} dashed />
         ))}
       </div>
       <div className={styles.price} style={{ '--chart-h': `${height}px` } as CSSProperties}>
@@ -386,12 +389,12 @@ export function ChartPanel({ data, timeframe, panels = ['volume'], levels = [], 
   );
 }
 
-function LegendItem({ colorVar, label, value, dashed }: { colorVar: string; label: string; value: number | null; dashed?: boolean }) {
+function LegendItem({ colorVar, label, value, digits, dashed }: { colorVar: string; label: string; value: number | null; digits: number; dashed?: boolean }) {
   return (
     <span className={styles.legendItem}>
       <i className={dashed ? styles.swatchDashed : styles.swatch} style={{ color: `var(${colorVar})` }} />
       {label}
-      <span className="num">{formatNumber(value)}</span>
+      <span className="num">{formatNumber(value, digits)}</span>
     </span>
   );
 }

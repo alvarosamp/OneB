@@ -10,11 +10,15 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from app.research_paths import VENDOR_RESEARCH  # noqa: E402
 
 import pandas as pd
 
 DEFAULT_BROKER = Path(r"D:\OneB\market-data\mt5\HonorPro\synced-2026-09-25")
-DEFAULT_RESEARCH = Path("output/vendor_indicator_research/prescribed_timeframes_v1/results.json")
+DEFAULT_RESEARCH = VENDOR_RESEARCH / "prescribed_timeframes_v1" / "results.json"
 
 
 def _sha256(path: Path) -> str:
@@ -57,12 +61,17 @@ def build_card(symbol: str, path: Path, research: dict, as_of: pd.Timestamp) -> 
     point = 0.1 if symbol == "US100.s" else 0.01
     spread = frame["spread"].astype(float) * point
     timestamp_ahead_minutes = max(0.0, (source_latest - as_of).total_seconds() / 60)
-    clock_ok = timestamp_ahead_minutes <= 5
+    manifest_path = path.with_suffix(".manifest.json")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
+    # A frozen file must retain the clock audit even after wall time catches up.
+    # Raw MT5 timestamps are not approved for session features until reconciled.
+    clock_verified = manifest.get("timestamp_basis") == "verified_utc"
+    clock_ok = timestamp_ahead_minutes <= 5 and clock_verified
     fresh = clock_ok and as_of - (last_time + pd.Timedelta(minutes=5)) <= pd.Timedelta(minutes=20)
     holdout = research.get("holdout", {})
     reasons = []
     if not clock_ok:
-        reasons.append(f"Timestamp MT5 {timestamp_ahead_minutes:.0f} min a frente do UTC local; fuso do servidor nao reconciliado.")
+        reasons.append(f"Fuso MT5 nao reconciliado; timestamp bruto {timestamp_ahead_minutes:.0f} min a frente do UTC local.")
     if not fresh:
         reasons.append("Cotacao intradiaria desatualizada.")
     if sessions < 250:
@@ -77,8 +86,8 @@ def build_card(symbol: str, path: Path, research: dict, as_of: pd.Timestamp) -> 
         "source": "HonorPro MT5",
         "timeframe": "M5",
         "as_of": last_time.isoformat(),
-        "market_price": round(float(latest["close"]), 2 if point == 0.01 else 1),
-        "action": "NO_TRADE" if reasons else "WATCH",
+        "market_price": round(float(latest["close"]), 2 if point == 0.01 else 1) if clock_ok else None,
+        "action": "NO_TRADE",
         "direction": None,
         "entry_price": None,
         "stop_price": None,
@@ -90,6 +99,7 @@ def build_card(symbol: str, path: Path, research: dict, as_of: pd.Timestamp) -> 
             "sessions": sessions,
             "rows": int(len(frame)),
             "fresh": bool(fresh),
+            "clock_verified": clock_verified,
             "source_latest_timestamp": source_latest.isoformat(),
             "timestamp_ahead_minutes": round(timestamp_ahead_minutes, 1),
             "median_spread_price": round(float(spread.median()), 4),

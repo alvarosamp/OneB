@@ -14,3 +14,12 @@
 **/.env
 **/__pycache__/
 **/*.pyc
+
+**/.env*
+**/*.db
+**/*.sqlite*
+**/*.pem
+**/*.key
+**/__pycache__
+**/data
+**/credentials*

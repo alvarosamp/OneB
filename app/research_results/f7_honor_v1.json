@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-10-10T11:33:44.340538+00:00",
+  "test": "f7_honor_v1",
+  "spec_sha256": "c0b00d0a19bcbbc971f307db440b4c5c8497cda81f95232dbfd132fe3a80d797",
+  "status": "FAILED",
+  "primary": {
+    "trades": 805,
+    "expectancy_r": -0.0283,
+    "ci95": [
+      -0.0855,
+      0.0281
+    ],
+    "win_rate": 0.477,
+    "p_value": 0.8413,
+    "recent_trades": 248,
+    "recent_expectancy_r": -0.1044,
+    "by_year": {
+      "2023": {
+        "trades": 248,
+        "expectancy_r": 0.0569
+      },
+      "2024": {
+        "trades": 249,
+        "expectancy_r": -0.054
+      },
+      "2025": {
+        "trades": 247,
+        "expectancy_r": -0.0801
+      },
+      "2026": {
+        "trades": 61,
+        "expectancy_r": -0.0602
+      }
+    }
+  },
+  "stress_double_cost": {
+    "trades": 805,
+    "expectancy_r": -0.0574,
+    "ci95": [
+      -0.1132,
+      -0.0025
+    ],
+    "win_rate": 0.4609,
+    "p_value": 0.9801,
+    "recent_trades": 248,
+    "recent_expectancy_r": -0.1277,
+    "by_year": {
+      "2023": {
+        "trades": 248,
+        "expectancy_r": 0.0198
+      },
+      "2024": {
+        "trades": 249,
+        "expectancy_r": -0.0829
+      },
+      "2025": {
+        "trades": 247,
+        "expectancy_r": -0.1036
+      },
+      "2026": {
+        "trades": 61,
+        "expectancy_r": -0.0806
+      }
+    }
+  },
+  "pass_criteria": "IC 95% bootstrap (10.000 reamostragens, semente 7) da expectância em R > 0 no período E expectância > 0 na janela recente, com custo primário.",
+  "assumption": "O spread de 2026 é aplicado a 2023-2025 (não há histórico de spread HonorPro anterior). Divulgado."
+}

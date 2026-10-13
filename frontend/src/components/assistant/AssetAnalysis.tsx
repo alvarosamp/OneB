@@ -164,13 +164,13 @@ function CopilotAnswer({ result, showPlan }: { result: Result; showPlan?: boolea
       details={
         <div className={styles.detailGrid}>
           <div className={styles.subsection}>
-            <h3 className={styles.hint}>Consenso dos agentes: {a.confidence}%</h3>
+            <h3 className={styles.hint}>Placar de evidências: {a.evidence_balance?.label ?? '-'} (não é probabilidade)</h3>
             {a.votes.map((v) => (
               <div key={v.name} className={styles.vote}>
                 <header>
                   <strong>{ptBR(v.name)}</strong>
                   <Badge tone={voteLabel(v.vote) === 'Construtivo' ? 'info' : voteLabel(v.vote) === 'Desfavorável' ? 'warning' : 'neutral'}>{voteLabel(v.vote)}</Badge>
-                  <span className="muted num">{v.confidence}%</span>
+                  <span className="muted num">força {v.confidence}/100</span>
                 </header>
                 <ul>
                   {v.evidence.map((e) => (

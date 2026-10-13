@@ -1,0 +1,38 @@
+{
+  "test": "x13_ex5_oos_dukascopy",
+  "registered_at": "2026-10-06",
+  "registered_before_results": true,
+  "purpose": "Testar o EX5 ORIGINAL 'Estratégia 13X - EMA13 + DMI' (inputs default) em XAUUSD 2019-2026 via símbolo personalizado Dukascopy. Nenhuma ordem.",
+  "timeframes": {"primary": "H1", "note": "H1 é o gráfico em que o trader usa o 13X; M15 fica para um registro futuro separado"},
+  "buffer_mapping": {
+    "method": "objetivo, sem olhar resultado: valores dos buffers coincidem exatamente com máxima/mínima do candle (captura Model=4 de 04-08/05/2026)",
+    "buffer_2": "seta de COMPRA (ancorada na mínima)",
+    "buffer_3": "seta de VENDA (esperada na máxima; vazia na semana de mapeamento)",
+    "buffer_4": "X ancorado na máxima",
+    "buffer_5": "X ancorado na mínima",
+    "signal_time": "a marca vale quando observada na barra fechada (shift 1), ou seja, no fechamento da barra marcada"
+  },
+  "hypotheses": {
+    "H1_primary": "X na máxima (buffer 4) encerra COMPRA; X na mínima (buffer 5) encerra VENDA (convenção: marca de venda acima do candle, de compra abaixo)",
+    "H2_secondary": "mapeamento inverso dos X (buffer 5 encerra compra, buffer 4 encerra venda)",
+    "multiple_testing": "Bonferroni para 2 hipóteses: IC de decisão a 97,5% (alpha 0,025 por hipótese)"
+  },
+  "execution": {
+    "entry": "abertura da primeira barra M5 após o fechamento da barra H1 com seta; compra no ask, venda no bid",
+    "exit": "o primeiro entre: X correspondente, seta oposta, stop de proteção, 5 dias corridos",
+    "protective_stop": "2 x ATR(14) do H1 no momento do sinal (não existe stop do vendedor; também define 1R)",
+    "position_policy": "uma posição por vez; nova seta na mesma direção com posição aberta é ignorada",
+    "max_gap_minutes_in_position": 120,
+    "gap_note": "120 min tolera a pausa diária de 60 min do ouro e censura fins de semana"
+  },
+  "costs": "por barra o MAIOR spread entre Dukascopy e mediana HonorPro da mesma hora UTC; slippage 0,05/lado; comissão 0,10 ida-volta",
+  "steps": {
+    "A_tick_model": "Model=1 vs Model=4 em XAUUSD.s 04-08/05/2026: as marcas dos buffers 2-5 (barra e buffer) devem coincidir em >= 90% (recall e precisão)",
+    "B_custom_symbol": "XAUUSD.dk vs Model=4 HonorPro na mesma semana: >= 80% (recall e precisão) das marcas",
+    "C_out_of_sample": {"from_inclusive": "2019-03-01", "to_exclusive": "2026-04-01"}
+  },
+  "decision_rule": ">=250 sessões, >=100 trades, IC 97,5% bootstrap da expectância em R > 0 e acima do p95 da entrada aleatória (mesmas horas, mesmas distâncias de stop, mesma duração média)",
+  "recency_requirement": "expectância em abr/2025-mar/2026 > 0 e nenhum ano com IC inteiramente negativo; senão DEGRADED",
+  "prohibit_optimization": true,
+  "scope_of_conclusion": "Diz se o 13X original tem vantagem no ouro spot com as hipóteses de saída registradas. Não certifica execução na conta."
+}

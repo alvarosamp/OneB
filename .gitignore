@@ -20,3 +20,6 @@ output/
 *.bundle
 *.patch
 *.ex5
+
+hostinger.env
+hostinger.test.env

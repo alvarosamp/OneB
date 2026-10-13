@@ -1,0 +1,61 @@
+{
+  "test": "gold_fakeout_open_v1_oos_dukascopy",
+  "registered_at": "2026-10-05",
+  "registered_before_download": true,
+  "purpose": "Teste fora da amostra da regra congelada gold_fakeout_open_v1 em histórico longo de outro feed confiável. Nenhuma ordem.",
+  "rule": "gold_fakeout_open_v1",
+  "rule_sha256": "1234df77cb5c2f0eeb127a0987a15205d4752cf2c75645d0d39502d0ff8d374c",
+  "rule_changes": "nenhuma; só parâmetros de adaptação ao feed listados em data_overrides",
+  "data_source": "Dukascopy (banco suíço) via dukascopy-node; XAUUSD spot, M5 bid e ask separados",
+  "data_overrides": {
+    "server_utc_offset_hours": 0,
+    "reason": "Dukascopy entrega UTC; a janela 07:00-11:00 BRT vira 10:00-14:00 UTC (Brasil sem horário de verão desde fev/2019)."
+  },
+  "bars": "OHLC do lado bid (mesma convenção das barras MT5)",
+  "test_period": {
+    "from_inclusive": "2019-03-01",
+    "to_exclusive": "2026-04-01"
+  },
+  "test_period_note": "Período nunca usado com esta regra. Começa após o fim do horário de verão brasileiro. Termina antes do período HonorPro (abr-set/2026), já examinado.",
+  "feed_validation": {
+    "period": {
+      "from_inclusive": "2026-04-10",
+      "to_exclusive": "2026-09-26"
+    },
+    "honorpro_bars": "D:/OneB/market-data/mt5/HonorPro/synced-2026-09-25/XAUUSD.s_M5_2026-04-01_2026-09-26.csv.gz",
+    "honorpro_offset_search_hours": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "criteria": {
+      "m5_return_correlation_min": 0.95,
+      "median_abs_close_diff_usd_max": 1.0,
+      "ready_signal_recall_min": 0.6,
+      "ready_signal_tolerance_minutes": 20
+    },
+    "on_failure": "Dukascopy NÃO é aceito como substituto; o resultado fora da amostra é reportado só como descritivo, sem veredito."
+  },
+  "costs": {
+    "spread": "por barra: o MAIOR entre (ask_open - bid_open) do Dukascopy e a mediana do spread HonorPro na mesma hora UTC medida no período de validação",
+    "slippage_price_per_side": 0.05,
+    "commission_roundtrip_per_unit": 0.1
+  },
+  "decision_rule": "a mesma de gold_fakeout_open_v1 (>=250 sessões, >=100 trades, IC 95% bootstrap > 0 e expectância acima do p95 da baseline aleatória)",
+  "baselines": "as mesmas de gold_fakeout_open_v1 (entrada aleatória 200 seeds; rompimento simples)",
+  "scope_of_conclusion": "Diz se a regra tem vantagem no ouro spot. Não certifica execução na conta HonorPro; isso continua com o shadow.",
+  "prohibit_optimization": true,
+  "amended_at": "2026-10-05",
+  "amendment_note": "Emenda feita ANTES de qualquer download: exigência de que o resultado valha para o mercado atual, não só na média histórica.",
+  "recency_requirement": {
+    "recent_window": {
+      "from_inclusive": "2025-04-01",
+      "to_exclusive": "2026-04-01"
+    },
+    "rule": "Para PASSED, além da regra geral: expectância da janela recente > 0 E nenhum ano-calendário com IC 95% inteiramente negativo.",
+    "report": "Expectância, IC e nº de trades por ano e na janela recente; volatilidade média (ATR em % do preço) por ano para mostrar a mudança de regime.",
+    "on_failure": "Se a média histórica passar mas a janela recente não, o veredito é DEGRADED: vantagem passada que não se sustenta hoje; não vai para paper."
+  }
+}

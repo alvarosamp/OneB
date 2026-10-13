@@ -125,8 +125,44 @@ export function ReliabilityChart({ data }: ReliabilityChartProps) {
         <span>Amostras checadas</span>
         <strong className="num">{data.total_samples}</strong>
         <span>Acerto geral</span>
-        <strong className="num">{String(data.overall_win_rate_pct).replace('.', ',')}%</strong>
+        <strong className="num">
+          {String(data.overall_win_rate_pct).replace('.', ',')}%
+          {data.overall_ci_low_pct != null && data.overall_ci_high_pct != null && (
+            <small className="muted"> (IC95% {data.overall_ci_low_pct}–{data.overall_ci_high_pct}%)</small>
+          )}
+        </strong>
+        {data.confidence_brier_score != null && (
+          <>
+            <span>Brier da confiança</span>
+            <strong className="num">{String(data.confidence_brier_score).replace('.', ',')}</strong>
+          </>
+        )}
       </div>
+      {!!data.by_reliability_grade?.length && (
+        <div>
+          <h3 className={styles.subtitle}>A confiabilidade se confirma? Acerto real por nota</h3>
+          <table className={styles.gradeTable}>
+            <thead>
+              <tr>
+                <th>Nota</th>
+                <th>Leituras</th>
+                <th>Acerto real</th>
+                <th>IC95%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.by_reliability_grade.map((row) => (
+                <tr key={row.grade}>
+                  <td>{row.grade}</td>
+                  <td className="num">{row.samples}</td>
+                  <td className="num">{row.actual_win_rate_pct}%</td>
+                  <td className="num">{row.ci_low_pct}–{row.ci_high_pct}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <div className={styles.charts}>
         <div>
           <h3>Calibração: confiança declarada contra acerto real</h3>

@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     # único lugar que precisa dele, e SameSite=strict + header obrigatório
     # (X-Refresh-Request) fecham o vetor de CSRF nas duas rotas que dependem do cookie.
     refresh_cookie_name: str = "oneb_refresh"
+    refresh_cookie_secure: bool | None = None
 
     # Bootstrap do admin inicial. Antes, o primeiro usuário a se cadastrar virava admin
     # automaticamente — qualquer visitante que chegasse primeiro no /cadastro ganhava
@@ -109,6 +110,10 @@ class Settings(BaseSettings):
     llm_provider: str = "anthropic"
     anthropic_api_key: str = ""
     llm_model: str = "claude-haiku-4-5-20251001"
+    # Agente da OneB AI (tool use + verificador). Separado do narrador acima.
+    llm_agent_model: str = "claude-opus-5-5"
+    llm_agent_effort: str = "medium"
+    llm_agent_max_turns: int = 8
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"
     groq_api_key: str = ""

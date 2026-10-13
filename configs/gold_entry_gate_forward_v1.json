@@ -1,0 +1,20 @@
+{
+  "purpose": "Frozen next-week replay of original Gold Fakeout plus executable-price entry gate; no orders",
+  "symbol": "XAUUSD.s",
+  "indicator": "Purchased GOLD Fakeout CRAZY v4, defaults unchanged",
+  "timeframe": "M10",
+  "from_inclusive": "2026-05-18",
+  "to_exclusive": "2026-05-23",
+  "entry": "first quote at or after first_seen + 250 ms, ask long / bid short",
+  "stop_target": "vendor absolute levels frozen at first observation",
+  "min_net_reward_to_risk": 1.0,
+  "slippage_price_per_side": 0.05,
+  "commission_roundtrip_per_ounce": 0.1,
+  "max_hold_hours": 4,
+  "max_quote_gap_seconds": 60,
+  "position_policy": "one position; replay entire chronological sequence after each gate decision",
+  "threshold_origin": "economic diagnostic chosen after inspection of May4-15; fixed before May18-22 original Gold result",
+  "success_criterion": "No promotion from one positive week. Require reproducible net benefit, stability and much more broker history.",
+  "prohibit_optimization": true,
+  "classification_before_run": "experimental_not_approved"
+}

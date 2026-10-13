@@ -370,6 +370,14 @@ export interface EconomicEvent {
   impact: string;
   forecast: string;
   previous: string;
+  /** Volatilidade típica medida no estudo calendar_v1 (null se o tipo de evento não foi estudado). */
+  risk?: CalendarRisk | null;
+}
+
+export interface CalendarRisk {
+  type: string;
+  note: string;
+  assets: { asset: string; label: string; pre60?: number; post5?: number; post30?: number; post120?: number; post30_ci95?: [number, number]; events?: number }[];
 }
 
 export interface EarningsEvent {
@@ -554,6 +562,38 @@ export interface DecisionDeskRecommendation {
   score_details: Record<string, unknown>;
   ai_narrative: string | null;
   probability_win_pct: number | null;
+  reliability?: Reliability | null;
+}
+
+export type ReliabilityGrade = 'ALTA' | 'MEDIA' | 'BAIXA' | 'INSUFICIENTE' | 'SEM_SINAL';
+
+export interface ReliabilityComponent {
+  key: string;
+  label: string;
+  weight: number;
+  available: boolean;
+  score: number | null;
+  detail: string;
+}
+
+export interface ReliabilityCap {
+  key: string;
+  limit: number;
+  reason: string;
+}
+
+/** Índice de confiabilidade (app/reliability.py): evidência que sustenta o sinal, não probabilidade de acerto. */
+export interface Reliability {
+  method: string;
+  score: number | null;
+  raw_score: number | null;
+  grade: ReliabilityGrade;
+  label: string;
+  components: ReliabilityComponent[];
+  caps: ReliabilityCap[];
+  limiting_factor: string;
+  evidence_samples: number;
+  disclaimer: string;
 }
 
 export interface CircuitBreaker {
@@ -603,10 +643,22 @@ export interface ReliabilityTrendPoint {
   ends_at: string;
 }
 
+export interface ReliabilityGradeOutcome {
+  grade: ReliabilityGrade;
+  samples: number;
+  actual_win_rate_pct: number;
+  ci_low_pct: number;
+  ci_high_pct: number;
+}
+
 export interface ReliabilityScoreboard {
   total_samples: number;
   overall_win_rate_pct: number;
+  overall_ci_low_pct?: number | null;
+  overall_ci_high_pct?: number | null;
+  confidence_brier_score?: number | null;
   calibration: ReliabilityCalibrationBucket[];
+  by_reliability_grade?: ReliabilityGradeOutcome[];
   trend: ReliabilityTrendPoint[];
 }
 
@@ -665,7 +717,9 @@ export interface CopilotAnalysis {
   symbol: string;
   question: string;
   bias: string;
-  confidence: number;
+  /** Removido: a média das confianças dos agentes não era probabilidade. Use evidence_balance. */
+  confidence: number | null;
+  evidence_balance?: { favorable: number; unfavorable: number; neutral: number; without_data: number; label: string };
   entry_price: number | null;
   votes: CopilotVote[];
   why: string[];
@@ -804,6 +858,8 @@ export interface LessonSummary {
   checklist: string[];
   exercise: string;
   required: boolean;
+  /** Texto da aula em markdown simples ("## " subtítulos, "- " listas, **negrito**). */
+  body: string;
 }
 
 export interface CourseModuleSummary {
@@ -865,10 +921,26 @@ export interface CertificateStatus {
   next_requirement: string;
 }
 
+export interface LastLesson {
+  course_slug: string;
+  lesson_id: number;
+  lesson_title: string;
+  visited_at: string;
+}
+
 export interface LearningState {
   courses: CourseSummary[];
   recommendation: LearningRecommendation | null;
   certificate: CertificateStatus;
+  last_lesson: LastLesson | null;
+}
+
+/** Estado do aluno numa aula, guardado no servidor (app/routers/lms.py). */
+export interface LessonState {
+  lesson_id: number;
+  note: string;
+  exercise_passed: boolean;
+  visited_at: string | null;
 }
 
 // ---- Regime / macro (app/routers/regime.py) ----
@@ -1040,4 +1112,233 @@ export interface MacroOverview {
   lead_lag_candidates?: LeadLagCandidate[];
   history_status?: MacroHistoryStatus;
   nasdaq_cross_asset_relevance: CrossAssetRow[];
+}
+
+/* ---- Oportunidades (ledger da máquina de estados) e OneB AI v2 ---- */
+
+export type SetupStateName =
+  | 'IDLE' | 'BREAK_DETECTED' | 'WAITING_CONFIRMATION_1' | 'WAITING_CONFIRMATION_2' | 'READY_TO_ENTER'
+  | 'POSITION_OPEN' | 'TARGET' | 'STOP' | 'TIME_EXIT' | 'INVALIDATED' | 'EXPIRED';
+
+export type ApprovalLevel = 'RESEARCH' | 'SHADOW' | 'PAPER' | 'LIVE_MANUAL';
+
+export interface OpportunityEvidence {
+  evidence_id: string;
+  kind: string;
+  text: string;
+  value: string | number | null;
+  source: string;
+  as_of: string | null;
+}
+
+export interface OpportunityLevels {
+  entry: number;
+  stop: number;
+  target: number;
+  time_stop_minutes: number;
+  reward_to_risk: number | null;
+  notice?: string;
+}
+
+export interface SetupVerdict {
+  status: 'COLLECTING' | 'PASSED' | 'ARCHIVE';
+  reason: string;
+  progress: { sessions: string; trades: string; pct: number | null };
+}
+
+export interface Opportunity {
+  opportunity_id: string;
+  symbol: string;
+  setup: string;
+  setup_version: string;
+  state: SetupStateName;
+  direction: 'long' | 'short' | null;
+  approval: ApprovalLevel;
+  data_as_of: string;
+  progress: number | null;
+  levels: OpportunityLevels | null;
+  research_plan: OpportunityLevels | null;
+  evidence: OpportunityEvidence[];
+  counter_evidence: OpportunityEvidence[];
+  reliability?: Reliability | null;
+  setup_evidence?: { verdict: SetupVerdict; summary: { completed_trades: number; expectancy_r: number | null; expectancy_ci95: [number, number] | null } } | null;
+}
+
+export interface OpportunityChange {
+  opportunity_id: string;
+  symbol: string;
+  setup: string;
+  from: string;
+  to: string;
+  reason: string;
+  at: string;
+  evidence_id: string;
+}
+
+export interface OpportunityChanges {
+  since: string;
+  until: string;
+  event_count: number;
+  new_opportunities: OpportunityChange[];
+  advanced: OpportunityChange[];
+  closed: OpportunityChange[];
+  summary: string;
+}
+
+export interface OneBClaim {
+  text: string;
+  evidence_ids: string[];
+}
+
+export interface OneBAnswer {
+  headline: string;
+  state_summary: { symbol: string | null; setup: string | null; state: string | null; approval: string | null };
+  claims: OneBClaim[];
+  counter_points: OneBClaim[];
+  what_changed: string[];
+  unknowns: string[];
+  conclusion: string;
+}
+
+export interface OneBAskResponse {
+  answer: OneBAnswer;
+  grounding: { ok: boolean; violations: { code: string }[]; numbers_checked: number };
+  fallback_used: boolean;
+  model: string;
+  tool_calls: string[];
+}
+
+// ---- Laboratório da Academia (app/routers/lms.py, replays de dias reais) ----
+export interface LabReplaySummary {
+  slug: string;
+  title: string;
+  asset: string;
+  label: string;
+  date: string;
+  summary: string;
+  bars: number;
+}
+
+export interface LabReplay {
+  slug: string;
+  title: string;
+  asset: string;
+  label: string;
+  date: string;
+  timezone: string;
+  spread: number;
+  digits: number;
+  summary: string;
+  hint: string;
+  context_bars: number;
+  bars: { t: number; o: number; h: number; l: number; c: number }[];
+  captions: { at: number; text: string }[];
+}
+
+// ---- Leitura de tendência (app/routers/trend.py) ----
+export interface TrendHorizon {
+  days: number;
+  label: string;
+  direction: 'alta' | 'baixa';
+  change: number;
+  flip_price: number;
+  distance_to_flip: number;
+}
+
+export interface TrendAsset {
+  key: string;
+  symbol: string;
+  label: string;
+  available: boolean;
+  as_of?: string;
+  last?: number;
+  horizons?: TrendHorizon[];
+  combined?: number | null;
+  agreement?: 'todos em alta' | 'todos em baixa' | 'misto';
+  volatility_annual?: number | null;
+  volatility_percentile?: number | null;
+  backtest_instrument?: { class: string; months: number; mean_monthly: number };
+}
+
+export interface TrendEvidence {
+  status: 'PENDING' | 'PASSED' | 'DEGRADED' | 'NOT_SIGNIFICANT' | 'FAILED';
+  reason: string;
+  as_evidence: boolean;
+  generated_at?: string;
+  universe_size?: number;
+  primary?: { months: number; mean_monthly: number; ci95: [number, number]; sharpe_annual: number | null; annual_return: number; max_drawdown: number };
+  recent?: { months: number; mean_monthly: number };
+  beyond_long_only?: { alpha_monthly: number; alpha_ci95: [number, number]; correlation: number; badge: boolean };
+  /** Universo completo com séries gratuitas: só descritivo, não muda o veredito. */
+  sensitivity?: { universe_size: number; status: TrendEvidence['status']; combined: { mean_monthly: number; ci95: [number, number] } } | null;
+}
+
+export interface TrendReadings {
+  evidence: TrendEvidence;
+  assets: TrendAsset[];
+  note: string;
+}
+
+
+/** Mapa de horários (scripts/build_hour_heatmap.py): hora de Nova York, dias úteis 0=seg. */
+export interface HeatCell {
+  weekday: number;
+  hour: number;
+  range_bps: number;
+  ratio: number;
+  spread_bps: number;
+  broker_spread_bps: number | null;
+  cost_share: number;
+  hours: number;
+}
+
+export interface HourHeatmap {
+  generated_at: string;
+  timezone: string;
+  method: string;
+  assets: Record<string, { label: string; broker_symbol: string | null; period: { from: string; to: string }; typical_range_bps: number; cost_source: string; cells: HeatCell[] }>;
+}
+
+export interface AssetBrief {
+  key: string;
+  label: string;
+  symbol: string;
+  generated_at: string;
+  broker: { symbol: string; contract_size: number; volume_min: number; volume_step: number; spread_points: number | null };
+  market: {
+    available: boolean;
+    price?: number;
+    prev_close?: number | null;
+    change_pct?: number;
+    as_of?: string;
+    atr_d1?: number | null;
+    atr_h1?: number | null;
+    trend?: TrendAsset | null;
+  };
+  range_forecast: {
+    target_date: string;
+    based_on: string;
+    expected_pct: number;
+    low80_pct: number;
+    high80_pct: number;
+    expected_price: number;
+    low80_price: number;
+    high80_price: number;
+    atr14_pct: number;
+    event: string | null;
+    coverage80_test: number | null;
+    note: string;
+  } | null;
+  hours_ahead: { starts_at: string; ny_hour: number; weekday: number; ratio: number | null; cost_share: number | null; range_bps: number | null }[];
+  heatmap_meta: { typical_range_bps: number; period: { from: string; to: string }; cost_source: string } | null;
+  events: { event_name: string; event_date: string; impact: string | null; type: string | null; post30: number | null; post120: number | null; measured: boolean }[];
+  evidence: { test: string; title: string; status: 'PASSED' | 'FAILED' | 'NOT_SIGNIFICANT' | 'MIXED' | 'DEGRADED' | 'PENDING'; detail: string }[];
+  note: string;
+}
+
+export interface NextSession {
+  generated_at: string;
+  assets: { key: string; label: string; forecast: AssetBrief['range_forecast'] }[];
+  events: { event_name: string; event_date: string; type: string | null; assets: { label: string; post30: number | null }[] }[];
+  note: string;
 }

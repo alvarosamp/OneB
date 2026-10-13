@@ -18,10 +18,14 @@ from app.decision_cards import build_decision_card
 from app.market_data import finnhub_client
 from app.models import RecommendationDecision, WatchlistItem
 from app.predictions import Evidence, Prediction
+from app.reliability import assess_decision, wilson_interval
 from app.risk_engine import evaluate_decision
 from app.saas import get_or_create_workspace
 
 AI_NARRATIVE_ACTIONS = {"BUY_CONTROLLED", "WATCH_BUY", "SELL_SHORT", "WATCH_SHORT"}
+# Ações que recebem narrativa da LLM. Inclui NO_TRADE/AVOID: "não operar" é a
+# leitura mais comum e a que mais precisa de explicação.
+NARRATED_ACTIONS = AI_NARRATIVE_ACTIONS | {"NO_TRADE", "AVOID"}
 LONG_ACTIONS = ("BUY_CONTROLLED", "WATCH_BUY")
 SHORT_ACTIONS = ("SELL_SHORT", "WATCH_SHORT")
 
@@ -489,14 +493,14 @@ def _short_action_from_context(
                 "WATCH_SHORT",
                 min(70, confidence),
                 [
-                    f"Regras confirmam venda, mas o modelo probabilístico (invertido) estima só "
+                    f"Regras confirmam venda, mas o modelo de queda estima só "
                     f"{prob_fall * 100:.0f}% de chance de queda (mínimo {PROBABILITY_WIN_THRESHOLD * 100:.0f}%) "
                     "— trava o tamanho até os dois concordarem."
                 ],
             )
         reasons = ["Score alto com retorno médio histórico negativo (queda)."]
         if prob_fall is not None:
-            reasons.append(f"Modelo probabilístico (invertido) concorda: {prob_fall * 100:.0f}% de chance estimada de queda.")
+            reasons.append(f"Modelo de queda concorda: {prob_fall * 100:.0f}% de chance estimada de queda.")
         return "SELL_SHORT", min(95, confidence), reasons
     if score >= thresholds["min_setup_score"]:
         return "WATCH_SHORT", min(74, confidence), ["Setup de queda interessante, mas ainda precisa de confirmação."]
@@ -510,9 +514,8 @@ def _position_size_pct(action: str, confidence: int, market_state: str, prob_win
     when no probability model is loaded (fail-open, same as everywhere else
     this model is used).
 
-    For SELL_SHORT, `prob_win` is expected to already be the model's P(fall)
-    (the caller passes 1 - P(rise) — see _recommendation) so the same edge
-    formula applies unchanged in both directions.
+    For SELL_SHORT there is no fitted P(fall) yet (see _recommendation), so
+    `prob_win` is None and the confidence buckets apply.
     """
     if action in ("WATCH_BUY", "WATCH_SHORT"):
         return 5.0
@@ -539,10 +542,10 @@ def _recommendation(
     earnings_date = _upcoming_earnings(symbol)
     model = pm.get_model()
     features = sim.feature_vector(data, i, benchmark)
-    # The model was only ever trained to estimate P(price rises) — for a
-    # short setup its complement (1 - P(rise)) doubles as a rough P(falls),
-    # not a separately fitted estimate, but it's a legitimate reuse: the two
-    # events are complementary by construction.
+    # The model estimates P(5d return > +0.5%). Its complement is NOT
+    # P(fall): it also contains the whole flat/slightly-up region, so using
+    # 1 - P(rise) for shorts systematically overstated them. Shorts get no
+    # probability until a model is trained on the short label itself.
     prob_rise = pm.predict_proba(model, features) if model and features is not None else None
 
     # ema9/macd crossover conditions in _buy_base/_sell_base are mutually
@@ -555,7 +558,7 @@ def _recommendation(
         historical = _historical_memory_short(data, benchmark)
         logged = _logged_memory(db, symbol, user_id, actions=SHORT_ACTIONS)
         memory = {**historical, **logged}
-        prob_directional = (1 - prob_rise) if prob_rise is not None else None
+        prob_directional = None
         action, confidence, action_reasons = _short_action_from_context(
             score, data, benchmark, memory, short_thresholds, earnings_date, prob_directional
         )
@@ -605,10 +608,9 @@ def _recommendation(
     if earnings_date is not None:
         evidence.append(f"Earnings em {earnings_date.date()} — dentro da janela de cautela de {EARNINGS_BLACKOUT_DAYS} dias.")
     if prob_directional is not None:
-        label = "queda" if is_short else "ganho"
         evidence.append(
-            f"Modelo probabilístico{' (invertido)' if is_short else ''}: {prob_directional * 100:.0f}% de chance "
-            f"estimada de {label} (limiar {PROBABILITY_WIN_THRESHOLD * 100:.0f}%)."
+            f"Modelo probabilístico: {prob_directional * 100:.0f}% de chance estimada de ganho "
+            f"(limiar {PROBABILITY_WIN_THRESHOLD * 100:.0f}%)."
         )
     fair_reason = " ".join(action_reasons + evidence[:2])
     thesis = (
@@ -661,6 +663,7 @@ def _recommendation(
         "score_details": details,
         "ai_narrative": None,
         "probability_win_pct": round(prob_directional * 100, 1) if prob_directional is not None else None,
+        "event_blackout": earnings_date is not None,
         "quality_gate": gate,
         "prediction": prediction.to_dict(),
     }
@@ -721,7 +724,7 @@ async def _attach_ai_narratives(rows: list[dict]) -> None:
     """
     if not llm_client.is_configured():
         return
-    targets = [row for row in rows if row["action"] in AI_NARRATIVE_ACTIONS]
+    targets = [row for row in rows if row["action"] in NARRATED_ACTIONS]
     if not targets:
         return
     contexts = [
@@ -880,7 +883,27 @@ async def build_decision_desk(db: Session, user, record: bool = False) -> dict:
     breaker_tripped = _apply_portfolio_circuit_breaker(rows, performance)
     decision_health = build_decision_health(db, user)
     health_gate_tripped = _apply_decision_health_gate(rows, decision_health)
+    model = pm.get_model()
+    drift_alert = bool(pm.health().get("drift_alert")) if model is not None else False
     for row in rows:
+        row["reliability"] = assess_decision(
+            action=row["action"],
+            memory=row["memory"],
+            quality_gate=row["quality_gate"],
+            risk=row.get("risk"),
+            model=model,
+            model_drift_alert=drift_alert,
+            probability=row["prediction"].get("probability"),
+            earnings_blackout=row.get("event_blackout", False),
+            decision_health=decision_health,
+        )
+        # Gravado junto da predição para o placar poder checar, depois, se
+        # "confiabilidade alta" de fato acertou mais que "baixa".
+        row["prediction"]["reliability"] = {
+            "score": row["reliability"]["score"],
+            "grade": row["reliability"]["grade"],
+            "method": row["reliability"]["method"],
+        }
         row["decision_card"] = build_decision_card(row)
     await _attach_ai_narratives(rows)
 
@@ -1096,6 +1119,36 @@ def build_reliability_scoreboard(db: Session, user, trend_chunk_size: int = 10) 
             }
         )
 
+    overall_ci = wilson_interval(wins, total)
+    grade_totals: dict[str, dict] = {}
+    for row in rows:
+        grade = (_loads(row.prediction_json, {}).get("reliability") or {}).get("grade")
+        if not grade:
+            continue
+        bucket = grade_totals.setdefault(grade, {"samples": 0, "wins": 0})
+        bucket["samples"] += 1
+        bucket["wins"] += row.outcome_status == "HIT"
+    by_reliability_grade = []
+    for grade in ("ALTA", "MEDIA", "BAIXA", "INSUFICIENTE"):
+        bucket = grade_totals.get(grade)
+        if not bucket:
+            continue
+        ci = wilson_interval(bucket["wins"], bucket["samples"])
+        by_reliability_grade.append(
+            {
+                "grade": grade,
+                "samples": bucket["samples"],
+                "actual_win_rate_pct": round(bucket["wins"] / bucket["samples"] * 100, 2),
+                "ci_low_pct": round(ci[0] * 100, 1),
+                "ci_high_pct": round(ci[1] * 100, 1),
+            }
+        )
+    brier = (
+        round(sum((row.confidence / 100 - (row.outcome_status == "HIT")) ** 2 for row in rows) / total, 4)
+        if total
+        else None
+    )
+
     trend = []
     for i in range(0, total, trend_chunk_size):
         chunk = rows[i : i + trend_chunk_size]
@@ -1112,7 +1165,11 @@ def build_reliability_scoreboard(db: Session, user, trend_chunk_size: int = 10) 
     return {
         "total_samples": total,
         "overall_win_rate_pct": overall_win_rate,
+        "overall_ci_low_pct": round(overall_ci[0] * 100, 1) if overall_ci else None,
+        "overall_ci_high_pct": round(overall_ci[1] * 100, 1) if overall_ci else None,
+        "confidence_brier_score": brier,
         "calibration": calibration,
+        "by_reliability_grade": by_reliability_grade,
         "trend": trend,
     }
 

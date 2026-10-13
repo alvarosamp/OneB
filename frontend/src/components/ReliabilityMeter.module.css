@@ -1,0 +1,112 @@
+.meter {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.title {
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.value {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.value small {
+  margin-left: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+}
+
+.track {
+  position: relative;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--dur-med) var(--ease);
+}
+
+.alta { background: var(--positive); }
+.media { background: var(--info); }
+.baixa { background: var(--warning); }
+.insuficiente { background: var(--negative); }
+.sem_sinal { background: var(--text-tertiary); }
+
+.limit {
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-normal);
+}
+
+.details summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+}
+
+.list {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px var(--sp-2);
+  font-size: var(--fs-xs);
+}
+
+.item span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+.item p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-tertiary);
+}
+
+.disclaimer {
+  margin: var(--sp-2) 0 0;
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}

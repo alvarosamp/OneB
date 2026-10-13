@@ -15,13 +15,18 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import httpx
 import pandas as pd
 
 from app.config import settings
+from app.market_data import fomc_schedule
+
+NEW_YORK = ZoneInfo("America/New_York")
+RELEASE_TIME_ET = time(8, 30)
 
 logger = logging.getLogger(__name__)
 
@@ -68,8 +73,8 @@ def _save_cached_series(series_id: str, history: pd.DataFrame) -> None:
 # hundreds of low-relevance releases per day (e.g. "Coinbase Cryptocurrencies")
 # if unfiltered; this whitelist is what actually moves markets. IDs confirmed
 # against GET /fred/releases during this session's data audit.
+# O FOMC NÃO vem do FRED (a release 101 tem data em quase todo dia): vem de fomc_schedule.
 HIGH_IMPACT_RELEASES: dict[int, str] = {
-    101: "FOMC Press Release",
     50: "Employment Situation (NFP)",
     10: "Consumer Price Index (CPI)",
     53: "Gross Domestic Product (GDP)",
@@ -207,7 +212,8 @@ def get_economic_calendar(from_date: date, to_date: date) -> list[EconomicEventE
                 "file_type": "json",
                 "realtime_start": from_date.isoformat(),
                 "realtime_end": to_date.isoformat(),
-                "include_release_dates_with_no_data": "false",
+                # Datas futuras ainda não têm dados: com "false" o calendário só mostrava o dia corrente.
+                "include_release_dates_with_no_data": "true",
             },
             timeout=15.0,
         )
@@ -223,9 +229,13 @@ def get_economic_calendar(from_date: date, to_date: date) -> list[EconomicEventE
         if release_id not in HIGH_IMPACT_RELEASES:
             continue
         try:
-            event_date = datetime.fromisoformat(item["date"]).replace(tzinfo=timezone.utc)
+            day = date.fromisoformat(item["date"])
         except (KeyError, ValueError):
             continue
+        if not from_date <= day <= to_date:
+            continue
+        # Estes relatórios saem às 08:30 de Nova York (antes ficavam à meia-noite UTC = noite anterior em NY).
+        event_date = datetime.combine(day, RELEASE_TIME_ET, NEW_YORK).astimezone(timezone.utc)
         entries.append(
             EconomicEventEntry(
                 event_name=HIGH_IMPACT_RELEASES[release_id],
@@ -237,4 +247,13 @@ def get_economic_calendar(from_date: date, to_date: date) -> list[EconomicEventE
                 previous="",
             )
         )
-    return entries
+    for when in fomc_schedule.decisions_between(from_date, to_date):
+        entries.append(EconomicEventEntry(event_name="FOMC Rate Decision", country="US", event_date=when,
+                                          impact="high", actual="", forecast="", previous=""))
+    seen: set[tuple[str, datetime]] = set()
+    unique = []
+    for e in sorted(entries, key=lambda e: e.event_date):
+        if (e.event_name, e.event_date) not in seen:
+            seen.add((e.event_name, e.event_date))
+            unique.append(e)
+    return unique

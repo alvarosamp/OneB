@@ -1,0 +1,265 @@
+{
+  "generated_at": "2026-10-08T12:55:02.707884+00:00",
+  "test": "tsmom_v1",
+  "spec_sha256": "a0b4101948c3412453cd413ae1a01df8cd2a91a9b1cade4f69710bc4405096c4",
+  "universe_used": [
+    "audusd",
+    "deuidxeur",
+    "eurusd",
+    "fraidxeur",
+    "gbpusd",
+    "gbridxgbp",
+    "jpnidxjpy",
+    "lightcmdusd",
+    "nzdusd",
+    "usa30idxusd",
+    "usa500idxusd",
+    "usatechidxusd",
+    "usdcad",
+    "usdchf",
+    "usdjpy",
+    "xagusd",
+    "xauusd"
+  ],
+  "excluded": {
+    "ausidxaud": "falha de dados na fonte: anos [2021] ausentes nos dois lados (d1 e h1)",
+    "hkgidxhkd": "falha de dados na fonte: anos [2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024] ausentes nos dois lados (d1 e h1)",
+    "eusidxeur": "falha de dados na fonte: anos [2014] ausentes nos dois lados (d1 e h1)",
+    "brentcmdusd": "falha de dados na fonte: anos [2012, 2013] ausentes nos dois lados (d1 e h1)",
+    "gascmdusd": "falha de dados na fonte: anos [2020] ausentes nos dois lados (d1 e h1)",
+    "coppercmdusd": "falha de dados na fonte: anos [2015, 2017, 2018, 2019, 2024] ausentes nos dois lados (d1 e h1)"
+  },
+  "primary_combined": {
+    "months": 164,
+    "mean_monthly": -0.00083,
+    "ci95": [
+      -0.00229,
+      0.00061
+    ],
+    "sharpe_annual": -0.28,
+    "annual_return": -0.0106,
+    "max_drawdown": -0.2246
+  },
+  "recent_window": {
+    "months": 44,
+    "mean_monthly": 0.00011,
+    "ci95": [
+      -0.00266,
+      0.00305
+    ],
+    "sharpe_annual": 0.039,
+    "annual_return": 0.0008,
+    "max_drawdown": -0.0469
+  },
+  "verdict": {
+    "status": "NOT_SIGNIFICANT",
+    "reason": "IC 95% contém zero: sem evidência de tendência após custos."
+  },
+  "horizons": {
+    "1 mês": {
+      "months": 164,
+      "mean_monthly": -0.00253,
+      "ci95": [
+        -0.00466,
+        -0.00057
+      ],
+      "sharpe_annual": -0.668,
+      "annual_return": -0.031,
+      "max_drawdown": -0.3954,
+      "ci_bonferroni": [
+        -0.00511,
+        -0.0001
+      ]
+    },
+    "3 meses": {
+      "months": 164,
+      "mean_monthly": -0.00168,
+      "ci95": [
+        -0.00339,
+        -8e-05
+      ],
+      "sharpe_annual": -0.457,
+      "annual_return": -0.021,
+      "max_drawdown": -0.3108,
+      "ci_bonferroni": [
+        -0.00378,
+        0.00024
+      ]
+    },
+    "12 meses": {
+      "months": 164,
+      "mean_monthly": 0.0002,
+      "ci95": [
+        -0.00148,
+        0.00188
+      ],
+      "sharpe_annual": 0.058,
+      "annual_return": 0.0016,
+      "max_drawdown": -0.18,
+      "ci_bonferroni": [
+        -0.00185,
+        0.00219
+      ]
+    }
+  },
+  "long_only_baseline": {
+    "months": 164,
+    "mean_monthly": 0.00101,
+    "ci95": [
+      -0.00098,
+      0.00294
+    ],
+    "sharpe_annual": 0.265,
+    "annual_return": 0.0111,
+    "max_drawdown": -0.1463
+  },
+  "beyond_long_only": {
+    "alpha_monthly": -0.0008,
+    "beta": -0.035,
+    "alpha_ci95": [
+      -0.00232,
+      0.0006
+    ],
+    "correlation": -0.044,
+    "badge": false
+  },
+  "by_class": {
+    "equity_index": {
+      "months": 164,
+      "mean_monthly": -0.00036,
+      "ci95": [
+        -0.00274,
+        0.002
+      ],
+      "sharpe_annual": -0.085,
+      "annual_return": -0.0055,
+      "max_drawdown": -0.246
+    },
+    "commodity": {
+      "months": 164,
+      "mean_monthly": 0.00144,
+      "ci95": [
+        -0.00135,
+        0.00457
+      ],
+      "sharpe_annual": 0.312,
+      "annual_return": 0.0159,
+      "max_drawdown": -0.1363
+    },
+    "fx": {
+      "months": 164,
+      "mean_monthly": -0.00222,
+      "ci95": [
+        -0.00356,
+        -0.00071
+      ],
+      "sharpe_annual": -0.569,
+      "annual_return": -0.0274,
+      "max_drawdown": -0.3561
+    }
+  },
+  "by_year": {
+    "2013": 0.0419,
+    "2014": 0.0059,
+    "2015": -0.0414,
+    "2016": -0.0264,
+    "2017": 0.0065,
+    "2018": -0.019,
+    "2019": -0.053,
+    "2020": 0.0111,
+    "2021": -0.0352,
+    "2022": -0.0336,
+    "2023": -0.0398,
+    "2024": 0.0019,
+    "2025": 0.0485,
+    "2026": -0.0058
+  },
+  "by_instrument": {
+    "usa500idxusd": {
+      "class": "equity_index",
+      "months": 162,
+      "mean_monthly": 0.00117
+    },
+    "usatechidxusd": {
+      "class": "equity_index",
+      "months": 164,
+      "mean_monthly": 0.00256
+    },
+    "usa30idxusd": {
+      "class": "equity_index",
+      "months": 141,
+      "mean_monthly": -0.00048
+    },
+    "deuidxeur": {
+      "class": "equity_index",
+      "months": 141,
+      "mean_monthly": -0.0012
+    },
+    "gbridxgbp": {
+      "class": "equity_index",
+      "months": 164,
+      "mean_monthly": -0.00318
+    },
+    "jpnidxjpy": {
+      "class": "equity_index",
+      "months": 164,
+      "mean_monthly": 0.00143
+    },
+    "fraidxeur": {
+      "class": "equity_index",
+      "months": 164,
+      "mean_monthly": -0.004
+    },
+    "xauusd": {
+      "class": "commodity",
+      "months": 164,
+      "mean_monthly": 0.00151
+    },
+    "xagusd": {
+      "class": "commodity",
+      "months": 164,
+      "mean_monthly": 0.00036
+    },
+    "lightcmdusd": {
+      "class": "commodity",
+      "months": 164,
+      "mean_monthly": 0.00246
+    },
+    "eurusd": {
+      "class": "fx",
+      "months": 164,
+      "mean_monthly": -0.0001
+    },
+    "gbpusd": {
+      "class": "fx",
+      "months": 164,
+      "mean_monthly": -0.00196
+    },
+    "usdjpy": {
+      "class": "fx",
+      "months": 164,
+      "mean_monthly": 0.00096
+    },
+    "audusd": {
+      "class": "fx",
+      "months": 164,
+      "mean_monthly": -0.00297
+    },
+    "usdcad": {
+      "class": "fx",
+      "months": 164,
+      "mean_monthly": -0.00375
+    },
+    "usdchf": {
+      "class": "fx",
+      "months": 164,
+      "mean_monthly": -0.00269
+    },
+    "nzdusd": {
+      "class": "fx",
+      "months": 164,
+      "mean_monthly": -0.00503
+    }
+  },
+  "notes": "CFDs de índice não incluem dividendos e o carry de moedas não é somado: o resultado é de preço, não de retorno total. Divulgado."
+}

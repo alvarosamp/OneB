@@ -5,20 +5,34 @@ import { api } from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../context/ToastContext';
 import { lessonExtra } from '../../content/academia';
-import { allLessons, exercisePassed, findLesson, firstIncomplete, isFileVideo, markExercisePassed, rememberLesson } from '../../lib/academia';
+import {
+  allLessons,
+  fetchLessonState,
+  findLesson,
+  firstIncomplete,
+  isFileVideo,
+  passExerciseRemote,
+  readNote,
+  rememberLesson,
+  saveNoteRemote,
+  visitLesson,
+  writeNote,
+} from '../../lib/academia';
 import { ptBR } from '../../lib/text';
 import type { CourseDetail, LessonSummary } from '../../types';
 import { AsyncContent, Button, EmptyState, ICON, Modal, SkeletonLines, TabPanel, Tabs } from '../../components/ui';
 import { buttonClass } from '../../components/ui/buttonClass';
 import { VideoArea } from '../../components/academia/VideoArea';
-import { Quiz } from '../../components/academia/Quiz';
+import { ServerQuiz } from '../../components/academia/Quiz';
 import { OpenExercise } from '../../components/academia/OpenExercise';
 import { Practice } from '../../components/academia/Practice';
 import { Notes } from '../../components/academia/Notes';
 import { LessonList } from '../../components/academia/LessonList';
+import { LessonBody } from '../../components/academia/LessonBody';
+import { TradingLab } from '../../components/academia/TradingLab';
 import styles from '../../components/academia/Player.module.css';
 
-type Tab = 'resumo' | 'checklist' | 'exercicio' | 'pratica' | 'anotacoes';
+type Tab = 'resumo' | 'checklist' | 'exercicio' | 'pratica' | 'laboratorio' | 'anotacoes';
 
 /** Player da aula (/aulas/:slug?aula=<id ou título>). */
 export function Aula() {
@@ -65,10 +79,22 @@ function Player({ course, onCourseChange }: { course: CourseDetail; onCourseChan
 
   useEffect(() => {
     if (!lesson) return;
-    rememberLesson(course.slug, lesson.id);
-    setPassed(exercisePassed(lesson.id));
+    const id = lesson.id;
+    let alive = true;
+    rememberLesson(course.slug, id);
+    setPassed(false);
     setTab('resumo');
     window.scrollTo({ top: 0 });
+    // O servidor confere o exercício (o gabarito do quiz fica só lá).
+    visitLesson(id).catch(() => undefined);
+    fetchLessonState(id)
+      .then((s) => {
+        if (alive && s.exercise_passed) setPassed(true);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
   }, [course.slug, lesson?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!lesson) return <EmptyState title="Esta trilha ainda não tem aulas" description="Volte mais tarde." />;
@@ -80,9 +106,19 @@ function Player({ course, onCourseChange }: { course: CourseDetail; onCourseChan
     setParams({ aula: String(l.id) });
   }
 
-  function onPassed() {
-    markExercisePassed(lesson!.id);
-    setPassed(true);
+  function onPassed(answer?: string) {
+    const id = lesson!.id;
+    if (!answer) {
+      setPassed(true); // quiz: o servidor já registrou ao corrigir a última questão
+      return;
+    }
+    passExerciseRemote(id, answer)
+      .then(() => setPassed(true))
+      .catch(() => toast('Não foi possível registrar a resposta. Tente de novo.', 'error'));
+    // A resposta do exercício aberto vai para as anotações da aula.
+    const note = [readNote(id), `Exercício: ${answer.trim()}`].filter(Boolean).join('\n\n');
+    writeNote(id, note);
+    saveNoteRemote(id, note).catch(() => undefined);
   }
 
   async function setCompleted(done: boolean) {
@@ -112,6 +148,7 @@ function Player({ course, onCourseChange }: { course: CourseDetail; onCourseChan
     { value: 'checklist', label: 'Checklist' },
     { value: 'exercicio', label: passed || lesson.completed ? 'Exercício (feito)' : 'Exercício' },
     { value: 'pratica', label: 'Praticar no gráfico' },
+    { value: 'laboratorio', label: 'Laboratório' },
     { value: 'anotacoes', label: 'Anotações' },
   ];
   const doneCount = course.modules.flatMap((m) => m.lessons).filter((l) => l.completed).length;
@@ -143,7 +180,7 @@ function Player({ course, onCourseChange }: { course: CourseDetail; onCourseChan
           {tab === 'resumo' && (
             <div className={styles.quiz}>
               <p className={styles.reading}>{ptBR(lesson.summary || lesson.description)}</p>
-              {lesson.description && lesson.summary && <p className={styles.meta}>{ptBR(lesson.description)}</p>}
+              {lesson.body ? <LessonBody source={lesson.body} /> : lesson.description && lesson.summary && <p className={styles.meta}>{ptBR(lesson.description)}</p>}
             </div>
           )}
           {tab === 'checklist' && (
@@ -158,13 +195,17 @@ function Player({ course, onCourseChange }: { course: CourseDetail; onCourseChan
               ))}
             </ul>
           )}
-          {tab === 'exercicio' &&
-            (extra?.quiz.length ? (
-              <Quiz key={lesson.id} questions={extra.quiz} onPassed={onPassed} passed={passed || lesson.completed} />
-            ) : (
-              <OpenExercise key={lesson.id} prompt={lesson.exercise} onPassed={onPassed} passed={passed || lesson.completed} />
-            ))}
+          {tab === 'exercicio' && (
+            <ServerQuiz
+              key={lesson.id}
+              lessonId={lesson.id}
+              onPassed={() => onPassed()}
+              passed={passed || lesson.completed}
+              fallback={<OpenExercise key={lesson.id} prompt={lesson.exercise} onPassed={onPassed} passed={passed || lesson.completed} />}
+            />
+          )}
           {tab === 'pratica' && <Practice symbol={extra?.practiceSymbol ?? 'QQQ'} hint={extra?.practiceHint ?? ptBR(lesson.exercise)} />}
+          {tab === 'laboratorio' && <TradingLab replaySlug={extra?.replaySlug} />}
           {tab === 'anotacoes' && <Notes lessonId={lesson.id} />}
         </TabPanel>
 

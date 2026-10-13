@@ -1,0 +1,23 @@
+{
+  "test": "calendar_v1",
+  "registered_at": "2026-10-07",
+  "registered_before": "Congelado antes de qualquer cálculo com preços ao redor dos eventos.",
+  "question": "Quanto as divulgações macro dos EUA (CPI, payroll, PIB, PCE e decisão do FOMC) mudam a volatilidade e a direção de Nasdaq, S&P 500, ouro, euro/dólar e petróleo, comparado com o mesmo horário em dias sem evento?",
+  "purpose": "Gerar um 'risco de calendário' por evento e ativo (quanto a volatilidade costuma multiplicar e por quanto tempo) para dimensionar posição e decidir esperar. Não gera ordens.",
+  "events_file": {"path": "configs/events/macro_events_2019_2026.json", "sha256_prefix": "495bb680651b",
+                  "times": "CPI, NFP, GDP, PCE às 08:30 de Nova York; FOMC às 14:00 de Nova York (horário de verão americano respeitado)"},
+  "data": {
+    "source": "Dukascopy M5 bid/ask (preço médio), 2019-03-01 a 2026-09-26, arquivos normalizados em D:/OneB/market-data",
+    "assets": ["NAS100", "SPX500", "XAUUSD", "EURUSD", "WTI"],
+    "missing": "evento sem barra no início ou no fim de uma janela é descartado daquela janela e contado no relatório"
+  },
+  "windows_minutes": {"pre60": [-60, 0], "post5": [0, 5], "post30": [0, 30], "post120": [0, 120]},
+  "control": "para cada evento, os 20 dias úteis anteriores sem nenhum evento da lista, no mesmo horário de Nova York e mesma janela",
+  "hypotheses": {
+    "H1_volatility_primary": "por ativo e tipo de evento, janela post30: razão = |retorno log| no evento / mediana do controle; a mediana das razões tem IC 95% bootstrap (5.000 reamostragens, semente 7) acima de 1. Família de 5 testes por ativo, Benjamini-Hochberg q=0,05 sobre p unilateral bootstrap.",
+    "H2_direction_secondary": "por ativo e tipo de evento: sinal do retorno nos primeiros 5 min; retorno de +5 a +60 min multiplicado por esse sinal, menos o meio spread na entrada e na saída (bps). Média com IC 95% bootstrap; continuação se o IC estiver acima de 0, reversão se abaixo. Família de 5 por ativo, BH q=0,05. Descritivo para o produto: não vira sinal sem um novo pré-registro.",
+    "H3_pre_fomc_drift": "Lucca-Moench (2015): retorno de SPX500 e NAS100 das 14:00 de NY do pregão anterior às 13:55 de NY do dia do FOMC, comparado com a mesma janela em todos os outros pares de dias úteis consecutivos sem FOMC. Diferença de médias com IC 95% bootstrap. Primário: SPX500."
+  },
+  "product_rule": "Evento x ativo com H1 aprovado entra no 'risco de calendário' do app com a razão mediana e o IC, por janela. H2 e H3 aparecem só como informação, com o veredito.",
+  "reporting": ["por ano (2019-2026)", "número de eventos usados e descartados por janela", "razões por janela pre60/post5/post30/post120"]
+}

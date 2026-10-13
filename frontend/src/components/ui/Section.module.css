@@ -9,8 +9,10 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--sp-3);
+  gap: var(--sp-2) var(--sp-3);
   min-height: 24px;
+  /* No celular as ações descem para a linha de baixo em vez de empurrar a página. */
+  flex-wrap: wrap;
 }
 
 .titleGroup {
@@ -36,7 +38,9 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .divided {

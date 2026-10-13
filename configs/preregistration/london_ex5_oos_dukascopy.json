@@ -1,0 +1,24 @@
+{
+  "test": "london_ex5_oos_dukascopy",
+  "registered_at": "2026-10-06",
+  "registered_before_results": true,
+  "purpose": "Testar o EX5 ORIGINAL 'Estratégia Caixa de Londres' (inputs default, H1 exigido pelo vendedor) em XAUUSD 2019-2026 via XAUUSD.dk. Nenhuma ordem.",
+  "structure_observed_without_results": "Objetos LB*_*_{Arrow,Box,HHigh,HLow,SL,TP1,TP2,Qual}. O vendedor reaproveita os nomes em rodízio; o sinal é identificado por (data, preço) da seta. Em abr-set/2026 (XAUUSD.s, ticks reais): 106 sinais, ~1 por dia, setas entre 11:00 e 17:00 do servidor, publicadas no fechamento da barra (atraso de 1 h em 100%); 68 'forte', 38 'fraco'. Nenhum resultado calculado.",
+  "signals": "setas novas após a primeira foto; lado pela posição do SL (acima = venda); níveis congelados na primeira observação",
+  "hypotheses": {
+    "H1_primary": "todas as setas, saída total no TP1",
+    "H2_secondary": "todas as setas, saída total no TP2",
+    "H3_quality_forte": "só setas com qualidade 'forte', saída no TP1",
+    "multiple_testing": "Bonferroni para 3: IC de decisão a 98,33% (o script usa 97,5% para H1/H2; H3 é avaliada com o mesmo IC e reportada com a ressalva)"
+  },
+  "execution": "entrada na abertura da primeira barra M5 após a primeira observação (compra ask / venda bid); SL do vendedor; saída máxima 5 dias; uma posição por vez; lacuna máxima 120 min",
+  "costs": "por barra o MAIOR spread entre Dukascopy e mediana HonorPro da mesma hora UTC; slippage 0,05/lado; comissão 0,10 ida-volta",
+  "steps": {
+    "A_tick_model": "XAUUSD.s Model=1 vs Model=4 (pilot44ref), 13/04-26/09/2026: lado, primeira observação a até 10 min, entrada/SL/TP1/TP2 a até US$ 0,50; recall e precisão >= 0,90",
+    "B_custom_symbol": "XAUUSD.dk Model=1 vs XAUUSD.s Model=4 no mesmo período; recall e precisão >= 0,80",
+    "C_out_of_sample": {"from_inclusive": "2019-03-01", "to_exclusive": "2026-04-01"}
+  },
+  "decision_rule": ">=250 sessões, >=100 trades, IC bootstrap da expectância em R > 0 (nível corrigido)",
+  "recency_requirement": "expectância em abr/2025-mar/2026 > 0 e nenhum ano com IC inteiramente negativo; senão DEGRADED",
+  "prohibit_optimization": true
+}

@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,7 +11,22 @@ from sqlalchemy.pool import StaticPool
 from app.auth import get_current_user
 from app.db import Base, get_db
 from app.main import app
-from app.models import PriceSnapshot, WatchlistItem
+from app.models import MacroIntelligenceSnapshot, PriceSnapshot, WatchlistItem
+
+
+def _macro_payload(now):
+    as_of = now.isoformat()
+    quality = [{"key": key, "status": "FRESH", "as_of": as_of} for key in ("GOLD", "WTI", "DXY")]
+    def window(gold_wti, gold_dxy):
+        return {"matrix": [{"key": "GOLD", "values": {"WTI": gold_wti, "DXY": gold_dxy}}]}
+    return {
+        "data_quality": {"instruments": quality},
+        "correlation_windows": {"20": window(0.1, -0.4), "60": window(-0.6, -0.5),
+                                "3m": window(-0.3, -0.2), "6m": window(0.2, -0.1)},
+        "trends": {"GOLD": {"direction": "ALTA", "change_20d": 3.2, "change_unit": "%"}},
+        "daily_moves": {"GOLD": {"move": 0.5, "unit": "%", "as_of": as_of}},
+        "relationship_dynamics": [{"left": "GOLD", "right": "WTI", "status": "ENFRAQUECENDO"}],
+    }
 
 
 @pytest.fixture()
@@ -79,6 +95,91 @@ def test_ask_context_includes_watchlist_prices(client):
     assert res.status_code == 200
     assert captured_context["watchlist"][0]["symbol"] == "AAPL"
     assert captured_context["watchlist"][0]["price"] == 200.0
+
+
+def test_ask_selects_fresh_context_assets_outside_watchlist(client):
+    test_client, Session = client
+    now = datetime.now(timezone.utc)
+    with Session() as db:
+        db.add(WatchlistItem(symbol="XAUUSD", label="Ouro"))
+        db.add(MacroIntelligenceSnapshot(snapshot_date=now.date().isoformat(), captured_at=now,
+                                         payload=_macro_payload(now)))
+        db.commit()
+    captured = {}
+
+    async def fake_answer(question, context):
+        captured.update(context)
+        return "ok"
+
+    with patch("app.routers.assistant.answer_question", new=fake_answer):
+        res = test_client.post("/api/assistant/ask", json={"question": "Como está o ouro?"})
+
+    assert res.status_code == 200
+    cross = captured["cross_asset_context"]
+    assert cross["status"] == "AVAILABLE"
+    target = cross["targets"][0]
+    assert target["asset"]["key"] == "GOLD"
+    assert target["asset"]["outside_watchlist"] is False
+    assert {row["asset"]["key"] for row in target["related_assets"]} == {"WTI", "DXY"}
+    assert all(row["asset"]["outside_watchlist"] for row in target["related_assets"])
+    assert target["related_assets"][0]["correlation_60_sessions"] == -0.6
+
+
+def test_old_macro_snapshot_is_not_presented_as_current(client):
+    test_client, Session = client
+    old = datetime.now(timezone.utc) - timedelta(days=8)
+    with Session() as db:
+        db.add(MacroIntelligenceSnapshot(snapshot_date=old.date().isoformat(), captured_at=old,
+                                         payload=_macro_payload(old)))
+        db.commit()
+    captured = {}
+
+    async def fake_answer(question, context):
+        captured.update(context)
+        return "ok"
+
+    with patch("app.routers.assistant.answer_question", new=fake_answer):
+        test_client.post("/api/assistant/ask", json={"question": "Ouro e petróleo estão correlacionados?"})
+    assert captured["cross_asset_context"]["status"] == "STALE"
+    assert "correlation_windows" not in captured["cross_asset_context"]
+
+
+def test_general_question_gets_watched_macro_overview(client):
+    from app.assistant_market_context import build_cross_asset_context
+
+    _, Session = client
+    now = datetime.now(timezone.utc)
+    with Session() as db:
+        db.add(MacroIntelligenceSnapshot(snapshot_date=now.date().isoformat(), captured_at=now,
+                                         payload=_macro_payload(now)))
+        db.commit()
+        context = build_cross_asset_context(
+            db, "Analise as tendencias do mercado", [{"symbol": "XAUUSD", "label": "Ouro"},
+                                                     {"symbol": "CL=F", "label": "Petróleo WTI"}], now=now,
+        )
+    assert context["status"] == "AVAILABLE"
+    assert {row["key"] for row in context["watchlist_overview"]} == {"GOLD", "WTI"}
+
+
+def test_missing_or_stale_instrument_history_does_not_rank_peers(client):
+    from app.assistant_market_context import build_cross_asset_context
+
+    _, Session = client
+    now = datetime.now(timezone.utc)
+    payload = _macro_payload(now)
+    payload["data_quality"]["instruments"][1]["status"] = "STALE"
+    with Session() as db:
+        db.add(MacroIntelligenceSnapshot(snapshot_date=now.date().isoformat(), captured_at=now, payload=payload))
+        db.commit()
+        context = build_cross_asset_context(db, "ouro", [{"symbol": "XAUUSD", "label": "Ouro"}], now=now)
+    assert [row["asset"]["key"] for row in context["targets"][0]["related_assets"]] == ["DXY"]
+
+
+def test_currency_pair_is_not_mistaken_for_dollar_index(client):
+    from app.assistant_market_context import _mentioned
+
+    assert _mentioned("EUR/Dólar EURUSD=X") == ["EURUSD"]
+    assert _mentioned("Índice Dólar") == ["DXY"]
 
 
 def test_llm_client_returns_none_without_api_key():

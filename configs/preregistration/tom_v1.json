@@ -1,0 +1,24 @@
+{
+  "test": "tom_v1",
+  "registered_at": "2026-10-10",
+  "registered_before_results": true,
+  "question": "A virada do mês (último pregão do mês e os 3 primeiros do mês seguinte) ainda concentra a alta dos índices americanos, e uma posição comprada só nesses 4 dias paga depois dos custos do CFD?",
+  "literature": "Ariel (1987); Lakonishok e Smidt (1988); McConnell e Xu (2008, 'Equity Returns at the Turn of the Month'). A hipótese vem de fora dos nossos dados; não há fase de descoberta.",
+  "data": {
+    "source": "Dukascopy diário normalizado em D:/OneB/market-data/dukascopy-daily (mesmo do tsmom_v1), fechamento do dia UTC",
+    "primary_asset": "usa500idxusd (S&P 500)",
+    "secondary_assets": ["usatechidxusd", "usa30idxusd", "deuidxeur", "gbridxgbp", "fraidxeur", "jpnidxjpy"],
+    "period": {"from_inclusive": "2012-02-01", "to_exclusive": "2026-09-01"},
+    "recent_window": {"from_inclusive": "2023-01-01", "to_exclusive": "2026-09-01"}
+  },
+  "definition": "Dias da virada (TOM) = último dia de negociação de cada mês (dia -1) e os 3 primeiros dias de negociação do mês seguinte (+1, +2, +3), pelo calendário de pregões do próprio arquivo. Retorno do dia = fechamento / fechamento anterior - 1.",
+  "hypotheses": {
+    "H1_primary": "No S&P 500, a média do retorno diário nos dias TOM menos a média nos demais dias é > 0: IC 95% bootstrap em blocos de 1 mês (10.000 reamostragens, semente 7) acima de zero.",
+    "H2_primary": "Estratégia: comprado do fechamento do dia -2 ao fechamento do dia +3 (4 dias por mês), fora no resto. Retorno mensal líquido de custos > 0 com IC 95% bootstrap em blocos de 12 meses acima de zero.",
+    "H3_secondary": "Mesmas medidas nos índices secundários e na janela recente: descritivo, sem selo."
+  },
+  "costs": "Por mês: spread de entrada e saída (spread mediano do ativo, metade em cada ponta = 1 spread por ida e volta) + slippage de 0,0002 por lado + financiamento de 2% ao ano pelos dias corridos com posição (5 dias corridos típicos). Mesma convenção do tsmom_v1.",
+  "pass": "APROVADO se H1 E H2 passarem no S&P 500 E a média TOM menos não-TOM for > 0 na janela recente. Senão, NÃO APROVADO (descritivo).",
+  "decision": "Se aprovado: o app mostra o calendário da virada do mês como evidência no S&P 500, e um novo pré-registro de acompanhamento ao vivo é criado antes de qualquer uso. Se não: a aula de sazonalidade mostra o resultado como mito ou efeito que acabou.",
+  "prohibit_optimization": true
+}

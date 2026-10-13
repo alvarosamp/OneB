@@ -1,0 +1,67 @@
+{
+ "gold_fakeout_open_v1": {
+  "sha256": "1234df77cb5c2f0eeb127a0987a15205d4752cf2c75645d0d39502d0ff8d374c",
+  "locked_at": "2026-10-05",
+  "note": "Congelado antes de qualquer replay desta vers\u00e3o."
+ },
+ "gold_fakeout_open_v1_oos_dukascopy": {
+  "sha256": "bba9243823771322590860d73e70db8227889073b0023477339f4a877236b19b",
+  "locked_at": "2026-10-05",
+  "note": "Congelado antes do download. Emendado (rec\u00eancia) tamb\u00e9m antes do download."
+ },
+ "gold_fakeout_ex5_oos_dukascopy": {
+  "sha256": "d62ae71db56ad81fe6af1874c4581b34b51c9ffb5f935a95fca7862e1828bcf2",
+  "locked_at": "2026-10-06",
+  "note": "Congelado antes do passo A; emendado (rel\u00f3gio com hor\u00e1rio de ver\u00e3o) antes dos passos B/C."
+ },
+ "x13_ex5_oos_dukascopy": {
+  "sha256": "e8d0c633abe334290798f72a4a97c4201b12cc76438e1214f53e98d7a717c03e",
+  "locked_at": "2026-10-06",
+  "note": "Congelado antes de qualquer execu\u00e7\u00e3o do 13X nos novos dados."
+ },
+ "x13_feed_validation_extended": {
+  "sha256": "3de3622b56da4255ceee24edda1231166d7aa49bff9a08cafefd614bbd5607fd",
+  "locked_at": "2026-10-06",
+  "note": "Registrado depois da reprova\u00e7\u00e3o do passo B (divulgado no arquivo)."
+ },
+ "lab_v1": {
+  "sha256": "a074df762c463aaef1e799801b126f80fe6ce9ae8df13953b1fa6596529cfc12",
+  "locked_at": "2026-10-06",
+  "note": "Protocolo do laborat\u00f3rio congelado antes de implementar e rodar. Emendado em 10/10/2026 (WTI fora por falha de fonte; fam\u00edlia F8 Duck) antes de qualquer c\u00e1lculo."
+ },
+ "pips100_ex5_oos_dukascopy": {
+  "sha256": "9026009958bef86fc5f84286df748a4b4d3791b56b6b78a5b01ad0b06d281fa8",
+  "locked_at": "2026-10-06",
+  "note": "Congelado ap\u00f3s estudar s\u00f3 a estrutura dos objetos; nenhum resultado calculado."
+ },
+ "london_ex5_oos_dukascopy": {
+  "sha256": "3b328429d89f87e43baaa70f4c82dd4ba2a7cef73b4270f404fc89023b6dcaba",
+  "locked_at": "2026-10-06",
+  "note": "Congelado ap\u00f3s estudar s\u00f3 a estrutura dos objetos; nenhum resultado calculado."
+ },
+ "tsmom_v1": {
+  "sha256": "a0b4101948c3412453cd413ae1a01df8cd2a91a9b1cade4f69710bc4405096c4",
+  "locked_at": "2026-10-07",
+  "note": "Congelado antes de baixar os dados di\u00e1rios. Emendado (regra de qualidade contava feriados) antes de qualquer c\u00e1lculo de tend\u00eancia; nenhum resultado tinha sido visto."
+ },
+ "calendar_v1": {
+  "sha256": "b31d5906a6b50bf0885f8c049e485614748a95ed0d57696edf3792d8d3a8b2ed",
+  "locked_at": "2026-10-07",
+  "note": "Congelado antes de qualquer c\u00e1lculo com pre\u00e7os ao redor dos eventos; lista de eventos com hash 495bb680651b."
+ },
+ "f7_honor_v1": {
+  "sha256": "c0b00d0a19bcbbc971f307db440b4c5c8497cda81f95232dbfd132fe3a80d797",
+  "locked_at": "2026-10-10",
+  "note": "Congelado antes de qualquer c\u00e1lculo no per\u00edodo 2023-2026."
+ },
+ "volfc_v1": {
+  "sha256": "509b40679febe5adf08c5c5d72e651890802e01baad74194c845341ae7d2a7df",
+  "locked_at": "2026-10-10",
+  "note": "Congelado antes de qualquer c\u00e1lculo de previs\u00e3o de amplitude."
+ },
+ "tom_v1": {
+  "sha256": "157b51fc61e5c4d492e853cfda7fc8659df553a5e285e5e17be982072c1df642",
+  "locked_at": "2026-10-10",
+  "note": "Congelado antes de qualquer c\u00e1lculo de virada de m\u00eas."
+ }
+}

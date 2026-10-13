@@ -1,0 +1,13 @@
+{
+  "test": "x13_feed_validation_extended",
+  "registered_at": "2026-10-06",
+  "registered_after": "passo B de x13_ex5_oos_dukascopy reprovar por uma marca (15/19 = 79%, mínimo 80%)",
+  "disclosure": "Registro POSTERIOR a uma reprovação. A reprovação original permanece no relatório. Este teste mede só a equivalência de marcas entre feeds; não usa nenhum resultado de lucro, que ainda não foi calculado.",
+  "question": "Em uma amostra maior, o EX5 13X no XAUUSD.dk (Model=1) reproduz as marcas do EX5 no XAUUSD.s HonorPro em ticks reais (Model=4)?",
+  "period": {"from": "2026.04.13", "to": "2026.09.26"},
+  "reference": "XAUUSD.s Model=4 (pilot43ref)",
+  "candidate": "XAUUSD.dk Model=1 (pilot43dk)",
+  "match": "mesma barra H1 (relógio do servidor) e mesmo buffer (2-5)",
+  "pass": "recall >= 0,80 E precisão >= 0,80",
+  "consequence": "Se passar, o resultado do passo C do 13X pode receber veredito, mas o relatório final mostra a reprovação original e esta validação lado a lado. Se reprovar, permanece DESCRIPTIVE_ONLY."
+}

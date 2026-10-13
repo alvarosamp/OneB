@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "purpose": "Human decision support only; never send broker orders",
+  "advisors": {
+    "gold": {
+      "symbol": "XAUUSD.s",
+      "instrument_type": "BROKER_SPOT_CFD",
+      "signal_family": "purchased_gold_fakeout_original_M10",
+      "timeframe": "M10",
+      "source": "HonorPro_MT5",
+      "approved_for_paper": false,
+      "broker_timezone_verified": false,
+      "latency_ms": 250,
+      "quote_max_age_ms": 5000,
+      "slippage_price_per_side": 0.05,
+      "commission_roundtrip_per_unit": 0.1,
+      "cost_status": "hypothetical_not_account_verified",
+      "min_net_reward_to_risk": 1.0,
+      "max_hold_hours": 4,
+      "research_status": "archived: open_v1 OOS -0.12R; original EX5 OOS 2019-2026 -0.02R (2026-10-06)"
+    },
+    "nasdaq": {
+      "symbol": "US100.s",
+      "instrument_type": "BROKER_CFD_NOT_NQ_FUTURE",
+      "signal_family": "purchased_nasdaq_gap_drive_M1",
+      "timeframe": "M1",
+      "source": "HonorPro_MT5",
+      "approved_for_paper": false,
+      "broker_timezone_verified": false,
+      "latency_ms": 250,
+      "quote_max_age_ms": 5000,
+      "slippage_price_per_side": null,
+      "commission_roundtrip_per_unit": null,
+      "cost_status": "unknown_for_account",
+      "min_net_reward_to_risk": 1.0,
+      "max_hold_hours": 2,
+      "research_status": "no_certified_original_entry_signal"
+    }
+  }
+}

@@ -331,12 +331,21 @@ def analyze_symbol(db: Session, symbol: str, user_id: int, capital_usd: float, r
         risk_agent(db, symbol, user_id, capital_usd, risk_budget_pct, entry_price, history),
         profile_agent(db, symbol, user_id),
     ]
-    confidence = round(mean([a.confidence for a in agents]))
+    # Os agentes leem fontes que se sobrepõem (técnico e risco usam o mesmo histórico),
+    # então a média das "confianças" deles não é uma probabilidade. Mostramos o placar.
     buy_votes = sum(1 for a in agents if a.vote == "Comprar")
     avoid_votes = sum(1 for a in agents if a.vote == "Evitar")
-    if buy_votes >= 3 and confidence >= 60:
+    no_data = sum(1 for a in agents if a.confidence <= 10)
+    evidence_balance = {
+        "favorable": buy_votes,
+        "unfavorable": avoid_votes,
+        "neutral": len(agents) - buy_votes - avoid_votes,
+        "without_data": no_data,
+        "label": f"{buy_votes} pró / {avoid_votes} contra / {len(agents) - buy_votes - avoid_votes} neutro",
+    }
+    if buy_votes >= 3 and avoid_votes == 0 and no_data == 0:
         bias = "OBSERVAR_COMPRA"
-    elif avoid_votes >= 2 or confidence < 40:
+    elif avoid_votes >= 2 or no_data >= 2:
         bias = "EVITAR_POR_ENQUANTO"
     else:
         bias = "AGUARDAR_CONFIRMACAO"
@@ -344,7 +353,7 @@ def analyze_symbol(db: Session, symbol: str, user_id: int, capital_usd: float, r
     risk_vote = next(a for a in agents if a.name == "Risco")
     explanation = [
         f"Estamos olhando {symbol} porque {buy_votes} de {len(agents)} agentes ficaram construtivos.",
-        f"Confianca consolidada: {confidence}%.",
+        f"Placar de evidencias: {evidence_balance['label']} (nao e probabilidade).",
         "A decisao final deve validar entrada, stop, noticia recente e tamanho de posicao antes de qualquer ordem manual.",
     ]
     contrary = []
@@ -356,7 +365,8 @@ def analyze_symbol(db: Session, symbol: str, user_id: int, capital_usd: float, r
         "symbol": symbol,
         "question": question,
         "bias": bias,
-        "confidence": confidence,
+        "confidence": None,
+        "evidence_balance": evidence_balance,
         "entry_price": round(entry_price, 2) if entry_price else None,
         "votes": [agent.__dict__ for agent in agents],
         "why": explanation,

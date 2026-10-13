@@ -1,0 +1,55 @@
+{
+  "test": "tsmom_v1",
+  "registered_at": "2026-10-07",
+  "registered_before": "Congelado antes de baixar os dados diários e antes de qualquer cálculo de tendência nestes instrumentos.",
+  "question": "A tendência de 1, 3 e 12 meses (time-series momentum, Moskowitz-Ooi-Pedersen 2012; Hurst-Ooi-Pedersen 2017) teve resultado positivo depois de custos num universo amplo de CFDs da Dukascopy entre 2013 e 2026, e ainda vale no período recente?",
+  "purpose": "Decidir se a tela 'Leitura de tendência' pode mostrar a direção de 1/3/12 meses como evidência (PASSED) ou só como descrição (demais vereditos). Não gera ordens.",
+  "data": {
+    "source": "Dukascopy via dukascopy-node, timeframe d1, bid e ask separados",
+    "price": "fechamento médio = (bid_close + ask_close) / 2; spread = ask_close - bid_close",
+    "from": "2010-01-01",
+    "to_exclusive": "2026-09-26",
+    "quality": "dias com |retorno| > 20% são listados no relatório (não removidos); instrumento é excluído (e divulgado) se tiver mais de 5 dias úteis seguidos sem dados ou algum ano-calendário completo com menos de 200 pregões",
+    "amendment_2026-10-07": "Emenda antes de qualquer cálculo de tendência: a regra original (mais de 2% de dias úteis faltando) contava feriados de bolsa, que somam ~3,5% dos dias úteis nos índices dos EUA, e excluiria todos os índices. A nova regra mede buracos de dados, não feriados."
+  },
+  "universe": {
+    "equity_index": ["usa500idxusd", "usatechidxusd", "usa30idxusd", "deuidxeur", "gbridxgbp", "jpnidxjpy", "fraidxeur", "ausidxaud", "hkgidxhkd", "eusidxeur"],
+    "commodity": ["xauusd", "xagusd", "lightcmdusd", "brentcmdusd", "gascmdusd", "coppercmdusd"],
+    "fx": ["eurusd", "gbpusd", "usdjpy", "audusd", "usdcad", "usdchf", "nzdusd"],
+    "excluded_and_why": "Títulos (bundtreur, ustbondtrusd, ukgilttrgbp) começam entre 2016 e 2018 na Dukascopy: histórico curto demais. Divulgado.",
+    "entry_rule": "o instrumento entra no portfólio quando tem pelo menos 252 + 60 dias de histórico"
+  },
+  "strategy": {
+    "returns": "retorno simples diário do fechamento médio",
+    "volatility": "EWMA dos retornos diários ao quadrado, centro de massa 60 dias, anualizada por sqrt(261)",
+    "signals": {"lookbacks_days": [21, 63, 252], "rule": "sinal = sinal(+1/-1) do retorno acumulado nos últimos L dias até o fechamento da data de rebalanceamento"},
+    "combined": "média dos três sinais (valores possíveis -1, -1/3, 1/3, 1)",
+    "weight": "peso = sinal x (0,10 / volatilidade anualizada), limitado a |peso| <= 5",
+    "portfolio": "média simples dos retornos ponderados dos instrumentos ativos no mês",
+    "rebalance": "último dia útil de cada mês, no fechamento; a posição vale a partir do dia seguinte (sem olhar o futuro)"
+  },
+  "costs": {
+    "trading": "a cada rebalanceamento, |variação do peso| x (meio spread relativo mediano dos últimos 20 dias + 0,0002 de slippage)",
+    "financing": "2% ao ano sobre |peso|, cobrado diariamente (conservador; o carry de moedas não é creditado)",
+    "note": "CFDs de índice não incluem dividendos e o carry de moedas não é somado: o resultado é de preço, não de retorno total. Divulgado."
+  },
+  "evaluation": {
+    "period": {"from_inclusive": "2013-01-01", "to_exclusive": "2026-09-01"},
+    "recent_window": {"from_inclusive": "2023-01-01", "to_exclusive": "2026-09-01"},
+    "unit": "retorno mensal do portfólio, líquido de custos",
+    "bootstrap": "bootstrap em blocos de 12 meses, 10.000 reamostragens, semente 7"
+  },
+  "hypotheses": {
+    "H1_primary": "portfólio combinado (1/3/12 meses): limite inferior do IC 95% do retorno mensal médio > 0",
+    "H2_horizons": "cada horizonte sozinho (21, 63, 252): IC com correção de Bonferroni para 3 testes (alfa 0,05/3); só descritivo para a decisão",
+    "H3_beyond_long_only": "regressão do retorno mensal do combinado contra um portfólio só comprado com o mesmo dimensionamento por volatilidade: o alfa e seu IC 95% são relatados; alfa com IC acima de zero recebe o selo 'adiciona além de ficar comprado'"
+  },
+  "decision": {
+    "PASSED": "H1 aprovada E média do período recente > 0",
+    "DEGRADED": "H1 aprovada mas média do período recente <= 0",
+    "NOT_SIGNIFICANT": "IC de H1 contém zero",
+    "FAILED": "limite superior do IC de H1 < 0",
+    "product_rule": "Somente PASSED autoriza a tela a apresentar a direção 1/3/12 como evidência. Nos demais casos ela aparece como descrição do preço, com o veredito visível."
+  },
+  "reporting": ["por classe de ativo", "por ano", "por instrumento (descritivo)", "Sharpe anualizado e queda máxima", "correlação com o portfólio só comprado", "lista de dias com |retorno| > 20%"]
+}

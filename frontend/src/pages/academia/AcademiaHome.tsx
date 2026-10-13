@@ -29,6 +29,20 @@ export function AcademiaHome() {
 
       <ContinueBlock state={state} />
 
+      <section className={styles.labCta} aria-labelledby="lab-title">
+        <div>
+          <h2 id="lab-title" className={styles.sectionTitle}>
+            Laboratório
+          </h2>
+          <p className={styles.trackSummary}>
+            Treine com uma conta fictícia de US$ 10.000: replays de dias reais que param quando é hora de decidir, ou o mercado ao vivo. Seu placar mostra acerto e expectativa em R.
+          </p>
+        </div>
+        <Link to="/academia/laboratorio" className={buttonClass({ variant: 'secondary' })}>
+          Abrir o laboratório
+        </Link>
+      </section>
+
       <section aria-labelledby="trilhas-title">
         <h2 id="trilhas-title" className={styles.sectionTitle}>
           Trilhas
@@ -69,7 +83,12 @@ export function AcademiaHome() {
 }
 
 function ContinueBlock({ state }: { state: ReturnType<typeof useApi<LearningState>> }) {
-  const local = lastLesson();
+  // Última aula aberta: a da conta (qualquer aparelho) vence a deste navegador.
+  const server = state.data?.last_lesson;
+  const local = useMemo(
+    () => (server ? { slug: server.course_slug, lessonId: server.lesson_id, at: server.visited_at } : lastLesson()),
+    [server],
+  );
   const slug = local?.slug ?? state.data?.recommendation?.course_slug ?? null;
   const course = useApi<CourseDetail>(slug ? `/api/lms/courses/${slug}` : null);
 

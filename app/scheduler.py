@@ -226,12 +226,36 @@ async def refresh_macro_intelligence() -> None:
         db.close()
 
 
+LEGACY_RELEASE_NAMES = set(fred_client.HIGH_IMPACT_RELEASES.values())
+
+
+def purge_legacy_economic_events(db) -> int:
+    """Remove linhas erradas gravadas antes de 10/10/2026.
+
+    - "FOMC Press Release": vinha da release 101 do FRED, com data em quase todo dia (FOMC falso);
+      as decisões reais agora vêm de fomc_schedule com o nome "FOMC Rate Decision".
+    - Relatórios do FRED gravados à meia-noite UTC (noite anterior em NY), sem o horário de 08:30.
+    """
+    removed = 0
+    for event in db.query(EconomicEvent).filter(
+        EconomicEvent.event_name.in_(["FOMC Press Release", *LEGACY_RELEASE_NAMES])
+    ).all():
+        at = event.event_date
+        if event.event_name == "FOMC Press Release" or (at.hour == 0 and at.minute == 0):
+            db.delete(event)
+            removed += 1
+    if removed:
+        db.flush()
+    return removed
+
+
 async def refresh_calendars() -> None:
     db = SessionLocal()
     try:
         today = date.today()
 
-        econ_events = fred_client.get_economic_calendar(today, today + timedelta(days=7))
+        econ_events = fred_client.get_economic_calendar(today, today + timedelta(days=21))
+        purge_legacy_economic_events(db)
         existing_econ_keys = {
             (name, country, dt) for name, country, dt in db.query(
                 EconomicEvent.event_name, EconomicEvent.country, EconomicEvent.event_date

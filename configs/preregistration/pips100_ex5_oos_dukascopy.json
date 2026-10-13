@@ -1,0 +1,23 @@
+{
+  "test": "pips100_ex5_oos_dukascopy",
+  "registered_at": "2026-10-06",
+  "registered_before_results": true,
+  "purpose": "Testar o EX5 ORIGINAL 'Estratégia 100 PIPS POR DIA' (inputs default) em XAUUSD H1 2019-2026 via XAUUSD.dk. Nenhuma ordem.",
+  "structure_observed_without_results": "Objetos 100PIPS_LV_ENTRY/SL/TP1/TP2_<id>. Em 20 sinais de abr-set/2026 (XAUUSD.s, ticks reais): entrada = fechamento da barra do sinal (a mercado), objeto aparece no fechamento; distância SL = TP1 (1R); TP2 = 2R. Nenhum resultado de trade foi calculado.",
+  "signals": "entradas novas (100PIPS_LV_ENTRY_<id>) após a primeira foto; lado pela posição do SL (acima = venda); níveis congelados na primeira observação",
+  "hypotheses": {
+    "H1_primary": "saída total no TP1 do vendedor",
+    "H2_secondary": "saída total no TP2 do vendedor",
+    "multiple_testing": "Bonferroni para 2: IC de decisão a 97,5%"
+  },
+  "execution": "entrada na abertura da primeira barra M5 após a primeira observação (compra ask / venda bid); SL do vendedor; saída máxima 5 dias; uma posição por vez; lacuna máxima 120 min (tolera pausa diária, censura fim de semana)",
+  "costs": "por barra o MAIOR spread entre Dukascopy e mediana HonorPro da mesma hora UTC; slippage 0,05/lado; comissão 0,10 ida-volta",
+  "steps": {
+    "A_tick_model": "XAUUSD.s Model=1 vs Model=4 (pilot44ref), 13/04-26/09/2026: mesmo lado, primeira observação a até 10 min, entrada/SL/TP1/TP2 a até US$ 0,50; recall e precisão >= 0,90",
+    "B_custom_symbol": "XAUUSD.dk Model=1 vs XAUUSD.s Model=4 no mesmo período, mesmo critério; recall e precisão >= 0,80",
+    "C_out_of_sample": {"from_inclusive": "2019-03-01", "to_exclusive": "2026-04-01"}
+  },
+  "decision_rule": ">=250 sessões, >=100 trades, IC 97,5% bootstrap da expectância em R > 0",
+  "recency_requirement": "expectância em abr/2025-mar/2026 > 0 e nenhum ano com IC inteiramente negativo; senão DEGRADED",
+  "prohibit_optimization": true
+}

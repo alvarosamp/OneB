@@ -1,0 +1,894 @@
+{
+ "Calendário macro: o que mexe e quanto": [
+  {
+   "question": "Nos 30 minutos depois do CPI, o movimento típico do Nasdaq em 2019–2026 foi…",
+   "options": [
+    "Igual a um dia normal",
+    "Cerca de 4 vezes o normal",
+    "Cerca de 40 vezes o normal"
+   ],
+   "correct": 1,
+   "why": "O estudo do OneB mediu cerca de 3,9 vezes o movimento do mesmo horário em dias sem evento."
+  },
+  {
+   "question": "Em 2022, o efeito do CPI no Nasdaq foi muito maior que em 2019 porque…",
+   "options": [
+    "Os dados eram de outra fonte",
+    "A inflação era o tema que guiava o Fed",
+    "O CPI passou a sair em outro horário"
+   ],
+   "correct": 1,
+   "why": "O mesmo evento pesa mais quando é o tema do momento."
+  },
+  {
+   "question": "Depois dos primeiros 5 minutos de uma divulgação, a direção…",
+   "options": [
+    "Costuma continuar sempre",
+    "Não é confiável; o único padrão firme foi uma reversão no payroll do Nasdaq, ainda sem teste próprio",
+    "É sempre de alta"
+   ],
+   "correct": 1,
+   "why": "O primeiro movimento não diz para onde o preço vai; padrões precisam de teste próprio antes de virar regra."
+  }
+ ],
+ "Tendência de 1, 3 e 12 meses": [
+  {
+   "question": "A tendência de 3 meses vira quando o preço cruza…",
+   "options": [
+    "A média de 200 dias",
+    "O fechamento de 3 meses atrás",
+    "A máxima do ano"
+   ],
+   "correct": 1,
+   "why": "Retorno de 3 meses positivo = preço acima do fechamento de 3 meses atrás."
+  },
+  {
+   "question": "Por que o OneB mostra um selo de teste junto da tendência?",
+   "options": [
+    "Por enfeite",
+    "Porque a regra só conta como evidência se passar no teste com custos",
+    "Porque a tendência é sinal de entrada"
+   ],
+   "correct": 1,
+   "why": "Mesmo a regra com mais evidência acadêmica precisa ser conferida nos instrumentos e custos atuais."
+  }
+ ],
+ "Dólar, juros e Nasdaq": [
+  {
+   "question": "Uma correlação de −0,6 entre Nasdaq e juros significa…",
+   "options": [
+    "Que juros causam a queda do Nasdaq",
+    "Que, na janela medida, eles costumaram andar em sentidos opostos",
+    "Que vai ser sempre assim"
+   ],
+   "correct": 1,
+   "why": "Correlação descreve o passado numa janela; não prova causa nem garante o futuro."
+  },
+  {
+   "question": "Por que o Nasdaq costuma ser sensível a juros?",
+   "options": [
+    "Porque as empresas não têm lucro",
+    "Porque o valor de empresas de crescimento depende muito de lucros futuros",
+    "Porque o índice é negociado em juros"
+   ],
+   "correct": 1,
+   "why": "Juros maiores reduzem o valor presente de lucros distantes."
+  }
+ ],
+ "O que move o ouro": [
+  {
+   "question": "Desde 2022, a relação entre ouro e juro real americano…",
+   "options": [
+    "Ficou mais forte",
+    "Afrouxou: o ouro subiu mesmo com juro real alto",
+    "Deixou de existir completamente"
+   ],
+   "correct": 1,
+   "why": "O juro real ainda pesa no curto prazo, mas compras de bancos centrais e incerteza sustentaram o preço."
+  },
+  {
+   "question": "Um fator que ajudou a sustentar o ouro nos últimos anos foi…",
+   "options": [
+    "A compra recorde de ouro por bancos centrais",
+    "O fim do dólar",
+    "A proibição de ETFs"
+   ],
+   "correct": 0,
+   "why": "Bancos centrais de emergentes compraram no ritmo mais forte em décadas."
+  }
+ ],
+ "Volatilidade e tamanho de posição": [
+  {
+   "question": "Risco de US$ 100 e stop de US$ 6: quantas unidades?",
+   "options": [
+    "6",
+    "Cerca de 16",
+    "600"
+   ],
+   "correct": 1,
+   "why": "100 ÷ 6 ≈ 16. Stop maior com o mesmo risco exige menos unidades."
+  },
+  {
+   "question": "Com volatilidade 3 vezes maior, mantendo o mesmo risco em dólares, você deve…",
+   "options": [
+    "Manter a quantidade",
+    "Reduzir a quantidade",
+    "Triplicar a quantidade"
+   ],
+   "correct": 1,
+   "why": "O stop precisa ser mais distante para não ser atingido por ruído; a quantidade cai."
+  }
+ ],
+ "Abrindo uma conta demo no MetaTrader 5": [
+  {
+   "question": "Para que serve a conta demo?",
+   "options": [
+    "Provar que uma estratégia dá lucro",
+    "Aprender a plataforma sem risco",
+    "Ganhar bônus da corretora"
+   ],
+   "correct": 1,
+   "why": "Na demo não há medo nem custo real de execução; ela ensina a plataforma, não valida estratégia."
+  },
+  {
+   "question": "No MT5, a diferença entre ask e bid é…",
+   "options": [
+    "O swap",
+    "O spread",
+    "A alavancagem"
+   ],
+   "correct": 1,
+   "why": "Você compra no ask e vende no bid; a diferença é o spread, um custo de toda operação."
+  },
+  {
+   "question": "Um “gerente de conta” liga oferecendo sinais e pede acesso remoto ao seu computador. Você…",
+   "options": [
+    "Aceita, se ele for educado",
+    "Recusa e não passa senha nem acesso",
+    "Passa só a senha da demo"
+   ],
+   "correct": 1,
+   "why": "Ninguém sério pede senha ou acesso remoto; é um golpe comum."
+  }
+ ],
+ "Seu primeiro trade no laboratório": [
+  {
+   "question": "No laboratório, a compra é executada…",
+   "options": [
+    "No preço de venda (bid)",
+    "No preço de compra (ask)",
+    "No último preço do gráfico"
+   ],
+   "correct": 1,
+   "why": "Comprar no ask e vender no bid é como funciona a execução real: o spread conta contra você."
+  },
+  {
+   "question": "Se o stop e o alvo cabem no mesmo candle, o laboratório…",
+   "options": [
+    "Conta o alvo",
+    "Conta o stop",
+    "Ignora a operação"
+   ],
+   "correct": 1,
+   "why": "Não dá para saber qual veio primeiro dentro do candle; assumir o pior evita resultados inflados."
+  },
+  {
+   "question": "Depois de uma operação vencedora no replay, a conclusão certa é…",
+   "options": [
+    "Encontrei uma estratégia",
+    "Uma operação não diz nada; preciso de muitas, com o plano escrito",
+    "Posso aumentar o risco"
+   ],
+   "correct": 1,
+   "why": "Amostra de uma operação é ruído; o processo é o que se treina."
+  }
+ ],
+ "Como funciona a NASDAQ": [
+  {
+   "question": "Qual é o horário do pregão regular da NASDAQ?",
+   "options": [
+    "9:30 às 16:00 de Nova York",
+    "10:00 às 17:00 de Brasília, o ano todo",
+    "24 horas em dias úteis"
+   ],
+   "correct": 0,
+   "why": "O pregão regular vai das 9:30 às 16:00 no horário de Nova York; em Brasília, isso muda com o horário de verão americano."
+  },
+  {
+   "question": "O QQQ é…",
+   "options": [
+    "Uma ação da Nasdaq Inc.",
+    "Um ETF que replica o Nasdaq-100",
+    "Um contrato futuro"
+   ],
+   "correct": 1,
+   "why": "O QQQ é um ETF: uma cota negociada em bolsa que acompanha o índice Nasdaq-100."
+  }
+ ],
+ "Ordens, corretoras e custos": [
+  {
+   "question": "O que é slippage?",
+   "options": [
+    "A taxa fixa da corretora",
+    "A diferença entre o preço esperado e o preço executado",
+    "O intervalo entre compra e venda de um mesmo dia"
+   ],
+   "correct": 1,
+   "why": "Slippage é a diferença entre o preço que você planejou e o preço em que a ordem de fato foi executada."
+  },
+  {
+   "question": "Um setup com alvo de US$ 0,20 e custo total de US$ 0,08 por ação…",
+   "options": [
+    "Continua ótimo, custo não importa",
+    "Perde 40% do potencial só com custos",
+    "Fica melhor com mais alavancagem"
+   ],
+   "correct": 1,
+   "why": "Custos comem uma parte fixa do resultado; em alvos pequenos, o impacto proporcional é grande."
+  }
+ ],
+ "O que o OneB pode e nao pode fazer": [
+  {
+   "question": "O OneB envia ordens para a sua corretora?",
+   "options": [
+    "Sim, quando o estado é Setup em formação",
+    "Não, ele só monitora, alerta e explica",
+    "Só com o Assistente ativo"
+   ],
+   "correct": 1,
+   "why": "O OneB é ferramenta de monitoramento e apoio à decisão; não executa ordens."
+  },
+  {
+   "question": "“Sem setup” significa…",
+   "options": [
+    "Que o sistema falhou",
+    "Que não há combinação de contexto e gatilho que justifique agir agora",
+    "Que o ativo vai cair"
+   ],
+   "correct": 1,
+   "why": "Sem setup é uma resposta válida: esperar também é decisão."
+  }
+ ],
+ "Montando sua watchlist piloto": [
+  {
+   "question": "Por que começar com poucos ativos?",
+   "options": [
+    "Porque o sistema cobra por ativo",
+    "Para reduzir ruído e conseguir revisar cada decisão",
+    "Porque poucos ativos sempre sobem"
+   ],
+   "correct": 1,
+   "why": "Menos ativos significam menos ruído e revisão de melhor qualidade."
+  },
+  {
+   "question": "Qual critério é mais importante para um ativo da watchlist piloto?",
+   "options": [
+    "Ter liquidez e dados confiáveis",
+    "Ter subido muito no último mês",
+    "Ser citado em redes sociais"
+   ],
+   "correct": 0,
+   "why": "Sem liquidez e dados confiáveis, sinais e custos ficam distorcidos."
+  }
+ ],
+ "Leitura diaria antes da abertura": [
+  {
+   "question": "Antes da abertura, o que olhar primeiro?",
+   "options": [
+    "Índices futuros, calendário do dia e notícias de impacto",
+    "Só o preço da sua ação favorita",
+    "O resultado de ontem da sua carteira"
+   ],
+   "correct": 0,
+   "why": "Contexto primeiro: futuros, eventos e notícias mostram o terreno antes do setup."
+  },
+  {
+   "question": "Um evento macro de alto impacto às 9:30 sugere…",
+   "options": [
+    "Aumentar o tamanho da posição",
+    "Esperar a reação antes de agir",
+    "Ignorar, porque é só macro"
+   ],
+   "correct": 1,
+   "why": "Eventos de alto impacto aumentam volatilidade e gaps; esperar a reação reduz risco."
+  }
+ ],
+ "Candles e price action": [
+  {
+   "question": "Um candle de pavio inferior longo significa…",
+   "options": [
+    "Compra garantida",
+    "Houve rejeição de preços mais baixos naquele período",
+    "Tendência de alta confirmada"
+   ],
+   "correct": 1,
+   "why": "O pavio mostra rejeição, mas sem contexto não é sinal final."
+  },
+  {
+   "question": "Por que não usar um candle isolado como gatilho?",
+   "options": [
+    "Porque candles não mostram preço",
+    "Porque o significado depende do contexto e do nível",
+    "Porque só vale no diário"
+   ],
+   "correct": 1,
+   "why": "O mesmo candle significa coisas diferentes em tendência, faixa ou perto de níveis."
+  }
+ ],
+ "Tendencia, faixa e reversao": [
+  {
+   "question": "Em regime de faixa (lateral), rompimentos…",
+   "options": [
+    "Costumam ser confiáveis",
+    "Tendem a falhar mais; exigem confirmação",
+    "Não existem"
+   ],
+   "correct": 1,
+   "why": "Em lateralidade, muitos rompimentos voltam para dentro da faixa. Confira no histórico do seu ativo antes de transformar isso em regra."
+  },
+  {
+   "question": "No OneB, o regime combina…",
+   "options": [
+    "Só o preço de fechamento",
+    "Médias, RSI, força da tendência (ADX) e estrutura",
+    "Notícias e redes sociais"
+   ],
+   "correct": 1,
+   "why": "O regime diário usa EMA 20/50, RSI, ADX e máximas/mínimas recentes."
+  }
+ ],
+ "Suporte, resistencia e zonas": [
+  {
+   "question": "Por que tratar suporte como zona, e não como linha exata?",
+   "options": [
+    "Porque o preço raramente respeita um valor exato",
+    "Porque zonas são mais bonitas",
+    "Porque linhas não aparecem no gráfico"
+   ],
+   "correct": 0,
+   "why": "O mercado reage em regiões; zonas evitam stops apertados demais."
+  },
+  {
+   "question": "A ideia de que “resistência rompida vira suporte” deve ser tratada como…",
+   "options": [
+    "Regra garantida",
+    "Hipótese a testar no seu ativo, com custos",
+    "Sinal de venda"
+   ],
+   "correct": 1,
+   "why": "É uma heurística popular. Sem teste no ativo e no horário em que você opera, ela não é evidência."
+  }
+ ],
+ "Medias, RSI e MACD sem excesso de sinal": [
+  {
+   "question": "RSI acima de 70 indica…",
+   "options": [
+    "Venda imediata",
+    "Movimento esticado, que pode continuar em tendência forte",
+    "Erro nos dados"
+   ],
+   "correct": 1,
+   "why": "RSI alto mostra força esticada; em tendência forte ele pode ficar alto por muito tempo."
+  },
+  {
+   "question": "MACD cruzando acima da linha de sinal mostra…",
+   "options": [
+    "Aceleração do momentum de alta",
+    "Que o volume subiu",
+    "Que o preço está barato"
+   ],
+   "correct": 0,
+   "why": "O MACD mede aceleração entre médias; o cruzamento indica ganho de momentum."
+  }
+ ],
+ "Volume e forca do movimento": [
+  {
+   "question": "Rompimento com volume abaixo da média…",
+   "options": [
+    "É mais confiável",
+    "Merece desconfiança",
+    "Não tem relação com volume"
+   ],
+   "correct": 1,
+   "why": "É a leitura comum: sem participação, o rompimento tende a ser mais frágil. Trate como hipótese e confira no histórico do ativo."
+  },
+  {
+   "question": "Volume relativo de 2,0x significa…",
+   "options": [
+    "O dobro do volume médio recente",
+    "Metade do volume médio",
+    "Que o preço dobrou"
+   ],
+   "correct": 0,
+   "why": "Volume relativo compara o volume atual à média recente."
+  }
+ ],
+ "ATR, Bollinger e volatilidade": [
+  {
+   "question": "Para que serve o ATR no plano?",
+   "options": [
+    "Escolher a direção",
+    "Dimensionar stop e alvo ao tamanho típico do movimento",
+    "Medir notícias"
+   ],
+   "correct": 1,
+   "why": "O ATR mostra a amplitude típica; stops menores que isso são atingidos por ruído."
+  },
+  {
+   "question": "Com ATR maior, mantendo o mesmo risco em dólares, a posição deve…",
+   "options": [
+    "Aumentar",
+    "Diminuir",
+    "Ficar igual"
+   ],
+   "correct": 1,
+   "why": "Stop mais distante com o mesmo risco exige menos unidades."
+  }
+ ],
+ "Montando um setup na Mesa Tecnica": [
+  {
+   "question": "O que precisa existir antes da entrada?",
+   "options": [
+    "Tese, gatilho, stop, alvo e invalidação",
+    "Só o alvo",
+    "Uma notícia positiva"
+   ],
+   "correct": 0,
+   "why": "Um setup auditável tem todas essas partes definidas antes de agir."
+  },
+  {
+   "question": "Risco/retorno abaixo de 1,5R sugere…",
+   "options": [
+    "Aumentar a posição",
+    "Rever o plano ou aceitar Sem setup",
+    "Tirar o stop"
+   ],
+   "correct": 1,
+   "why": "Com R/R menor, o setup precisa acertar mais para pagar os custos. Sem evidência de acerto alto, rever o plano ou aceitar Sem setup é o caminho."
+  }
+ ],
+ "Definindo seu risco maximo": [
+  {
+   "question": "Com US$ 10.000 e risco de 1% por operação, a perda máxima planejada é…",
+   "options": [
+    "US$ 10",
+    "US$ 100",
+    "US$ 1.000"
+   ],
+   "correct": 1,
+   "why": "1% de 10.000 é 100: é quanto você aceita perder se o stop for atingido."
+  },
+  {
+   "question": "Um limite de perda diário serve para…",
+   "options": [
+    "Parar antes que decisões emocionais aumentem o prejuízo",
+    "Aumentar o número de operações",
+    "Evitar impostos"
+   ],
+   "correct": 0,
+   "why": "Limites diários interrompem sequências emocionais."
+  }
+ ],
+ "Tamanho de posicao e stop": [
+  {
+   "question": "Risco de US$ 100 e stop a US$ 2 da entrada: quantas ações?",
+   "options": [
+    "20",
+    "50",
+    "200"
+   ],
+   "correct": 1,
+   "why": "Quantidade = risco em dólares ÷ distância até o stop = 100 ÷ 2 = 50."
+  },
+  {
+   "question": "O que vem primeiro?",
+   "options": [
+    "Escolher o alvo",
+    "Definir o stop e o tamanho",
+    "Escolher a alavancagem"
+   ],
+   "correct": 1,
+   "why": "O tamanho nasce do stop; o alvo vem depois."
+  }
+ ],
+ "Circuit breakers pessoais": [
+  {
+   "question": "Um circuit breaker pessoal é…",
+   "options": [
+    "Uma regra que interrompe a operação após perdas definidas",
+    "Um tipo de ordem da bolsa",
+    "Um indicador técnico"
+   ],
+   "correct": 0,
+   "why": "É uma regra escrita antes, para parar depois de X perdas ou Y% no dia."
+  },
+  {
+   "question": "Depois de 3 perdas seguidas, a regra mais saudável é…",
+   "options": [
+    "Dobrar o tamanho para recuperar",
+    "Parar e revisar",
+    "Trocar de ativo imediatamente"
+   ],
+   "correct": 1,
+   "why": "Parar e revisar evita o ciclo de recuperação emocional."
+  }
+ ],
+ "Lidando com FOMO e overtrading": [
+  {
+   "question": "FOMO costuma levar a…",
+   "options": [
+    "Entradas atrasadas, sem plano, depois do movimento",
+    "Stops mais bem posicionados",
+    "Menos operações"
+   ],
+   "correct": 0,
+   "why": "O medo de ficar de fora faz entrar tarde e sem plano."
+  },
+  {
+   "question": "Um bom antídoto para overtrading é…",
+   "options": [
+    "Limitar o número de operações por dia",
+    "Operar mais ativos",
+    "Seguir mais pessoas"
+   ],
+   "correct": 0,
+   "why": "Limites objetivos reduzem decisões impulsivas."
+  }
+ ],
+ "Quando aceitar o NO_TRADE": [
+  {
+   "question": "Quando regime diário e leitura intradiária discordam, o estado tende a ser…",
+   "options": [
+    "Setup em formação",
+    "Sem setup",
+    "Observar com viés forte"
+   ],
+   "correct": 1,
+   "why": "Sinais conflitantes pedem espera: Sem setup."
+  },
+  {
+   "question": "Aceitar Sem setup é…",
+   "options": [
+    "Perder oportunidade",
+    "Uma decisão profissional quando falta confluência",
+    "Um erro do sistema"
+   ],
+   "correct": 1,
+   "why": "Esperar faz parte do processo quando o contexto não sustenta a entrada."
+  }
+ ],
+ "Journaling de decisoes": [
+  {
+   "question": "O que registrar no diário?",
+   "options": [
+    "Só o resultado financeiro",
+    "Tese, gatilho, invalidação, risco e resultado",
+    "Apenas as operações vencedoras"
+   ],
+   "correct": 1,
+   "why": "Sem o processo registrado, não há como revisar a decisão."
+  },
+  {
+   "question": "Registrar decisões de não agir…",
+   "options": [
+    "É desnecessário",
+    "Também é importante para avaliar o processo",
+    "Atrapalha a estatística"
+   ],
+   "correct": 1,
+   "why": "Decisões de espera também mostram disciplina e qualidade de leitura."
+  }
+ ],
+ "Tese, gatilho e invalidacao": [
+  {
+   "question": "Invalidação é…",
+   "options": [
+    "O ponto em que a tese deixa de fazer sentido",
+    "O alvo da operação",
+    "O preço médio"
+   ],
+   "correct": 0,
+   "why": "É o que prova que você estava errado, e define o stop."
+  },
+  {
+   "question": "“Vou entrar se romper 180 com volume acima da média” é…",
+   "options": [
+    "Uma tese",
+    "Um gatilho",
+    "Uma invalidação"
+   ],
+   "correct": 1,
+   "why": "Gatilho é o evento objetivo que dispara a entrada."
+  }
+ ],
+ "Revisao de falso positivo": [
+  {
+   "question": "Um falso positivo é…",
+   "options": [
+    "Um sinal que parecia bom e falhou",
+    "Um lucro inesperado",
+    "Um erro de cotação"
+   ],
+   "correct": 0,
+   "why": "É o sinal que cumpriu as regras e ainda assim não funcionou."
+  },
+  {
+   "question": "Ao revisar um falso positivo, o objetivo é…",
+   "options": [
+    "Achar um culpado",
+    "Descobrir se falta um filtro ou se foi variância normal",
+    "Parar de operar"
+   ],
+   "correct": 1,
+   "why": "Nem todo erro é de regra; às vezes é a variância natural do método."
+  }
+ ],
+ "Checklist semanal da Mesa": [
+  {
+   "question": "O checklist semanal serve para…",
+   "options": [
+    "Revisar processo, sinais e risco com regularidade",
+    "Escolher ações da semana que vem",
+    "Substituir o diário"
+   ],
+   "correct": 0,
+   "why": "É a revisão periódica do processo, complementar ao diário."
+  },
+  {
+   "question": "Drawdown é…",
+   "options": [
+    "A maior queda do capital a partir de um pico",
+    "O lucro da semana",
+    "O volume médio"
+   ],
+   "correct": 0,
+   "why": "Drawdown mede a pior sequência de perdas a partir de um topo."
+  }
+ ],
+ "Plano de evolucao individual": [
+  {
+   "question": "Como escolher a próxima aula?",
+   "options": [
+    "Pelo erro mais recente ou mais frequente",
+    "Pela aula mais curta",
+    "Aleatoriamente"
+   ],
+   "correct": 0,
+   "why": "Estudar o que corrige seu erro atual dá o maior retorno."
+  },
+  {
+   "question": "Um bom objetivo de evolução é…",
+   "options": [
+    "Ganhar mais dinheiro",
+    "Reduzir entradas sem invalidação definida para zero em 4 semanas",
+    "Operar todos os dias"
+   ],
+   "correct": 1,
+   "why": "Objetivos de processo são mensuráveis e controláveis."
+  }
+ ],
+ "Acerto não é lucro": [
+  {
+   "question": "Acerto de 70%, ganho médio de +0,3R e perda média de −1R. A expectativa é…",
+   "options": [
+    "+0,21R",
+    "−0,09R",
+    "+0,40R"
+   ],
+   "correct": 1,
+   "why": "0,70 × 0,3 − 0,30 × 1 = 0,21 − 0,30 = −0,09R por operação: acerta muito e perde dinheiro."
+  },
+  {
+   "question": "No teste do OneB, a Caixa de Londres acertou 55% em 1.164 operações. O resultado foi…",
+   "options": [
+    "Lucro consistente",
+    "Perda: −0,068R por operação e os 8 anos negativos",
+    "Empate exato"
+   ],
+   "correct": 1,
+   "why": "O ganho médio foi só ~70% da perda média; acertar mais da metade não bastou."
+  },
+  {
+   "question": "Um alvo bem curto costuma…",
+   "options": [
+    "Aumentar o acerto e diminuir o ganho por acerto",
+    "Aumentar o acerto e o lucro",
+    "Não mudar nada"
+   ],
+   "correct": 0,
+   "why": "Alvo curto é atingido com facilidade, mas paga pouco. Num teste nosso, alvo de US$ 1 no ouro deu 81% de “acerto” numa estratégia perdedora."
+  }
+ ],
+ "Custos que somem com o resultado": [
+  {
+   "question": "O Gold Fakeout testado pelo OneB deu +0,008R sem custos e −0,116R com custos. Isso mostra que…",
+   "options": [
+    "O setup não tinha vantagem para pagar o spread",
+    "Os custos estavam errados",
+    "O setup é bom"
+   ],
+   "correct": 0,
+   "why": "Sem custos ele empatava; o spread e o slippage transformaram empate em perda."
+  },
+  {
+   "question": "Alvo de US$ 2,00, spread de US$ 0,30 e slippage de US$ 0,05 por lado. O custo de ida e volta é cerca de…",
+   "options": [
+    "US$ 0,05",
+    "US$ 0,40",
+    "US$ 2,00"
+   ],
+   "correct": 1,
+   "why": "0,30 de spread + 0,05 × 2 de slippage = 0,40, ou 20% do alvo."
+  },
+  {
+   "question": "Um backtest que não informa os custos usados deve ser lido como…",
+   "options": [
+    "Com custos realistas",
+    "Sem custos",
+    "Auditado"
+   ],
+   "correct": 1,
+   "why": "Se não diz, assuma o pior: o resultado provavelmente ignora spread e slippage."
+  }
+ ],
+ "Backtest honesto: olhar o futuro sem perceber": [
+  {
+   "question": "Um candle de 5 min que começa às 10:00 tem o fechamento conhecido às…",
+   "options": [
+    "10:00",
+    "10:05",
+    "10:30"
+   ],
+   "correct": 1,
+   "why": "Só às 10:05. Um sinal “às 10:00” que usa esse fechamento olhou o futuro."
+  },
+  {
+   "question": "Ao corrigir o carimbo do sinal para o fechamento da barra, a linha de base de +0,34R do OneB…",
+   "options": [
+    "Melhorou",
+    "Desapareceu: era fruto do erro",
+    "Ficou igual"
+   ],
+   "correct": 1,
+   "why": "O ganho inteiro vinha do look-ahead. Por isso todo sinal do OneB é registrado no fechamento da barra."
+  },
+  {
+   "question": "Repaint é…",
+   "options": [
+    "O indicador mudar ou apagar um sinal depois que ele apareceu",
+    "Trocar a cor do gráfico",
+    "Um tipo de ordem"
+   ],
+   "correct": 0,
+   "why": "No gráfico passado só sobram os sinais “bons”; para testar, é preciso gravar o que aparecia em cada momento."
+  }
+ ],
+ "Fora da amostra e pré-registro": [
+  {
+   "question": "Testando 20 variações com critério de 5%, quantos falsos positivos se esperam em média?",
+   "options": [
+    "Nenhum",
+    "Cerca de 1",
+    "Cerca de 10"
+   ],
+   "correct": 1,
+   "why": "20 × 5% = 1. Por isso a exigência de evidência aumenta com o número de tentativas."
+  },
+  {
+   "question": "Pré-registrar um teste significa…",
+   "options": [
+    "Escrever a regra de aprovação antes de ver o resultado",
+    "Publicar só os bons resultados",
+    "Testar no mesmo período várias vezes"
+   ],
+   "correct": 0,
+   "why": "A regra fica travada antes; ninguém pode afrouxá-la depois de ver o número."
+  },
+  {
+   "question": "Um método positivo em 2019–2022 e perto de zero em 2025–2026 deve ser…",
+   "options": [
+    "Aprovado pela média",
+    "Tratado como degradado: pode ter parado de funcionar",
+    "Operado com mais tamanho"
+   ],
+   "correct": 1,
+   "why": "Exigimos que o resultado valha também na janela recente; média antiga não basta."
+  }
+ ],
+ "Lendo promessas de sinais": [
+  {
+   "question": "“Auditado” sem nome do auditor, método e relatório é…",
+   "options": [
+    "Auditoria",
+    "Marketing",
+    "Obrigação legal cumprida"
+   ],
+   "correct": 1,
+   "why": "Auditoria tem autor identificável, método e relatório que outros podem conferir."
+  },
+  {
+   "question": "Se atingir o TP1 já conta como acerto…",
+   "options": [
+    "O acerto fica inflado",
+    "O acerto fica mais conservador",
+    "Nada muda"
+   ],
+   "correct": 0,
+   "why": "O TP1 costuma ser curto e o resto da operação pode terminar no stop."
+  },
+  {
+   "question": "Qual informação é indispensável para avaliar um serviço de sinais?",
+   "options": [
+    "Número de seguidores",
+    "Expectativa em R depois de custos, com histórico completo",
+    "Prints de lucro"
+   ],
+   "correct": 1,
+   "why": "Sem expectativa líquida e histórico completo, inclusive perdas, não há como avaliar."
+  }
+ ],
+ "64 regras testadas: o que reprovou e por quê": [
+  {
+   "question": "Das 64 regras testadas com custo real em 2019-2022, quantas sobreviveram à correção para múltiplos testes?",
+   "options": [
+    "Nenhuma",
+    "Quatro",
+    "Metade"
+   ],
+   "correct": 0,
+   "why": "Só 4 ficaram positivas, todas perto de zero, e nenhuma passou na correção."
+  },
+  {
+   "question": "Sem custo nenhum, a regra típica do laboratório ficou em torno de:",
+   "options": [
+    "+0,30R por trade",
+    "−0,02R por trade",
+    "+1R por trade"
+   ],
+   "correct": 1,
+   "why": "A maioria das regras não tem vantagem nem antes do spread; o custo só piora."
+  },
+  {
+   "question": "Por que testar 64 regras exige correção para múltiplos testes?",
+   "options": [
+    "Porque algumas parecem boas só por sorte",
+    "Porque o computador erra com muitas regras",
+    "Porque o spread muda"
+   ],
+   "correct": 0,
+   "why": "Com muitas tentativas, algumas passam por acaso; a correção desconta isso."
+  }
+ ],
+ "Horário e spread: quando o custo come o movimento": [
+  {
+   "question": "O que mede o 'custo do spread' no mapa de horários?",
+   "options": [
+    "O spread em reais",
+    "Quanto do movimento típico da hora o spread consome",
+    "A comissão da corretora"
+   ],
+   "correct": 1,
+   "why": "É o spread de ida e volta dividido pela amplitude típica daquela hora."
+  },
+  {
+   "question": "Na HonorPro, o US500.s comparado ao US100.s custa, em proporção ao preço:",
+   "options": [
+    "O mesmo",
+    "Cerca de 25 vezes mais",
+    "Metade"
+   ],
+   "correct": 1,
+   "why": "5,3 pontos num índice de ~7.700 contra 0,7 ponto num de ~25.000."
+  },
+  {
+   "question": "A calculadora mostra 'abaixo do lote mínimo'. O que isso significa?",
+   "options": [
+    "Que o trade é seguro",
+    "Que nem o menor lote cabe no risco que você escolheu",
+    "Que a corretora está fechada"
+   ],
+   "correct": 1,
+   "why": "Operar mesmo assim arriscaria mais do que o seu limite."
+  }
+ ]
+}

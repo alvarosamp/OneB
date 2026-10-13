@@ -1,4 +1,5 @@
-import type { CourseDetail, CourseSummary, LessonSummary } from '../types';
+import { api } from '../api/client';
+import type { CourseDetail, CourseSummary, LearningState, LessonState, LessonSummary } from '../types';
 import { readJson, writeJson } from './storage';
 
 export type TrackStatus = 'nao-iniciada' | 'andamento' | 'concluida';
@@ -45,7 +46,50 @@ export function firstIncomplete(course: CourseDetail): LessonSummary | null {
   return lessons.find((l) => !l.completed) ?? lessons[0] ?? null;
 }
 
-// ---- Progresso local (só neste navegador) ----
+/** Trilha que leva o aluno novo para a Academia depois do login até ser concluída. */
+export const ONBOARDING_TRACK = 'fundamentos';
+
+/**
+ * Para onde ir depois do login quando não há página de origem: quem ainda não
+ * terminou a trilha de fundamentos começa na Academia; os demais vão para Hoje.
+ * Sem dados (API falhou), mantém o destino antigo.
+ */
+export function afterLoginPath(state: Pick<LearningState, 'courses'> | null): string {
+  const first = state?.courses.find((c) => c.slug === ONBOARDING_TRACK);
+  if (!first || first.lesson_count === 0) return '/ferramenta';
+  return first.completed_count < first.lesson_count ? '/academia' : '/ferramenta';
+}
+
+export async function postLoginPath(): Promise<string> {
+  try {
+    return afterLoginPath(await api.get<LearningState>('/api/lms/learning-state'));
+  } catch {
+    return afterLoginPath(null);
+  }
+}
+
+// ---- Estado no servidor (anotação, exercício feito, última aula) ----
+// O localStorage abaixo continua como cache/fallback: se a API falhar, nada se perde
+// neste navegador, e um exercício feito antes da migração é enviado ao servidor.
+
+export function fetchLessonState(lessonId: number): Promise<LessonState> {
+  return api.get<LessonState>(`/api/lms/lessons/${lessonId}/state`);
+}
+
+export function visitLesson(lessonId: number): Promise<LessonState> {
+  return api.post<LessonState>(`/api/lms/lessons/${lessonId}/visit`);
+}
+
+export function saveNoteRemote(lessonId: number, note: string): Promise<LessonState> {
+  return api.put<LessonState>(`/api/lms/lessons/${lessonId}/note`, { note });
+}
+
+/** Exercício aberto (aulas sem quiz): o servidor exige uma resposta de pelo menos 40 caracteres. */
+export function passExerciseRemote(lessonId: number, answer: string): Promise<LessonState> {
+  return api.post<LessonState>(`/api/lms/lessons/${lessonId}/exercise`, { answer });
+}
+
+// ---- Progresso local (cache deste navegador) ----
 
 interface LastLesson {
   slug: string;
@@ -65,7 +109,6 @@ export function lastLesson(): LastLesson | null {
 
 const noteKey = (lessonId: number) => `oneb.academia.anotacoes.${lessonId}`;
 const videoKey = (lessonId: number) => `oneb.academia.video.${lessonId}`;
-const exerciseKey = (lessonId: number) => `oneb.academia.exercicio.${lessonId}`;
 
 export function readNote(lessonId: number): string {
   return readJson<string>(noteKey(lessonId), '');
@@ -81,14 +124,6 @@ export function readVideoPosition(lessonId: number): number {
 
 export function writeVideoPosition(lessonId: number, seconds: number) {
   writeJson(videoKey(lessonId), Math.floor(seconds));
-}
-
-export function exercisePassed(lessonId: number): boolean {
-  return readJson<boolean>(exerciseKey(lessonId), false);
-}
-
-export function markExercisePassed(lessonId: number) {
-  writeJson(exerciseKey(lessonId), true);
 }
 
 /** Vídeo em arquivo direto (permite retomada e atalhos); YouTube/Vimeo não. */

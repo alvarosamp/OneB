@@ -238,3 +238,20 @@ a.track:hover {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.labCta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-5);
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.labCta > div {
+  display: grid;
+  gap: var(--sp-2);
+  max-width: var(--measure);
+}

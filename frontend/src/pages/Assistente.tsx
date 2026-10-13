@@ -2,12 +2,14 @@ import { useId } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, TabPanel, Tabs } from '../components/ui';
 import { MarketView } from '../components/assistant/MarketView';
+import { OpportunitiesView } from '../components/assistant/OpportunitiesView';
 import { AssetAnalysis, SetupReview } from '../components/assistant/AssetAnalysis';
 import { AskQuestion } from '../components/assistant/AskQuestion';
 import { AlertExplain } from '../components/assistant/AlertExplain';
 import styles from './Assistente.module.css';
 
 const MODES = [
+  { value: 'oportunidades', label: 'Oportunidades' },
   { value: 'mercado', label: 'Visão do mercado' },
   { value: 'ativo', label: 'Analisar ativo' },
   { value: 'setup', label: 'Revisar setup' },
@@ -36,9 +38,10 @@ export function Assistente() {
 
   return (
     <div className={styles.page}>
-      <PageHeader title="Assistente" description="Explica o mercado e os seus ativos a partir dos dados coletados pelo OneB. Não recomenda compra ou venda." />
+      <PageHeader title="Assistente" description="Quant Engine decide, Risk Engine controla, OneB AI explica e você decide. Nenhuma ordem é enviada." />
       <Tabs items={[...MODES]} value={mode} onChange={(m) => go(m)} label="Modo do Assistente" variant="segmented" idBase={idBase} />
       <TabPanel idBase={idBase} value={mode}>
+        {mode === 'oportunidades' && <OpportunitiesView />}
         {mode === 'mercado' && <MarketView onAnalyze={(s) => go('ativo', { symbol: s })} />}
         {mode === 'ativo' && <AssetAnalysis key={symbol ?? ''} initialSymbol={symbol} />}
         {mode === 'setup' && <SetupReview initialSymbol={symbol} />}

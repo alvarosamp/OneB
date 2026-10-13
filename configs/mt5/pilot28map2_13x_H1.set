@@ -1,0 +1,7 @@
+Family=2
+BufferCount=6
+ClosedBarLookback=80
+MaxObjects=1000
+RunLabel=pilot28map2_13x_H1
+CalculateEveryTick=true
+OverrideGapSession=false

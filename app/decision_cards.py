@@ -27,6 +27,7 @@ def build_decision_card(row: dict) -> dict:
         "similar_setups": row.get("memory", {}),
         "study_topics": _study_topics(row),
         "prediction": prediction,
+        "reliability": row.get("reliability"),
     }
 
 

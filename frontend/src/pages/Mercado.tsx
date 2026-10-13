@@ -117,6 +117,20 @@ function Calendar() {
     { key: 'impacto', header: 'Impacto', sortValue: (e) => (e.impact === 'high' ? 3 : e.impact === 'medium' ? 2 : 1), render: (e) => (IMPACT[e.impact] ? <Badge tone={IMPACT[e.impact].tone}>{IMPACT[e.impact].label}</Badge> : e.impact) },
     { key: 'proj', header: 'Projeção', align: 'right', render: (e) => <span className="num">{e.forecast || '—'}</span> },
     { key: 'ant', header: 'Anterior', align: 'right', render: (e) => <span className="num">{e.previous || '—'}</span> },
+    {
+      key: 'vol',
+      header: 'Volatilidade típica (30 min)',
+      wrap: true,
+      sortValue: (e) => Math.max(0, ...(e.risk?.assets.map((a) => a.post30 ?? 0) ?? [0])),
+      render: (e) =>
+        e.risk ? (
+          <span className="num" title={`${e.risk.note} Primeiros 5 min: ${e.risk.assets.map((a) => `${a.label} ${formatNumber(a.post5 ?? null, 1)}x`).join(', ')}.`}>
+            {e.risk.assets.map((a) => `${a.label} ${formatNumber(a.post30 ?? null, 1)}x`).join(' · ')}
+          </span>
+        ) : (
+          <span className="muted">—</span>
+        ),
+    },
   ];
   return (
     <Section
@@ -124,6 +138,9 @@ function Calendar() {
       meta="próximos 14 dias, horário local"
       actions={<ChipGroup label="Impacto" value={impact} onChange={setImpact} items={[{ value: 'todos', label: 'Todos' }, { value: 'high', label: 'Só alto impacto' }]} />}
     >
+      <p className="muted">
+        Volatilidade típica: quantas vezes o movimento dos 30 minutos depois da divulgação costuma ser maior que no mesmo horário em dias sem evento (estudo pré-registrado com dados de 2019 a 2026). Indica risco, não direção: com 3x, o mesmo stop é atingido com muito mais facilidade.
+      </p>
       <AsyncContent state={econ} loading={<SkeletonLines lines={10} height={20} />} empty={<EmptyState title="Nenhum evento nos próximos 14 dias" description="O calendário é atualizado diariamente." />} errorTitle="Calendário indisponível">
         {(list) => <Table caption="Calendário econômico" columns={columns} rows={impact === 'high' ? list.filter((e) => e.impact === 'high') : list} rowKey={(e) => `${e.event_name}-${e.event_date}`} initialSort={{ key: 'data', dir: 'asc' }} dense />}
       </AsyncContent>

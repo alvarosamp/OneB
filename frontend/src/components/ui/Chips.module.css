@@ -33,3 +33,9 @@
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
+
+@media (pointer: coarse) {
+  .chip {
+    height: 36px;
+  }
+}

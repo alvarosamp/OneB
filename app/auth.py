@@ -199,7 +199,8 @@ def set_refresh_cookie(response: Response, raw_token: str) -> None:
         httponly=True,
         # Secure só fora de desenvolvimento: o navegador descarta cookie Secure em
         # http:// puro, o que quebraria o dev local em http://localhost.
-        secure=settings.environment == "production",
+        secure=(settings.refresh_cookie_secure if settings.refresh_cookie_secure is not None
+                else settings.environment == "production"),
         samesite="strict",
         path="/api/auth",
     )

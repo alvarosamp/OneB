@@ -15,6 +15,24 @@ from app.market_data.providers import MarketDataProvider, MarketQuote, YahooMark
 DATA_ROOT = Path(os.getenv("MARKET_DATA_ROOT", "data"))
 CACHE_ENABLED = os.getenv("MARKET_DATA_CACHE_ENABLED", "true").lower() == "true"
 CACHE_ONLY = os.getenv("MARKET_DATA_CACHE_ONLY", "false").lower() == "true"
+# Validade do cache em disco por intervalo. Sem isso o primeiro download valia para sempre:
+# em 10/10/2026 o diário do NQ=F ainda era o de 13/08 (tendência, regime e preço congelados).
+CACHE_TTL_SECONDS = {"1m": 60, "2m": 60, "5m": 120, "15m": 300, "30m": 300, "60m": 600, "1h": 600, "90m": 600,
+                     "1d": 1800, "5d": 3600, "1wk": 6 * 3600, "1mo": 12 * 3600}
+DEFAULT_CACHE_TTL_SECONDS = 1800
+
+
+def cache_is_fresh(fetched_at: str | None, interval: str, now: datetime | None = None) -> bool:
+    if not fetched_at:
+        return False
+    try:
+        fetched = datetime.fromisoformat(fetched_at)
+    except ValueError:
+        return False
+    if fetched.tzinfo is None:
+        fetched = fetched.replace(tzinfo=timezone.utc)
+    age = ((now or datetime.now(timezone.utc)) - fetched).total_seconds()
+    return age < CACHE_TTL_SECONDS.get(interval, DEFAULT_CACHE_TTL_SECONDS)
 FORMAT_VERSION = 1
 REQUIRED_COLUMNS = ["open", "high", "low", "close", "volume"]
 logger = logging.getLogger(__name__)
@@ -114,11 +132,11 @@ class MarketDataService:
         cache_only: bool = CACHE_ONLY,
     ) -> pd.DataFrame:
         cached_fallback = self.load_cached_bars(symbol, period=period, interval=interval) if use_cache else None
-        if use_cache and not refresh:
-            if cached_fallback is not None and not cached_fallback.empty:
-                return cached_fallback
+        has_cache = cached_fallback is not None and not cached_fallback.empty
+        if use_cache and not refresh and has_cache and (cache_only or cache_is_fresh(cached_fallback.attrs.get("fetched_at"), interval)):
+            return cached_fallback
         if cache_only:
-            return pd.DataFrame(columns=REQUIRED_COLUMNS)
+            return cached_fallback if has_cache else pd.DataFrame(columns=REQUIRED_COLUMNS)
 
         for provider in self._provider_chain(interval, symbol):
             try:
@@ -143,8 +161,8 @@ class MarketDataService:
                     provider_name=provider.name,
                 )
             return bars
-        if cached_fallback is not None and not cached_fallback.empty:
-            cached_fallback.attrs["cache_fallback"] = True
+        if has_cache:
+            cached_fallback.attrs["cache_fallback"] = True  # fonte falhou: devolve o último dado, marcado como velho
             return cached_fallback
         return pd.DataFrame(columns=REQUIRED_COLUMNS)
 
@@ -191,6 +209,7 @@ class MarketDataService:
                     df = df.set_index("timestamp")
                     bars, _ = normalize_bars(df)
                     bars.attrs["provider"] = provider.name
+                    bars.attrs["fetched_at"] = (metadata or {}).get("fetched_at")
                     return bars
                 except Exception:
                     continue

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
+import { postLoginPath } from '../lib/academia';
 import { AuthLayout } from '../components/AuthLayout';
 import styles from '../components/AuthLayout.module.css';
 import { Button, Input } from '../components/ui';
@@ -21,8 +22,8 @@ export function Login() {
     setSubmitting(true);
     try {
       await login(username, password);
-      const from = (location.state as { from?: string } | null)?.from ?? '/ferramenta';
-      navigate(from, { replace: true });
+      const from = (location.state as { from?: string } | null)?.from;
+      navigate(from ?? (await postLoginPath()), { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível entrar. Tente de novo.');
     } finally {

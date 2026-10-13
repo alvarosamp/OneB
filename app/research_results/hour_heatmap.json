@@ -1,0 +1,4355 @@
+{
+ "generated_at": "2026-10-10T11:43:47.421614+00:00",
+ "timezone": "America/New_York",
+ "method": "Mapa de horários: volatilidade e custo por dia da semana e hora, medidos no M5 da Dukascopy.\n\n    python scripts/build_hour_heatmap.py\n\nPeríodo: os 2 anos mais recentes do arquivo (regime atual). Hora de Nova York, que é onde\nabertura e fechamento dos EUA ficam fixos o ano todo (o horário de verão muda a hora em\nBrasília, não em NY). Grava app/research_results/hour_heatmap.json (pequeno, versionado:\nprodução não tem o HD externo).",
+ "assets": {
+  "NAS100": {
+   "label": "Nasdaq 100",
+   "broker_symbol": "US100.s",
+   "period": {
+    "from": "2024-09-25",
+    "to": "2026-09-25"
+   },
+   "typical_range_bps": 24.87,
+   "cells": [
+    {
+     "weekday": 0,
+     "hour": 0,
+     "range_bps": 14.07,
+     "ratio": 0.57,
+     "spread_bps": 0.834,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0208,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 1,
+     "range_bps": 15.08,
+     "ratio": 0.61,
+     "spread_bps": 0.519,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0194,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 2,
+     "range_bps": 20.26,
+     "ratio": 0.81,
+     "spread_bps": 0.801,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0145,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 3,
+     "range_bps": 25.5,
+     "ratio": 1.03,
+     "spread_bps": 0.81,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0115,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 4,
+     "range_bps": 25.83,
+     "ratio": 1.04,
+     "spread_bps": 0.823,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0113,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 5,
+     "range_bps": 18.83,
+     "ratio": 0.76,
+     "spread_bps": 0.506,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0154,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 6,
+     "range_bps": 18.03,
+     "ratio": 0.73,
+     "spread_bps": 0.513,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0162,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 7,
+     "range_bps": 22.63,
+     "ratio": 0.91,
+     "spread_bps": 0.522,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0128,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 8,
+     "range_bps": 25.06,
+     "ratio": 1.01,
+     "spread_bps": 0.525,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0116,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 9,
+     "range_bps": 65.25,
+     "ratio": 2.62,
+     "spread_bps": 0.644,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0044,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 10,
+     "range_bps": 51.09,
+     "ratio": 2.05,
+     "spread_bps": 0.486,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0057,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 11,
+     "range_bps": 36.2,
+     "ratio": 1.46,
+     "spread_bps": 0.48,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.008,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 12,
+     "range_bps": 30.86,
+     "ratio": 1.24,
+     "spread_bps": 0.485,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0094,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 13,
+     "range_bps": 27.82,
+     "ratio": 1.12,
+     "spread_bps": 0.48,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0104,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 14,
+     "range_bps": 27.9,
+     "ratio": 1.12,
+     "spread_bps": 0.479,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0104,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 15,
+     "range_bps": 29.91,
+     "ratio": 1.2,
+     "spread_bps": 0.481,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0097,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 18,
+     "range_bps": 18.88,
+     "ratio": 0.76,
+     "spread_bps": 0.531,
+     "broker_spread_bps": 0.288,
+     "cost_share": 0.0153,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 19,
+     "range_bps": 15.15,
+     "ratio": 0.61,
+     "spread_bps": 0.523,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0191,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 20,
+     "range_bps": 22.3,
+     "ratio": 0.9,
+     "spread_bps": 0.506,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.013,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 21,
+     "range_bps": 21.31,
+     "ratio": 0.86,
+     "spread_bps": 0.523,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0137,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 22,
+     "range_bps": 16.93,
+     "ratio": 0.68,
+     "spread_bps": 0.506,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0172,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 23,
+     "range_bps": 13.75,
+     "ratio": 0.55,
+     "spread_bps": 0.653,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0212,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 0,
+     "range_bps": 14.29,
+     "ratio": 0.57,
+     "spread_bps": 0.515,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0204,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 1,
+     "range_bps": 17.84,
+     "ratio": 0.72,
+     "spread_bps": 0.523,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0163,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 2,
+     "range_bps": 18.16,
+     "ratio": 0.73,
+     "spread_bps": 0.506,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.016,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 3,
+     "range_bps": 27.02,
+     "ratio": 1.09,
+     "spread_bps": 0.515,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0108,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 4,
+     "range_bps": 23.94,
+     "ratio": 0.96,
+     "spread_bps": 0.52,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0121,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 5,
+     "range_bps": 20.35,
+     "ratio": 0.82,
+     "spread_bps": 0.501,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0142,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 6,
+     "range_bps": 20.57,
+     "ratio": 0.83,
+     "spread_bps": 0.521,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0141,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 7,
+     "range_bps": 21.88,
+     "ratio": 0.88,
+     "spread_bps": 0.501,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0133,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 8,
+     "range_bps": 27.47,
+     "ratio": 1.1,
+     "spread_bps": 0.505,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0106,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 9,
+     "range_bps": 57.09,
+     "ratio": 2.3,
+     "spread_bps": 0.492,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0051,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 10,
+     "range_bps": 56.54,
+     "ratio": 2.27,
+     "spread_bps": 0.481,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0052,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 11,
+     "range_bps": 43.67,
+     "ratio": 1.76,
+     "spread_bps": 0.478,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0067,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 12,
+     "range_bps": 38.09,
+     "ratio": 1.53,
+     "spread_bps": 0.485,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0076,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 13,
+     "range_bps": 31.97,
+     "ratio": 1.29,
+     "spread_bps": 0.478,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0091,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 14,
+     "range_bps": 30.64,
+     "ratio": 1.23,
+     "spread_bps": 0.479,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0095,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 15,
+     "range_bps": 33.61,
+     "ratio": 1.35,
+     "spread_bps": 0.474,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0086,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 18,
+     "range_bps": 17.33,
+     "ratio": 0.7,
+     "spread_bps": 0.695,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0166,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 19,
+     "range_bps": 17.59,
+     "ratio": 0.71,
+     "spread_bps": 0.518,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0163,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 20,
+     "range_bps": 18.27,
+     "ratio": 0.73,
+     "spread_bps": 0.511,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0157,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 21,
+     "range_bps": 16.9,
+     "ratio": 0.68,
+     "spread_bps": 0.515,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.017,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 22,
+     "range_bps": 14.0,
+     "ratio": 0.56,
+     "spread_bps": 0.503,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0205,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 23,
+     "range_bps": 12.91,
+     "ratio": 0.52,
+     "spread_bps": 0.5,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0223,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 0,
+     "range_bps": 13.21,
+     "ratio": 0.53,
+     "spread_bps": 0.504,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0218,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 1,
+     "range_bps": 15.04,
+     "ratio": 0.6,
+     "spread_bps": 0.498,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0191,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 2,
+     "range_bps": 17.7,
+     "ratio": 0.71,
+     "spread_bps": 0.504,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0162,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 3,
+     "range_bps": 21.1,
+     "ratio": 0.85,
+     "spread_bps": 0.512,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0136,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 4,
+     "range_bps": 21.96,
+     "ratio": 0.88,
+     "spread_bps": 0.503,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0131,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 5,
+     "range_bps": 18.95,
+     "ratio": 0.76,
+     "spread_bps": 0.505,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0151,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 6,
+     "range_bps": 18.31,
+     "ratio": 0.74,
+     "spread_bps": 0.504,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0157,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 7,
+     "range_bps": 21.67,
+     "ratio": 0.87,
+     "spread_bps": 0.51,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0132,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 8,
+     "range_bps": 30.73,
+     "ratio": 1.24,
+     "spread_bps": 0.504,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0093,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 9,
+     "range_bps": 60.02,
+     "ratio": 2.41,
+     "spread_bps": 0.49,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0048,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 10,
+     "range_bps": 58.05,
+     "ratio": 2.33,
+     "spread_bps": 0.475,
+     "broker_spread_bps": 0.287,
+     "cost_share": 0.0049,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 11,
+     "range_bps": 40.67,
+     "ratio": 1.64,
+     "spread_bps": 0.473,
+     "broker_spread_bps": 0.288,
+     "cost_share": 0.0071,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 12,
+     "range_bps": 32.32,
+     "ratio": 1.3,
+     "spread_bps": 0.472,
+     "broker_spread_bps": 0.288,
+     "cost_share": 0.0089,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 13,
+     "range_bps": 33.06,
+     "ratio": 1.33,
+     "spread_bps": 0.477,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0087,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 14,
+     "range_bps": 34.2,
+     "ratio": 1.38,
+     "spread_bps": 0.482,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0085,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 15,
+     "range_bps": 39.48,
+     "ratio": 1.59,
+     "spread_bps": 0.482,
+     "broker_spread_bps": 0.289,
+     "cost_share": 0.0073,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 18,
+     "range_bps": 21.72,
+     "ratio": 0.87,
+     "spread_bps": 1.15,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0134,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 19,
+     "range_bps": 18.68,
+     "ratio": 0.75,
+     "spread_bps": 1.11,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0156,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 20,
+     "range_bps": 24.28,
+     "ratio": 0.98,
+     "spread_bps": 1.146,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.012,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 21,
+     "range_bps": 18.81,
+     "ratio": 0.76,
+     "spread_bps": 1.165,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0156,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 22,
+     "range_bps": 17.0,
+     "ratio": 0.68,
+     "spread_bps": 1.158,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0172,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 23,
+     "range_bps": 14.39,
+     "ratio": 0.58,
+     "spread_bps": 1.159,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0204,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 0,
+     "range_bps": 13.84,
+     "ratio": 0.56,
+     "spread_bps": 1.144,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0212,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 1,
+     "range_bps": 17.6,
+     "ratio": 0.71,
+     "spread_bps": 1.15,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0167,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 2,
+     "range_bps": 20.93,
+     "ratio": 0.84,
+     "spread_bps": 1.144,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.014,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 3,
+     "range_bps": 26.06,
+     "ratio": 1.05,
+     "spread_bps": 0.648,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0112,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 4,
+     "range_bps": 26.62,
+     "ratio": 1.07,
+     "spread_bps": 0.696,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.011,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 5,
+     "range_bps": 18.93,
+     "ratio": 0.76,
+     "spread_bps": 0.543,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0155,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 6,
+     "range_bps": 18.52,
+     "ratio": 0.74,
+     "spread_bps": 1.142,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0158,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 7,
+     "range_bps": 25.35,
+     "ratio": 1.02,
+     "spread_bps": 0.529,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0116,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 8,
+     "range_bps": 32.04,
+     "ratio": 1.29,
+     "spread_bps": 1.106,
+     "broker_spread_bps": 0.293,
+     "cost_share": 0.0091,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 9,
+     "range_bps": 67.83,
+     "ratio": 2.73,
+     "spread_bps": 0.499,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0043,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 10,
+     "range_bps": 65.23,
+     "ratio": 2.62,
+     "spread_bps": 0.475,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0045,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 11,
+     "range_bps": 48.0,
+     "ratio": 1.93,
+     "spread_bps": 0.477,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0061,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 12,
+     "range_bps": 39.02,
+     "ratio": 1.57,
+     "spread_bps": 0.483,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0075,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 13,
+     "range_bps": 39.44,
+     "ratio": 1.59,
+     "spread_bps": 0.485,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0074,
+     "hours": 98
+    },
+    {
+     "weekday": 3,
+     "hour": 14,
+     "range_bps": 34.43,
+     "ratio": 1.38,
+     "spread_bps": 0.481,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0084,
+     "hours": 98
+    },
+    {
+     "weekday": 3,
+     "hour": 15,
+     "range_bps": 40.68,
+     "ratio": 1.64,
+     "spread_bps": 0.484,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0072,
+     "hours": 98
+    },
+    {
+     "weekday": 3,
+     "hour": 18,
+     "range_bps": 20.41,
+     "ratio": 0.82,
+     "spread_bps": 0.645,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0143,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 19,
+     "range_bps": 16.8,
+     "ratio": 0.68,
+     "spread_bps": 0.518,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0173,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 20,
+     "range_bps": 21.68,
+     "ratio": 0.87,
+     "spread_bps": 1.135,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0134,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 21,
+     "range_bps": 17.01,
+     "ratio": 0.68,
+     "spread_bps": 0.968,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0171,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 22,
+     "range_bps": 15.7,
+     "ratio": 0.63,
+     "spread_bps": 0.831,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0185,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 23,
+     "range_bps": 13.47,
+     "ratio": 0.54,
+     "spread_bps": 0.977,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0216,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 0,
+     "range_bps": 14.2,
+     "ratio": 0.57,
+     "spread_bps": 1.134,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0205,
+     "hours": 101
+    },
+    {
+     "weekday": 4,
+     "hour": 1,
+     "range_bps": 16.41,
+     "ratio": 0.66,
+     "spread_bps": 0.832,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0177,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 2,
+     "range_bps": 19.01,
+     "ratio": 0.76,
+     "spread_bps": 1.036,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0153,
+     "hours": 101
+    },
+    {
+     "weekday": 4,
+     "hour": 3,
+     "range_bps": 22.22,
+     "ratio": 0.89,
+     "spread_bps": 0.536,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0131,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 4,
+     "range_bps": 22.56,
+     "ratio": 0.91,
+     "spread_bps": 0.521,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0129,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 5,
+     "range_bps": 19.42,
+     "ratio": 0.78,
+     "spread_bps": 0.517,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.015,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 6,
+     "range_bps": 18.46,
+     "ratio": 0.74,
+     "spread_bps": 0.517,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0158,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 7,
+     "range_bps": 21.47,
+     "ratio": 0.86,
+     "spread_bps": 0.516,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0135,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 8,
+     "range_bps": 32.88,
+     "ratio": 1.32,
+     "spread_bps": 0.525,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0088,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 9,
+     "range_bps": 61.34,
+     "ratio": 2.47,
+     "spread_bps": 0.499,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0047,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 10,
+     "range_bps": 64.89,
+     "ratio": 2.61,
+     "spread_bps": 0.491,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0045,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 11,
+     "range_bps": 46.24,
+     "ratio": 1.86,
+     "spread_bps": 0.483,
+     "broker_spread_bps": 0.29,
+     "cost_share": 0.0063,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 12,
+     "range_bps": 35.36,
+     "ratio": 1.42,
+     "spread_bps": 0.487,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0082,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 13,
+     "range_bps": 37.88,
+     "ratio": 1.52,
+     "spread_bps": 0.484,
+     "broker_spread_bps": 0.291,
+     "cost_share": 0.0077,
+     "hours": 98
+    },
+    {
+     "weekday": 4,
+     "hour": 14,
+     "range_bps": 29.55,
+     "ratio": 1.19,
+     "spread_bps": 0.484,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0099,
+     "hours": 98
+    },
+    {
+     "weekday": 4,
+     "hour": 15,
+     "range_bps": 31.08,
+     "ratio": 1.25,
+     "spread_bps": 0.483,
+     "broker_spread_bps": 0.292,
+     "cost_share": 0.0094,
+     "hours": 98
+    }
+   ],
+   "cost_source": "HonorPro (spread medido abr-set/2026)"
+  },
+  "SPX500": {
+   "label": "S&P 500",
+   "broker_symbol": "US500.s",
+   "period": {
+    "from": "2024-09-25",
+    "to": "2026-09-25"
+   },
+   "typical_range_bps": 17.58,
+   "cells": [
+    {
+     "weekday": 0,
+     "hour": 0,
+     "range_bps": 9.22,
+     "ratio": 0.52,
+     "spread_bps": 0.893,
+     "broker_spread_bps": 8.111,
+     "cost_share": 0.8798,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 1,
+     "range_bps": 9.95,
+     "ratio": 0.57,
+     "spread_bps": 0.896,
+     "broker_spread_bps": 8.114,
+     "cost_share": 0.8155,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 2,
+     "range_bps": 13.88,
+     "ratio": 0.79,
+     "spread_bps": 0.901,
+     "broker_spread_bps": 8.106,
+     "cost_share": 0.5839,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 3,
+     "range_bps": 18.18,
+     "ratio": 1.03,
+     "spread_bps": 0.887,
+     "broker_spread_bps": 8.1,
+     "cost_share": 0.4455,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 4,
+     "range_bps": 16.65,
+     "ratio": 0.95,
+     "spread_bps": 0.896,
+     "broker_spread_bps": 8.101,
+     "cost_share": 0.4865,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 5,
+     "range_bps": 11.97,
+     "ratio": 0.68,
+     "spread_bps": 0.908,
+     "broker_spread_bps": 8.042,
+     "cost_share": 0.6721,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 6,
+     "range_bps": 12.58,
+     "ratio": 0.72,
+     "spread_bps": 0.896,
+     "broker_spread_bps": 8.098,
+     "cost_share": 0.6435,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 7,
+     "range_bps": 15.14,
+     "ratio": 0.86,
+     "spread_bps": 0.899,
+     "broker_spread_bps": 8.044,
+     "cost_share": 0.5311,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 8,
+     "range_bps": 17.12,
+     "ratio": 0.97,
+     "spread_bps": 0.892,
+     "broker_spread_bps": 8.033,
+     "cost_share": 0.4692,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 9,
+     "range_bps": 40.69,
+     "ratio": 2.31,
+     "spread_bps": 0.881,
+     "broker_spread_bps": 8.016,
+     "cost_share": 0.197,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 10,
+     "range_bps": 31.96,
+     "ratio": 1.82,
+     "spread_bps": 0.775,
+     "broker_spread_bps": 8.02,
+     "cost_share": 0.2509,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 11,
+     "range_bps": 26.06,
+     "ratio": 1.48,
+     "spread_bps": 0.776,
+     "broker_spread_bps": 8.038,
+     "cost_share": 0.3084,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 12,
+     "range_bps": 22.81,
+     "ratio": 1.3,
+     "spread_bps": 0.781,
+     "broker_spread_bps": 8.04,
+     "cost_share": 0.3525,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 13,
+     "range_bps": 21.77,
+     "ratio": 1.24,
+     "spread_bps": 0.776,
+     "broker_spread_bps": 8.034,
+     "cost_share": 0.3691,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 14,
+     "range_bps": 21.56,
+     "ratio": 1.23,
+     "spread_bps": 0.774,
+     "broker_spread_bps": 8.022,
+     "cost_share": 0.3721,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 15,
+     "range_bps": 25.47,
+     "ratio": 1.45,
+     "spread_bps": 0.777,
+     "broker_spread_bps": 8.035,
+     "cost_share": 0.3155,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 18,
+     "range_bps": 13.29,
+     "ratio": 0.76,
+     "spread_bps": 0.93,
+     "broker_spread_bps": 8.027,
+     "cost_share": 0.6041,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 19,
+     "range_bps": 10.7,
+     "ratio": 0.61,
+     "spread_bps": 0.887,
+     "broker_spread_bps": 8.033,
+     "cost_share": 0.7511,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 20,
+     "range_bps": 14.64,
+     "ratio": 0.83,
+     "spread_bps": 0.887,
+     "broker_spread_bps": 8.053,
+     "cost_share": 0.5499,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 21,
+     "range_bps": 13.82,
+     "ratio": 0.79,
+     "spread_bps": 0.903,
+     "broker_spread_bps": 8.079,
+     "cost_share": 0.5844,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 22,
+     "range_bps": 10.8,
+     "ratio": 0.61,
+     "spread_bps": 0.91,
+     "broker_spread_bps": 8.076,
+     "cost_share": 0.748,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 23,
+     "range_bps": 9.62,
+     "ratio": 0.55,
+     "spread_bps": 0.886,
+     "broker_spread_bps": 8.071,
+     "cost_share": 0.8389,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 0,
+     "range_bps": 9.06,
+     "ratio": 0.52,
+     "spread_bps": 0.9,
+     "broker_spread_bps": 8.072,
+     "cost_share": 0.8913,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 1,
+     "range_bps": 11.96,
+     "ratio": 0.68,
+     "spread_bps": 0.897,
+     "broker_spread_bps": 8.074,
+     "cost_share": 0.6751,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 2,
+     "range_bps": 12.95,
+     "ratio": 0.74,
+     "spread_bps": 0.902,
+     "broker_spread_bps": 8.055,
+     "cost_share": 0.622,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 3,
+     "range_bps": 19.48,
+     "ratio": 1.11,
+     "spread_bps": 0.9,
+     "broker_spread_bps": 8.045,
+     "cost_share": 0.413,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 4,
+     "range_bps": 15.82,
+     "ratio": 0.9,
+     "spread_bps": 0.898,
+     "broker_spread_bps": 8.044,
+     "cost_share": 0.5086,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 5,
+     "range_bps": 13.38,
+     "ratio": 0.76,
+     "spread_bps": 0.885,
+     "broker_spread_bps": 8.046,
+     "cost_share": 0.6015,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 6,
+     "range_bps": 14.1,
+     "ratio": 0.8,
+     "spread_bps": 0.874,
+     "broker_spread_bps": 8.058,
+     "cost_share": 0.5717,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 7,
+     "range_bps": 15.72,
+     "ratio": 0.89,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.058,
+     "cost_share": 0.5127,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 8,
+     "range_bps": 19.81,
+     "ratio": 1.13,
+     "spread_bps": 0.895,
+     "broker_spread_bps": 8.072,
+     "cost_share": 0.4074,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 9,
+     "range_bps": 33.85,
+     "ratio": 1.93,
+     "spread_bps": 0.877,
+     "broker_spread_bps": 8.089,
+     "cost_share": 0.239,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 10,
+     "range_bps": 39.53,
+     "ratio": 2.25,
+     "spread_bps": 0.784,
+     "broker_spread_bps": 8.083,
+     "cost_share": 0.2045,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 11,
+     "range_bps": 27.85,
+     "ratio": 1.58,
+     "spread_bps": 0.784,
+     "broker_spread_bps": 8.069,
+     "cost_share": 0.2897,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 12,
+     "range_bps": 25.42,
+     "ratio": 1.45,
+     "spread_bps": 0.781,
+     "broker_spread_bps": 8.054,
+     "cost_share": 0.3168,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 13,
+     "range_bps": 23.44,
+     "ratio": 1.33,
+     "spread_bps": 0.771,
+     "broker_spread_bps": 8.042,
+     "cost_share": 0.3431,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 14,
+     "range_bps": 23.66,
+     "ratio": 1.35,
+     "spread_bps": 0.77,
+     "broker_spread_bps": 8.062,
+     "cost_share": 0.3407,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 15,
+     "range_bps": 26.88,
+     "ratio": 1.53,
+     "spread_bps": 0.775,
+     "broker_spread_bps": 8.021,
+     "cost_share": 0.2984,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 18,
+     "range_bps": 12.85,
+     "ratio": 0.73,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.01,
+     "cost_share": 0.6231,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 19,
+     "range_bps": 12.24,
+     "ratio": 0.7,
+     "spread_bps": 0.891,
+     "broker_spread_bps": 8.014,
+     "cost_share": 0.6545,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 20,
+     "range_bps": 12.06,
+     "ratio": 0.69,
+     "spread_bps": 0.907,
+     "broker_spread_bps": 8.015,
+     "cost_share": 0.6647,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 21,
+     "range_bps": 10.76,
+     "ratio": 0.61,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.007,
+     "cost_share": 0.744,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 22,
+     "range_bps": 9.35,
+     "ratio": 0.53,
+     "spread_bps": 0.916,
+     "broker_spread_bps": 8.02,
+     "cost_share": 0.8583,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 23,
+     "range_bps": 8.82,
+     "ratio": 0.5,
+     "spread_bps": 0.905,
+     "broker_spread_bps": 8.023,
+     "cost_share": 0.9095,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 0,
+     "range_bps": 8.09,
+     "ratio": 0.46,
+     "spread_bps": 0.905,
+     "broker_spread_bps": 8.019,
+     "cost_share": 0.9914,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 1,
+     "range_bps": 9.92,
+     "ratio": 0.56,
+     "spread_bps": 0.905,
+     "broker_spread_bps": 8.019,
+     "cost_share": 0.8085,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 2,
+     "range_bps": 11.75,
+     "ratio": 0.67,
+     "spread_bps": 0.904,
+     "broker_spread_bps": 8.011,
+     "cost_share": 0.682,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 3,
+     "range_bps": 14.74,
+     "ratio": 0.84,
+     "spread_bps": 0.9,
+     "broker_spread_bps": 8.012,
+     "cost_share": 0.5437,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 4,
+     "range_bps": 14.94,
+     "ratio": 0.85,
+     "spread_bps": 0.903,
+     "broker_spread_bps": 8.003,
+     "cost_share": 0.5357,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 5,
+     "range_bps": 13.71,
+     "ratio": 0.78,
+     "spread_bps": 0.906,
+     "broker_spread_bps": 8.018,
+     "cost_share": 0.5848,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 6,
+     "range_bps": 13.47,
+     "ratio": 0.77,
+     "spread_bps": 0.895,
+     "broker_spread_bps": 8.0,
+     "cost_share": 0.5938,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 7,
+     "range_bps": 16.15,
+     "ratio": 0.92,
+     "spread_bps": 0.89,
+     "broker_spread_bps": 7.992,
+     "cost_share": 0.495,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 8,
+     "range_bps": 22.93,
+     "ratio": 1.3,
+     "spread_bps": 0.884,
+     "broker_spread_bps": 8.004,
+     "cost_share": 0.3491,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 9,
+     "range_bps": 37.41,
+     "ratio": 2.13,
+     "spread_bps": 0.875,
+     "broker_spread_bps": 7.992,
+     "cost_share": 0.2136,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 10,
+     "range_bps": 35.82,
+     "ratio": 2.04,
+     "spread_bps": 0.768,
+     "broker_spread_bps": 7.996,
+     "cost_share": 0.2232,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 11,
+     "range_bps": 31.06,
+     "ratio": 1.77,
+     "spread_bps": 0.771,
+     "broker_spread_bps": 8.011,
+     "cost_share": 0.2579,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 12,
+     "range_bps": 24.12,
+     "ratio": 1.37,
+     "spread_bps": 0.774,
+     "broker_spread_bps": 8.011,
+     "cost_share": 0.3321,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 13,
+     "range_bps": 23.96,
+     "ratio": 1.36,
+     "spread_bps": 0.771,
+     "broker_spread_bps": 8.025,
+     "cost_share": 0.3349,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 14,
+     "range_bps": 26.64,
+     "ratio": 1.52,
+     "spread_bps": 0.767,
+     "broker_spread_bps": 8.042,
+     "cost_share": 0.3019,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 15,
+     "range_bps": 30.7,
+     "ratio": 1.75,
+     "spread_bps": 0.778,
+     "broker_spread_bps": 8.03,
+     "cost_share": 0.2616,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 18,
+     "range_bps": 16.31,
+     "ratio": 0.93,
+     "spread_bps": 0.898,
+     "broker_spread_bps": 8.069,
+     "cost_share": 0.4946,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 19,
+     "range_bps": 13.14,
+     "ratio": 0.75,
+     "spread_bps": 0.89,
+     "broker_spread_bps": 8.06,
+     "cost_share": 0.6134,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 20,
+     "range_bps": 15.69,
+     "ratio": 0.89,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.049,
+     "cost_share": 0.513,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 21,
+     "range_bps": 11.93,
+     "ratio": 0.68,
+     "spread_bps": 0.898,
+     "broker_spread_bps": 8.103,
+     "cost_share": 0.6794,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 22,
+     "range_bps": 10.79,
+     "ratio": 0.61,
+     "spread_bps": 0.9,
+     "broker_spread_bps": 8.104,
+     "cost_share": 0.751,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 23,
+     "range_bps": 9.83,
+     "ratio": 0.56,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.104,
+     "cost_share": 0.8242,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 0,
+     "range_bps": 9.3,
+     "ratio": 0.53,
+     "spread_bps": 0.895,
+     "broker_spread_bps": 8.112,
+     "cost_share": 0.8723,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 1,
+     "range_bps": 11.64,
+     "ratio": 0.66,
+     "spread_bps": 0.888,
+     "broker_spread_bps": 8.111,
+     "cost_share": 0.697,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 2,
+     "range_bps": 14.7,
+     "ratio": 0.84,
+     "spread_bps": 0.897,
+     "broker_spread_bps": 8.102,
+     "cost_share": 0.5513,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 3,
+     "range_bps": 18.46,
+     "ratio": 1.05,
+     "spread_bps": 0.896,
+     "broker_spread_bps": 8.1,
+     "cost_share": 0.4388,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 4,
+     "range_bps": 19.39,
+     "ratio": 1.1,
+     "spread_bps": 0.901,
+     "broker_spread_bps": 8.102,
+     "cost_share": 0.4178,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 5,
+     "range_bps": 12.78,
+     "ratio": 0.73,
+     "spread_bps": 0.888,
+     "broker_spread_bps": 8.102,
+     "cost_share": 0.634,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 6,
+     "range_bps": 15.14,
+     "ratio": 0.86,
+     "spread_bps": 0.896,
+     "broker_spread_bps": 8.097,
+     "cost_share": 0.5349,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 7,
+     "range_bps": 18.6,
+     "ratio": 1.06,
+     "spread_bps": 0.897,
+     "broker_spread_bps": 8.116,
+     "cost_share": 0.4364,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 8,
+     "range_bps": 24.42,
+     "ratio": 1.39,
+     "spread_bps": 0.893,
+     "broker_spread_bps": 8.107,
+     "cost_share": 0.332,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 9,
+     "range_bps": 43.75,
+     "ratio": 2.49,
+     "spread_bps": 0.886,
+     "broker_spread_bps": 8.069,
+     "cost_share": 0.1845,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 10,
+     "range_bps": 42.11,
+     "ratio": 2.39,
+     "spread_bps": 0.773,
+     "broker_spread_bps": 8.058,
+     "cost_share": 0.1914,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 11,
+     "range_bps": 34.33,
+     "ratio": 1.95,
+     "spread_bps": 0.781,
+     "broker_spread_bps": 8.063,
+     "cost_share": 0.2349,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 12,
+     "range_bps": 29.48,
+     "ratio": 1.68,
+     "spread_bps": 0.777,
+     "broker_spread_bps": 8.067,
+     "cost_share": 0.2737,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 13,
+     "range_bps": 30.79,
+     "ratio": 1.75,
+     "spread_bps": 0.77,
+     "broker_spread_bps": 8.063,
+     "cost_share": 0.2618,
+     "hours": 98
+    },
+    {
+     "weekday": 3,
+     "hour": 14,
+     "range_bps": 29.34,
+     "ratio": 1.67,
+     "spread_bps": 0.779,
+     "broker_spread_bps": 8.044,
+     "cost_share": 0.2741,
+     "hours": 98
+    },
+    {
+     "weekday": 3,
+     "hour": 15,
+     "range_bps": 30.34,
+     "ratio": 1.73,
+     "spread_bps": 0.772,
+     "broker_spread_bps": 8.05,
+     "cost_share": 0.2653,
+     "hours": 98
+    },
+    {
+     "weekday": 3,
+     "hour": 18,
+     "range_bps": 14.49,
+     "ratio": 0.82,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.045,
+     "cost_share": 0.5552,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 19,
+     "range_bps": 11.8,
+     "ratio": 0.67,
+     "spread_bps": 0.89,
+     "broker_spread_bps": 8.044,
+     "cost_share": 0.6818,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 20,
+     "range_bps": 14.84,
+     "ratio": 0.84,
+     "spread_bps": 0.897,
+     "broker_spread_bps": 8.046,
+     "cost_share": 0.5423,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 21,
+     "range_bps": 11.55,
+     "ratio": 0.66,
+     "spread_bps": 0.908,
+     "broker_spread_bps": 8.05,
+     "cost_share": 0.6967,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 22,
+     "range_bps": 10.31,
+     "ratio": 0.59,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.06,
+     "cost_share": 0.782,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 23,
+     "range_bps": 9.07,
+     "ratio": 0.52,
+     "spread_bps": 0.893,
+     "broker_spread_bps": 8.062,
+     "cost_share": 0.8889,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 0,
+     "range_bps": 9.32,
+     "ratio": 0.53,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.086,
+     "cost_share": 0.8676,
+     "hours": 101
+    },
+    {
+     "weekday": 4,
+     "hour": 1,
+     "range_bps": 11.1,
+     "ratio": 0.63,
+     "spread_bps": 0.895,
+     "broker_spread_bps": 8.062,
+     "cost_share": 0.726,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 2,
+     "range_bps": 14.05,
+     "ratio": 0.8,
+     "spread_bps": 0.895,
+     "broker_spread_bps": 8.108,
+     "cost_share": 0.577,
+     "hours": 101
+    },
+    {
+     "weekday": 4,
+     "hour": 3,
+     "range_bps": 16.01,
+     "ratio": 0.91,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.085,
+     "cost_share": 0.5051,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 4,
+     "range_bps": 15.62,
+     "ratio": 0.89,
+     "spread_bps": 0.882,
+     "broker_spread_bps": 8.099,
+     "cost_share": 0.5186,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 5,
+     "range_bps": 13.54,
+     "ratio": 0.77,
+     "spread_bps": 0.89,
+     "broker_spread_bps": 8.094,
+     "cost_share": 0.5977,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 6,
+     "range_bps": 13.03,
+     "ratio": 0.74,
+     "spread_bps": 0.9,
+     "broker_spread_bps": 8.087,
+     "cost_share": 0.6205,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 7,
+     "range_bps": 15.24,
+     "ratio": 0.87,
+     "spread_bps": 0.889,
+     "broker_spread_bps": 8.061,
+     "cost_share": 0.529,
+     "hours": 102
+    },
+    {
+     "weekday": 4,
+     "hour": 8,
+     "range_bps": 25.12,
+     "ratio": 1.43,
+     "spread_bps": 0.894,
+     "broker_spread_bps": 8.063,
+     "cost_share": 0.321,
+     "hours": 101
+    },
+    {
+     "weekday": 4,
+     "hour": 9,
+     "range_bps": 37.72,
+     "ratio": 2.15,
+     "spread_bps": 0.882,
+     "broker_spread_bps": 8.08,
+     "cost_share": 0.2142,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 10,
+     "range_bps": 45.44,
+     "ratio": 2.58,
+     "spread_bps": 0.781,
+     "broker_spread_bps": 8.095,
+     "cost_share": 0.1781,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 11,
+     "range_bps": 33.99,
+     "ratio": 1.93,
+     "spread_bps": 0.783,
+     "broker_spread_bps": 8.048,
+     "cost_share": 0.2368,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 12,
+     "range_bps": 27.35,
+     "ratio": 1.56,
+     "spread_bps": 0.776,
+     "broker_spread_bps": 8.043,
+     "cost_share": 0.294,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 13,
+     "range_bps": 27.85,
+     "ratio": 1.58,
+     "spread_bps": 0.791,
+     "broker_spread_bps": 8.071,
+     "cost_share": 0.2898,
+     "hours": 98
+    },
+    {
+     "weekday": 4,
+     "hour": 14,
+     "range_bps": 24.76,
+     "ratio": 1.41,
+     "spread_bps": 0.789,
+     "broker_spread_bps": 8.092,
+     "cost_share": 0.3268,
+     "hours": 98
+    },
+    {
+     "weekday": 4,
+     "hour": 15,
+     "range_bps": 26.95,
+     "ratio": 1.53,
+     "spread_bps": 0.786,
+     "broker_spread_bps": 8.115,
+     "cost_share": 0.3011,
+     "hours": 98
+    }
+   ],
+   "cost_source": "HonorPro (spread medido abr-set/2026)"
+  },
+  "XAUUSD": {
+   "label": "Ouro",
+   "broker_symbol": "XAUUSD.s",
+   "period": {
+    "from": "2024-09-25",
+    "to": "2026-09-25"
+   },
+   "typical_range_bps": 30.24,
+   "cells": [
+    {
+     "weekday": 0,
+     "hour": 0,
+     "range_bps": 23.85,
+     "ratio": 0.79,
+     "spread_bps": 1.672,
+     "broker_spread_bps": 0.694,
+     "cost_share": 0.0291,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 1,
+     "range_bps": 32.18,
+     "ratio": 1.06,
+     "spread_bps": 1.699,
+     "broker_spread_bps": 0.693,
+     "cost_share": 0.0215,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 2,
+     "range_bps": 31.17,
+     "ratio": 1.03,
+     "spread_bps": 1.558,
+     "broker_spread_bps": 0.691,
+     "cost_share": 0.0222,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 3,
+     "range_bps": 33.11,
+     "ratio": 1.09,
+     "spread_bps": 1.534,
+     "broker_spread_bps": 0.692,
+     "cost_share": 0.0209,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 4,
+     "range_bps": 27.04,
+     "ratio": 0.89,
+     "spread_bps": 1.465,
+     "broker_spread_bps": 0.69,
+     "cost_share": 0.0255,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 5,
+     "range_bps": 28.28,
+     "ratio": 0.94,
+     "spread_bps": 1.524,
+     "broker_spread_bps": 0.683,
+     "cost_share": 0.0241,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 6,
+     "range_bps": 28.03,
+     "ratio": 0.93,
+     "spread_bps": 1.491,
+     "broker_spread_bps": 0.689,
+     "cost_share": 0.0246,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 7,
+     "range_bps": 29.16,
+     "ratio": 0.96,
+     "spread_bps": 1.496,
+     "broker_spread_bps": 0.689,
+     "cost_share": 0.0236,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 8,
+     "range_bps": 39.84,
+     "ratio": 1.32,
+     "spread_bps": 1.514,
+     "broker_spread_bps": 0.69,
+     "cost_share": 0.0173,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 9,
+     "range_bps": 49.05,
+     "ratio": 1.62,
+     "spread_bps": 1.506,
+     "broker_spread_bps": 0.689,
+     "cost_share": 0.0141,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 10,
+     "range_bps": 44.94,
+     "ratio": 1.49,
+     "spread_bps": 1.543,
+     "broker_spread_bps": 0.689,
+     "cost_share": 0.0153,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 11,
+     "range_bps": 34.16,
+     "ratio": 1.13,
+     "spread_bps": 1.511,
+     "broker_spread_bps": 0.687,
+     "cost_share": 0.0201,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 12,
+     "range_bps": 25.61,
+     "ratio": 0.85,
+     "spread_bps": 1.514,
+     "broker_spread_bps": 0.687,
+     "cost_share": 0.0268,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 13,
+     "range_bps": 23.64,
+     "ratio": 0.78,
+     "spread_bps": 1.508,
+     "broker_spread_bps": 0.687,
+     "cost_share": 0.029,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 14,
+     "range_bps": 23.03,
+     "ratio": 0.76,
+     "spread_bps": 1.504,
+     "broker_spread_bps": 0.687,
+     "cost_share": 0.0298,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 15,
+     "range_bps": 23.33,
+     "ratio": 0.77,
+     "spread_bps": 1.459,
+     "broker_spread_bps": 0.686,
+     "cost_share": 0.0294,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 16,
+     "range_bps": 16.44,
+     "ratio": 0.54,
+     "spread_bps": 1.507,
+     "broker_spread_bps": 0.686,
+     "cost_share": 0.0417,
+     "hours": 96
+    },
+    {
+     "weekday": 0,
+     "hour": 18,
+     "range_bps": 22.16,
+     "ratio": 0.73,
+     "spread_bps": 1.845,
+     "broker_spread_bps": 0.687,
+     "cost_share": 0.031,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 19,
+     "range_bps": 22.16,
+     "ratio": 0.73,
+     "spread_bps": 1.766,
+     "broker_spread_bps": 0.686,
+     "cost_share": 0.031,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 20,
+     "range_bps": 34.16,
+     "ratio": 1.13,
+     "spread_bps": 1.725,
+     "broker_spread_bps": 0.686,
+     "cost_share": 0.0201,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 21,
+     "range_bps": 37.86,
+     "ratio": 1.25,
+     "spread_bps": 1.717,
+     "broker_spread_bps": 0.684,
+     "cost_share": 0.0181,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 22,
+     "range_bps": 29.3,
+     "ratio": 0.97,
+     "spread_bps": 1.722,
+     "broker_spread_bps": 0.685,
+     "cost_share": 0.0234,
+     "hours": 104
+    },
+    {
+     "weekday": 0,
+     "hour": 23,
+     "range_bps": 24.05,
+     "ratio": 0.8,
+     "spread_bps": 1.696,
+     "broker_spread_bps": 0.683,
+     "cost_share": 0.0284,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 0,
+     "range_bps": 23.4,
+     "ratio": 0.77,
+     "spread_bps": 1.682,
+     "broker_spread_bps": 0.683,
+     "cost_share": 0.0292,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 1,
+     "range_bps": 30.9,
+     "ratio": 1.02,
+     "spread_bps": 1.729,
+     "broker_spread_bps": 0.682,
+     "cost_share": 0.0221,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 2,
+     "range_bps": 33.78,
+     "ratio": 1.12,
+     "spread_bps": 1.556,
+     "broker_spread_bps": 0.684,
+     "cost_share": 0.0202,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 3,
+     "range_bps": 31.27,
+     "ratio": 1.03,
+     "spread_bps": 1.51,
+     "broker_spread_bps": 0.685,
+     "cost_share": 0.0219,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 4,
+     "range_bps": 32.78,
+     "ratio": 1.08,
+     "spread_bps": 1.578,
+     "broker_spread_bps": 0.685,
+     "cost_share": 0.0209,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 5,
+     "range_bps": 25.01,
+     "ratio": 0.83,
+     "spread_bps": 1.547,
+     "broker_spread_bps": 0.686,
+     "cost_share": 0.0274,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 6,
+     "range_bps": 23.57,
+     "ratio": 0.78,
+     "spread_bps": 1.526,
+     "broker_spread_bps": 0.685,
+     "cost_share": 0.029,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 7,
+     "range_bps": 30.13,
+     "ratio": 1.0,
+     "spread_bps": 1.536,
+     "broker_spread_bps": 0.684,
+     "cost_share": 0.0227,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 8,
+     "range_bps": 45.54,
+     "ratio": 1.51,
+     "spread_bps": 1.592,
+     "broker_spread_bps": 0.684,
+     "cost_share": 0.015,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 9,
+     "range_bps": 50.92,
+     "ratio": 1.68,
+     "spread_bps": 1.631,
+     "broker_spread_bps": 0.684,
+     "cost_share": 0.0134,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 10,
+     "range_bps": 53.83,
+     "ratio": 1.78,
+     "spread_bps": 1.624,
+     "broker_spread_bps": 0.682,
+     "cost_share": 0.0127,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 11,
+     "range_bps": 42.14,
+     "ratio": 1.39,
+     "spread_bps": 1.59,
+     "broker_spread_bps": 0.683,
+     "cost_share": 0.0162,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 12,
+     "range_bps": 28.52,
+     "ratio": 0.94,
+     "spread_bps": 1.572,
+     "broker_spread_bps": 0.682,
+     "cost_share": 0.0239,
+     "hours": 104
+    },
+    {
+     "weekday": 1,
+     "hour": 13,
+     "range_bps": 26.26,
+     "ratio": 0.87,
+     "spread_bps": 1.557,
+     "broker_spread_bps": 0.676,
+     "cost_share": 0.0258,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 14,
+     "range_bps": 22.76,
+     "ratio": 0.75,
+     "spread_bps": 1.502,
+     "broker_spread_bps": 0.676,
+     "cost_share": 0.0297,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 15,
+     "range_bps": 23.01,
+     "ratio": 0.76,
+     "spread_bps": 1.52,
+     "broker_spread_bps": 0.674,
+     "cost_share": 0.0293,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 16,
+     "range_bps": 15.64,
+     "ratio": 0.52,
+     "spread_bps": 1.562,
+     "broker_spread_bps": 0.674,
+     "cost_share": 0.0431,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 18,
+     "range_bps": 20.18,
+     "ratio": 0.67,
+     "spread_bps": 1.883,
+     "broker_spread_bps": 0.667,
+     "cost_share": 0.0331,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 19,
+     "range_bps": 24.07,
+     "ratio": 0.8,
+     "spread_bps": 1.77,
+     "broker_spread_bps": 0.667,
+     "cost_share": 0.0277,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 20,
+     "range_bps": 33.7,
+     "ratio": 1.11,
+     "spread_bps": 1.74,
+     "broker_spread_bps": 0.667,
+     "cost_share": 0.0198,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 21,
+     "range_bps": 41.71,
+     "ratio": 1.38,
+     "spread_bps": 1.778,
+     "broker_spread_bps": 0.665,
+     "cost_share": 0.016,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 22,
+     "range_bps": 31.79,
+     "ratio": 1.05,
+     "spread_bps": 1.7,
+     "broker_spread_bps": 0.665,
+     "cost_share": 0.0209,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 23,
+     "range_bps": 24.69,
+     "ratio": 0.82,
+     "spread_bps": 1.726,
+     "broker_spread_bps": 0.665,
+     "cost_share": 0.0269,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 0,
+     "range_bps": 21.99,
+     "ratio": 0.73,
+     "spread_bps": 1.702,
+     "broker_spread_bps": 0.665,
+     "cost_share": 0.0303,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 1,
+     "range_bps": 32.18,
+     "ratio": 1.06,
+     "spread_bps": 1.732,
+     "broker_spread_bps": 0.665,
+     "cost_share": 0.0207,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 2,
+     "range_bps": 28.81,
+     "ratio": 0.95,
+     "spread_bps": 1.576,
+     "broker_spread_bps": 0.664,
+     "cost_share": 0.0231,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 3,
+     "range_bps": 30.13,
+     "ratio": 1.0,
+     "spread_bps": 1.481,
+     "broker_spread_bps": 0.662,
+     "cost_share": 0.022,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 4,
+     "range_bps": 28.47,
+     "ratio": 0.94,
+     "spread_bps": 1.49,
+     "broker_spread_bps": 0.661,
+     "cost_share": 0.0232,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 5,
+     "range_bps": 28.55,
+     "ratio": 0.94,
+     "spread_bps": 1.501,
+     "broker_spread_bps": 0.662,
+     "cost_share": 0.0232,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 6,
+     "range_bps": 26.12,
+     "ratio": 0.86,
+     "spread_bps": 1.504,
+     "broker_spread_bps": 0.662,
+     "cost_share": 0.0253,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 7,
+     "range_bps": 26.04,
+     "ratio": 0.86,
+     "spread_bps": 1.494,
+     "broker_spread_bps": 0.662,
+     "cost_share": 0.0254,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 8,
+     "range_bps": 42.56,
+     "ratio": 1.41,
+     "spread_bps": 1.539,
+     "broker_spread_bps": 0.663,
+     "cost_share": 0.0156,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 9,
+     "range_bps": 53.54,
+     "ratio": 1.77,
+     "spread_bps": 1.539,
+     "broker_spread_bps": 0.663,
+     "cost_share": 0.0124,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 10,
+     "range_bps": 49.19,
+     "ratio": 1.63,
+     "spread_bps": 1.542,
+     "broker_spread_bps": 0.662,
+     "cost_share": 0.0135,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 11,
+     "range_bps": 42.41,
+     "ratio": 1.4,
+     "spread_bps": 1.503,
+     "broker_spread_bps": 0.662,
+     "cost_share": 0.0156,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 12,
+     "range_bps": 28.78,
+     "ratio": 0.95,
+     "spread_bps": 1.512,
+     "broker_spread_bps": 0.662,
+     "cost_share": 0.023,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 13,
+     "range_bps": 27.97,
+     "ratio": 0.92,
+     "spread_bps": 1.484,
+     "broker_spread_bps": 0.673,
+     "cost_share": 0.0241,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 14,
+     "range_bps": 30.07,
+     "ratio": 0.99,
+     "spread_bps": 1.513,
+     "broker_spread_bps": 0.673,
+     "cost_share": 0.0224,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 15,
+     "range_bps": 24.59,
+     "ratio": 0.81,
+     "spread_bps": 1.494,
+     "broker_spread_bps": 0.672,
+     "cost_share": 0.0273,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 16,
+     "range_bps": 20.07,
+     "ratio": 0.66,
+     "spread_bps": 1.523,
+     "broker_spread_bps": 0.673,
+     "cost_share": 0.0335,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 18,
+     "range_bps": 24.36,
+     "ratio": 0.81,
+     "spread_bps": 1.879,
+     "broker_spread_bps": 0.71,
+     "cost_share": 0.0291,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 19,
+     "range_bps": 22.5,
+     "ratio": 0.74,
+     "spread_bps": 1.787,
+     "broker_spread_bps": 0.702,
+     "cost_share": 0.0312,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 20,
+     "range_bps": 34.74,
+     "ratio": 1.15,
+     "spread_bps": 1.734,
+     "broker_spread_bps": 0.711,
+     "cost_share": 0.0205,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 21,
+     "range_bps": 40.6,
+     "ratio": 1.34,
+     "spread_bps": 1.756,
+     "broker_spread_bps": 0.713,
+     "cost_share": 0.0176,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 22,
+     "range_bps": 31.72,
+     "ratio": 1.05,
+     "spread_bps": 1.713,
+     "broker_spread_bps": 0.712,
+     "cost_share": 0.0225,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 23,
+     "range_bps": 23.25,
+     "ratio": 0.77,
+     "spread_bps": 1.714,
+     "broker_spread_bps": 0.713,
+     "cost_share": 0.0307,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 0,
+     "range_bps": 22.48,
+     "ratio": 0.74,
+     "spread_bps": 1.674,
+     "broker_spread_bps": 0.714,
+     "cost_share": 0.0318,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 1,
+     "range_bps": 30.25,
+     "ratio": 1.0,
+     "spread_bps": 1.688,
+     "broker_spread_bps": 0.715,
+     "cost_share": 0.0236,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 2,
+     "range_bps": 29.44,
+     "ratio": 0.97,
+     "spread_bps": 1.6,
+     "broker_spread_bps": 0.715,
+     "cost_share": 0.0243,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 3,
+     "range_bps": 31.78,
+     "ratio": 1.05,
+     "spread_bps": 1.518,
+     "broker_spread_bps": 0.713,
+     "cost_share": 0.0224,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 4,
+     "range_bps": 30.4,
+     "ratio": 1.01,
+     "spread_bps": 1.513,
+     "broker_spread_bps": 0.713,
+     "cost_share": 0.0235,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 5,
+     "range_bps": 27.88,
+     "ratio": 0.92,
+     "spread_bps": 1.527,
+     "broker_spread_bps": 0.713,
+     "cost_share": 0.0256,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 6,
+     "range_bps": 28.43,
+     "ratio": 0.94,
+     "spread_bps": 1.507,
+     "broker_spread_bps": 0.713,
+     "cost_share": 0.0251,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 7,
+     "range_bps": 32.17,
+     "ratio": 1.06,
+     "spread_bps": 1.527,
+     "broker_spread_bps": 0.714,
+     "cost_share": 0.0222,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 8,
+     "range_bps": 46.2,
+     "ratio": 1.53,
+     "spread_bps": 1.587,
+     "broker_spread_bps": 0.713,
+     "cost_share": 0.0154,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 9,
+     "range_bps": 57.75,
+     "ratio": 1.91,
+     "spread_bps": 1.628,
+     "broker_spread_bps": 0.715,
+     "cost_share": 0.0124,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 10,
+     "range_bps": 49.26,
+     "ratio": 1.63,
+     "spread_bps": 1.628,
+     "broker_spread_bps": 0.716,
+     "cost_share": 0.0145,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 11,
+     "range_bps": 37.08,
+     "ratio": 1.23,
+     "spread_bps": 1.604,
+     "broker_spread_bps": 0.715,
+     "cost_share": 0.0193,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 12,
+     "range_bps": 33.4,
+     "ratio": 1.1,
+     "spread_bps": 1.601,
+     "broker_spread_bps": 0.714,
+     "cost_share": 0.0214,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 13,
+     "range_bps": 27.48,
+     "ratio": 0.91,
+     "spread_bps": 1.569,
+     "broker_spread_bps": 0.714,
+     "cost_share": 0.026,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 14,
+     "range_bps": 22.17,
+     "ratio": 0.73,
+     "spread_bps": 1.584,
+     "broker_spread_bps": 0.714,
+     "cost_share": 0.0322,
+     "hours": 99
+    },
+    {
+     "weekday": 3,
+     "hour": 15,
+     "range_bps": 25.29,
+     "ratio": 0.84,
+     "spread_bps": 1.519,
+     "broker_spread_bps": 0.713,
+     "cost_share": 0.0282,
+     "hours": 99
+    },
+    {
+     "weekday": 3,
+     "hour": 16,
+     "range_bps": 17.15,
+     "ratio": 0.57,
+     "spread_bps": 1.613,
+     "broker_spread_bps": 0.714,
+     "cost_share": 0.0416,
+     "hours": 99
+    },
+    {
+     "weekday": 3,
+     "hour": 18,
+     "range_bps": 19.14,
+     "ratio": 0.63,
+     "spread_bps": 1.907,
+     "broker_spread_bps": 0.704,
+     "cost_share": 0.0368,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 19,
+     "range_bps": 23.14,
+     "ratio": 0.77,
+     "spread_bps": 1.796,
+     "broker_spread_bps": 0.704,
+     "cost_share": 0.0304,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 20,
+     "range_bps": 32.37,
+     "ratio": 1.07,
+     "spread_bps": 1.709,
+     "broker_spread_bps": 0.693,
+     "cost_share": 0.0214,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 21,
+     "range_bps": 36.35,
+     "ratio": 1.2,
+     "spread_bps": 1.716,
+     "broker_spread_bps": 0.695,
+     "cost_share": 0.0191,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 22,
+     "range_bps": 28.61,
+     "ratio": 0.95,
+     "spread_bps": 1.7,
+     "broker_spread_bps": 0.696,
+     "cost_share": 0.0243,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 23,
+     "range_bps": 24.69,
+     "ratio": 0.82,
+     "spread_bps": 1.71,
+     "broker_spread_bps": 0.694,
+     "cost_share": 0.0281,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 0,
+     "range_bps": 22.13,
+     "ratio": 0.73,
+     "spread_bps": 1.684,
+     "broker_spread_bps": 0.694,
+     "cost_share": 0.0313,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 1,
+     "range_bps": 28.03,
+     "ratio": 0.93,
+     "spread_bps": 1.701,
+     "broker_spread_bps": 0.695,
+     "cost_share": 0.0248,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 2,
+     "range_bps": 31.75,
+     "ratio": 1.05,
+     "spread_bps": 1.592,
+     "broker_spread_bps": 0.695,
+     "cost_share": 0.0219,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 3,
+     "range_bps": 31.61,
+     "ratio": 1.05,
+     "spread_bps": 1.521,
+     "broker_spread_bps": 0.694,
+     "cost_share": 0.0219,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 4,
+     "range_bps": 29.7,
+     "ratio": 0.98,
+     "spread_bps": 1.556,
+     "broker_spread_bps": 0.693,
+     "cost_share": 0.0233,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 5,
+     "range_bps": 25.16,
+     "ratio": 0.83,
+     "spread_bps": 1.562,
+     "broker_spread_bps": 0.693,
+     "cost_share": 0.0276,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 6,
+     "range_bps": 26.04,
+     "ratio": 0.86,
+     "spread_bps": 1.518,
+     "broker_spread_bps": 0.694,
+     "cost_share": 0.0267,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 7,
+     "range_bps": 28.94,
+     "ratio": 0.96,
+     "spread_bps": 1.565,
+     "broker_spread_bps": 0.694,
+     "cost_share": 0.024,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 8,
+     "range_bps": 48.9,
+     "ratio": 1.62,
+     "spread_bps": 1.594,
+     "broker_spread_bps": 0.693,
+     "cost_share": 0.0142,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 9,
+     "range_bps": 54.18,
+     "ratio": 1.79,
+     "spread_bps": 1.615,
+     "broker_spread_bps": 0.691,
+     "cost_share": 0.0128,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 10,
+     "range_bps": 58.43,
+     "ratio": 1.93,
+     "spread_bps": 1.613,
+     "broker_spread_bps": 0.688,
+     "cost_share": 0.0118,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 11,
+     "range_bps": 39.52,
+     "ratio": 1.31,
+     "spread_bps": 1.604,
+     "broker_spread_bps": 0.688,
+     "cost_share": 0.0174,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 12,
+     "range_bps": 31.2,
+     "ratio": 1.03,
+     "spread_bps": 1.584,
+     "broker_spread_bps": 0.689,
+     "cost_share": 0.0221,
+     "hours": 103
+    },
+    {
+     "weekday": 4,
+     "hour": 13,
+     "range_bps": 30.32,
+     "ratio": 1.0,
+     "spread_bps": 1.595,
+     "broker_spread_bps": 0.697,
+     "cost_share": 0.023,
+     "hours": 100
+    },
+    {
+     "weekday": 4,
+     "hour": 14,
+     "range_bps": 23.19,
+     "ratio": 0.77,
+     "spread_bps": 1.57,
+     "broker_spread_bps": 0.697,
+     "cost_share": 0.0301,
+     "hours": 98
+    },
+    {
+     "weekday": 4,
+     "hour": 15,
+     "range_bps": 25.78,
+     "ratio": 0.85,
+     "spread_bps": 1.502,
+     "broker_spread_bps": 0.698,
+     "cost_share": 0.0271,
+     "hours": 98
+    },
+    {
+     "weekday": 4,
+     "hour": 16,
+     "range_bps": 21.56,
+     "ratio": 0.71,
+     "spread_bps": 1.631,
+     "broker_spread_bps": 0.699,
+     "cost_share": 0.0324,
+     "hours": 98
+    }
+   ],
+   "cost_source": "HonorPro (spread medido abr-set/2026)"
+  },
+  "EURUSD": {
+   "label": "Euro/dólar",
+   "broker_symbol": null,
+   "period": {
+    "from": "2024-09-25",
+    "to": "2026-09-25"
+   },
+   "typical_range_bps": 9.75,
+   "cells": [
+    {
+     "weekday": 0,
+     "hour": 0,
+     "range_bps": 6.51,
+     "ratio": 0.67,
+     "spread_bps": 0.301,
+     "broker_spread_bps": null,
+     "cost_share": 0.0463,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 1,
+     "range_bps": 8.03,
+     "ratio": 0.82,
+     "spread_bps": 0.3,
+     "broker_spread_bps": null,
+     "cost_share": 0.0373,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 2,
+     "range_bps": 13.36,
+     "ratio": 1.37,
+     "spread_bps": 0.263,
+     "broker_spread_bps": null,
+     "cost_share": 0.0197,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 3,
+     "range_bps": 14.85,
+     "ratio": 1.52,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0174,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 4,
+     "range_bps": 13.24,
+     "ratio": 1.36,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0195,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 5,
+     "range_bps": 10.84,
+     "ratio": 1.11,
+     "spread_bps": 0.256,
+     "broker_spread_bps": null,
+     "cost_share": 0.0237,
+     "hours": 102
+    },
+    {
+     "weekday": 0,
+     "hour": 6,
+     "range_bps": 10.36,
+     "ratio": 1.06,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0249,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 7,
+     "range_bps": 12.21,
+     "ratio": 1.25,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0211,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 8,
+     "range_bps": 12.88,
+     "ratio": 1.32,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0201,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 9,
+     "range_bps": 13.66,
+     "ratio": 1.4,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0189,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 10,
+     "range_bps": 14.59,
+     "ratio": 1.5,
+     "spread_bps": 0.257,
+     "broker_spread_bps": null,
+     "cost_share": 0.0176,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 11,
+     "range_bps": 13.38,
+     "ratio": 1.37,
+     "spread_bps": 0.257,
+     "broker_spread_bps": null,
+     "cost_share": 0.0192,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 12,
+     "range_bps": 10.39,
+     "ratio": 1.07,
+     "spread_bps": 0.257,
+     "broker_spread_bps": null,
+     "cost_share": 0.0248,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 13,
+     "range_bps": 9.41,
+     "ratio": 0.97,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0274,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 14,
+     "range_bps": 8.85,
+     "ratio": 0.91,
+     "spread_bps": 0.256,
+     "broker_spread_bps": null,
+     "cost_share": 0.0289,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 15,
+     "range_bps": 6.4,
+     "ratio": 0.66,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0405,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 16,
+     "range_bps": 5.51,
+     "ratio": 0.56,
+     "spread_bps": 0.343,
+     "broker_spread_bps": null,
+     "cost_share": 0.0623,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 17,
+     "range_bps": 5.07,
+     "ratio": 0.52,
+     "spread_bps": 2.447,
+     "broker_spread_bps": null,
+     "cost_share": 0.4826,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 18,
+     "range_bps": 5.25,
+     "ratio": 0.54,
+     "spread_bps": 0.438,
+     "broker_spread_bps": null,
+     "cost_share": 0.0834,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 19,
+     "range_bps": 5.74,
+     "ratio": 0.59,
+     "spread_bps": 0.345,
+     "broker_spread_bps": null,
+     "cost_share": 0.0601,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 20,
+     "range_bps": 8.87,
+     "ratio": 0.91,
+     "spread_bps": 0.339,
+     "broker_spread_bps": null,
+     "cost_share": 0.0382,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 21,
+     "range_bps": 9.09,
+     "ratio": 0.93,
+     "spread_bps": 0.303,
+     "broker_spread_bps": null,
+     "cost_share": 0.0333,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 22,
+     "range_bps": 7.71,
+     "ratio": 0.79,
+     "spread_bps": 0.306,
+     "broker_spread_bps": null,
+     "cost_share": 0.0398,
+     "hours": 103
+    },
+    {
+     "weekday": 0,
+     "hour": 23,
+     "range_bps": 6.5,
+     "ratio": 0.67,
+     "spread_bps": 0.289,
+     "broker_spread_bps": null,
+     "cost_share": 0.0444,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 0,
+     "range_bps": 6.11,
+     "ratio": 0.63,
+     "spread_bps": 0.302,
+     "broker_spread_bps": null,
+     "cost_share": 0.0495,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 1,
+     "range_bps": 7.89,
+     "ratio": 0.81,
+     "spread_bps": 0.301,
+     "broker_spread_bps": null,
+     "cost_share": 0.0381,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 2,
+     "range_bps": 11.26,
+     "ratio": 1.16,
+     "spread_bps": 0.298,
+     "broker_spread_bps": null,
+     "cost_share": 0.0264,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 3,
+     "range_bps": 14.33,
+     "ratio": 1.47,
+     "spread_bps": 0.261,
+     "broker_spread_bps": null,
+     "cost_share": 0.0182,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 4,
+     "range_bps": 12.25,
+     "ratio": 1.26,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0211,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 5,
+     "range_bps": 11.2,
+     "ratio": 1.15,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0231,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 6,
+     "range_bps": 10.38,
+     "ratio": 1.07,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.025,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 7,
+     "range_bps": 12.07,
+     "ratio": 1.24,
+     "spread_bps": 0.257,
+     "broker_spread_bps": null,
+     "cost_share": 0.0213,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 8,
+     "range_bps": 13.99,
+     "ratio": 1.44,
+     "spread_bps": 0.257,
+     "broker_spread_bps": null,
+     "cost_share": 0.0184,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 9,
+     "range_bps": 15.42,
+     "ratio": 1.58,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0167,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 10,
+     "range_bps": 20.09,
+     "ratio": 2.06,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0129,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 11,
+     "range_bps": 14.82,
+     "ratio": 1.52,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0174,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 12,
+     "range_bps": 11.42,
+     "ratio": 1.17,
+     "spread_bps": 0.256,
+     "broker_spread_bps": null,
+     "cost_share": 0.0225,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 13,
+     "range_bps": 10.33,
+     "ratio": 1.06,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.025,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 14,
+     "range_bps": 8.12,
+     "ratio": 0.83,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0318,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 15,
+     "range_bps": 7.36,
+     "ratio": 0.76,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.035,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 16,
+     "range_bps": 5.39,
+     "ratio": 0.55,
+     "spread_bps": 0.34,
+     "broker_spread_bps": null,
+     "cost_share": 0.0631,
+     "hours": 103
+    },
+    {
+     "weekday": 1,
+     "hour": 17,
+     "range_bps": 5.23,
+     "ratio": 0.54,
+     "spread_bps": 2.296,
+     "broker_spread_bps": null,
+     "cost_share": 0.439,
+     "hours": 101
+    },
+    {
+     "weekday": 1,
+     "hour": 18,
+     "range_bps": 4.89,
+     "ratio": 0.5,
+     "spread_bps": 0.472,
+     "broker_spread_bps": null,
+     "cost_share": 0.0965,
+     "hours": 101
+    },
+    {
+     "weekday": 1,
+     "hour": 19,
+     "range_bps": 6.04,
+     "ratio": 0.62,
+     "spread_bps": 0.346,
+     "broker_spread_bps": null,
+     "cost_share": 0.0574,
+     "hours": 102
+    },
+    {
+     "weekday": 1,
+     "hour": 20,
+     "range_bps": 7.96,
+     "ratio": 0.82,
+     "spread_bps": 0.305,
+     "broker_spread_bps": null,
+     "cost_share": 0.0382,
+     "hours": 100
+    },
+    {
+     "weekday": 1,
+     "hour": 21,
+     "range_bps": 7.83,
+     "ratio": 0.8,
+     "spread_bps": 0.3,
+     "broker_spread_bps": null,
+     "cost_share": 0.0382,
+     "hours": 100
+    },
+    {
+     "weekday": 1,
+     "hour": 22,
+     "range_bps": 7.41,
+     "ratio": 0.76,
+     "spread_bps": 0.301,
+     "broker_spread_bps": null,
+     "cost_share": 0.0406,
+     "hours": 101
+    },
+    {
+     "weekday": 1,
+     "hour": 23,
+     "range_bps": 6.21,
+     "ratio": 0.64,
+     "spread_bps": 0.302,
+     "broker_spread_bps": null,
+     "cost_share": 0.0486,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 0,
+     "range_bps": 5.95,
+     "ratio": 0.61,
+     "spread_bps": 0.303,
+     "broker_spread_bps": null,
+     "cost_share": 0.051,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 1,
+     "range_bps": 7.27,
+     "ratio": 0.75,
+     "spread_bps": 0.299,
+     "broker_spread_bps": null,
+     "cost_share": 0.0411,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 2,
+     "range_bps": 11.95,
+     "ratio": 1.23,
+     "spread_bps": 0.263,
+     "broker_spread_bps": null,
+     "cost_share": 0.022,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 3,
+     "range_bps": 13.14,
+     "ratio": 1.35,
+     "spread_bps": 0.297,
+     "broker_spread_bps": null,
+     "cost_share": 0.0226,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 4,
+     "range_bps": 11.93,
+     "ratio": 1.22,
+     "spread_bps": 0.262,
+     "broker_spread_bps": null,
+     "cost_share": 0.0219,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 5,
+     "range_bps": 10.71,
+     "ratio": 1.1,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0242,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 6,
+     "range_bps": 11.74,
+     "ratio": 1.21,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.022,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 7,
+     "range_bps": 12.33,
+     "ratio": 1.26,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.021,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 8,
+     "range_bps": 16.8,
+     "ratio": 1.72,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0154,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 9,
+     "range_bps": 16.21,
+     "ratio": 1.66,
+     "spread_bps": 0.26,
+     "broker_spread_bps": null,
+     "cost_share": 0.016,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 10,
+     "range_bps": 17.79,
+     "ratio": 1.83,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0145,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 11,
+     "range_bps": 14.44,
+     "ratio": 1.48,
+     "spread_bps": 0.257,
+     "broker_spread_bps": null,
+     "cost_share": 0.0178,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 12,
+     "range_bps": 11.63,
+     "ratio": 1.19,
+     "spread_bps": 0.257,
+     "broker_spread_bps": null,
+     "cost_share": 0.0221,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 13,
+     "range_bps": 9.57,
+     "ratio": 0.98,
+     "spread_bps": 0.256,
+     "broker_spread_bps": null,
+     "cost_share": 0.0268,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 14,
+     "range_bps": 11.33,
+     "ratio": 1.16,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0229,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 15,
+     "range_bps": 7.15,
+     "ratio": 0.73,
+     "spread_bps": 0.261,
+     "broker_spread_bps": null,
+     "cost_share": 0.0365,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 16,
+     "range_bps": 6.46,
+     "ratio": 0.66,
+     "spread_bps": 0.303,
+     "broker_spread_bps": null,
+     "cost_share": 0.0469,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 17,
+     "range_bps": 5.73,
+     "ratio": 0.59,
+     "spread_bps": 2.187,
+     "broker_spread_bps": null,
+     "cost_share": 0.3815,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 18,
+     "range_bps": 5.47,
+     "ratio": 0.56,
+     "spread_bps": 0.438,
+     "broker_spread_bps": null,
+     "cost_share": 0.0801,
+     "hours": 101
+    },
+    {
+     "weekday": 2,
+     "hour": 19,
+     "range_bps": 5.79,
+     "ratio": 0.59,
+     "spread_bps": 0.348,
+     "broker_spread_bps": null,
+     "cost_share": 0.0601,
+     "hours": 100
+    },
+    {
+     "weekday": 2,
+     "hour": 20,
+     "range_bps": 8.86,
+     "ratio": 0.91,
+     "spread_bps": 0.303,
+     "broker_spread_bps": null,
+     "cost_share": 0.0342,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 21,
+     "range_bps": 8.53,
+     "ratio": 0.88,
+     "spread_bps": 0.303,
+     "broker_spread_bps": null,
+     "cost_share": 0.0355,
+     "hours": 103
+    },
+    {
+     "weekday": 2,
+     "hour": 22,
+     "range_bps": 7.19,
+     "ratio": 0.74,
+     "spread_bps": 0.301,
+     "broker_spread_bps": null,
+     "cost_share": 0.0419,
+     "hours": 102
+    },
+    {
+     "weekday": 2,
+     "hour": 23,
+     "range_bps": 6.42,
+     "ratio": 0.66,
+     "spread_bps": 0.302,
+     "broker_spread_bps": null,
+     "cost_share": 0.0471,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 0,
+     "range_bps": 5.95,
+     "ratio": 0.61,
+     "spread_bps": 0.301,
+     "broker_spread_bps": null,
+     "cost_share": 0.0507,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 1,
+     "range_bps": 7.47,
+     "ratio": 0.77,
+     "spread_bps": 0.304,
+     "broker_spread_bps": null,
+     "cost_share": 0.0407,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 2,
+     "range_bps": 12.72,
+     "ratio": 1.3,
+     "spread_bps": 0.274,
+     "broker_spread_bps": null,
+     "cost_share": 0.0216,
+     "hours": 103
+    },
+    {
+     "weekday": 3,
+     "hour": 3,
+     "range_bps": 13.68,
+     "ratio": 1.4,
+     "spread_bps": 0.26,
+     "broker_spread_bps": null,
+     "cost_share": 0.019,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 4,
+     "range_bps": 12.83,
+     "ratio": 1.32,
+     "spread_bps": 0.262,
+     "broker_spread_bps": null,
+     "cost_share": 0.0204,
+     "hours": 101
+    },
+    {
+     "weekday": 3,
+     "hour": 5,
+     "range_bps": 10.74,
+     "ratio": 1.1,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.024,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 6,
+     "range_bps": 10.57,
+     "ratio": 1.08,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0245,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 7,
+     "range_bps": 12.14,
+     "ratio": 1.25,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0213,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 8,
+     "range_bps": 20.73,
+     "ratio": 2.13,
+     "spread_bps": 0.261,
+     "broker_spread_bps": null,
+     "cost_share": 0.0126,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 9,
+     "range_bps": 17.06,
+     "ratio": 1.75,
+     "spread_bps": 0.26,
+     "broker_spread_bps": null,
+     "cost_share": 0.0152,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 10,
+     "range_bps": 18.41,
+     "ratio": 1.89,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.014,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 11,
+     "range_bps": 15.17,
+     "ratio": 1.56,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.017,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 12,
+     "range_bps": 11.69,
+     "ratio": 1.2,
+     "spread_bps": 0.257,
+     "broker_spread_bps": null,
+     "cost_share": 0.022,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 13,
+     "range_bps": 10.02,
+     "ratio": 1.03,
+     "spread_bps": 0.256,
+     "broker_spread_bps": null,
+     "cost_share": 0.0255,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 14,
+     "range_bps": 8.32,
+     "ratio": 0.85,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0311,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 15,
+     "range_bps": 8.06,
+     "ratio": 0.83,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.032,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 16,
+     "range_bps": 6.12,
+     "ratio": 0.63,
+     "spread_bps": 0.302,
+     "broker_spread_bps": null,
+     "cost_share": 0.0494,
+     "hours": 102
+    },
+    {
+     "weekday": 3,
+     "hour": 17,
+     "range_bps": 5.64,
+     "ratio": 0.58,
+     "spread_bps": 2.237,
+     "broker_spread_bps": null,
+     "cost_share": 0.3966,
+     "hours": 104
+    },
+    {
+     "weekday": 3,
+     "hour": 18,
+     "range_bps": 5.13,
+     "ratio": 0.53,
+     "spread_bps": 0.437,
+     "broker_spread_bps": null,
+     "cost_share": 0.085,
+     "hours": 104
+    },
+    {
+     "weekday": 3,
+     "hour": 19,
+     "range_bps": 6.18,
+     "ratio": 0.63,
+     "spread_bps": 0.344,
+     "broker_spread_bps": null,
+     "cost_share": 0.0556,
+     "hours": 104
+    },
+    {
+     "weekday": 3,
+     "hour": 20,
+     "range_bps": 8.07,
+     "ratio": 0.83,
+     "spread_bps": 0.302,
+     "broker_spread_bps": null,
+     "cost_share": 0.0375,
+     "hours": 104
+    },
+    {
+     "weekday": 3,
+     "hour": 21,
+     "range_bps": 8.21,
+     "ratio": 0.84,
+     "spread_bps": 0.3,
+     "broker_spread_bps": null,
+     "cost_share": 0.0366,
+     "hours": 104
+    },
+    {
+     "weekday": 3,
+     "hour": 22,
+     "range_bps": 6.34,
+     "ratio": 0.65,
+     "spread_bps": 0.305,
+     "broker_spread_bps": null,
+     "cost_share": 0.0481,
+     "hours": 104
+    },
+    {
+     "weekday": 3,
+     "hour": 23,
+     "range_bps": 6.23,
+     "ratio": 0.64,
+     "spread_bps": 0.302,
+     "broker_spread_bps": null,
+     "cost_share": 0.0485,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 0,
+     "range_bps": 5.9,
+     "ratio": 0.61,
+     "spread_bps": 0.303,
+     "broker_spread_bps": null,
+     "cost_share": 0.0513,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 1,
+     "range_bps": 7.66,
+     "ratio": 0.79,
+     "spread_bps": 0.301,
+     "broker_spread_bps": null,
+     "cost_share": 0.0393,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 2,
+     "range_bps": 11.07,
+     "ratio": 1.14,
+     "spread_bps": 0.296,
+     "broker_spread_bps": null,
+     "cost_share": 0.0267,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 3,
+     "range_bps": 13.23,
+     "ratio": 1.36,
+     "spread_bps": 0.263,
+     "broker_spread_bps": null,
+     "cost_share": 0.0199,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 4,
+     "range_bps": 12.81,
+     "ratio": 1.31,
+     "spread_bps": 0.261,
+     "broker_spread_bps": null,
+     "cost_share": 0.0204,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 5,
+     "range_bps": 9.76,
+     "ratio": 1.0,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0265,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 6,
+     "range_bps": 9.26,
+     "ratio": 0.95,
+     "spread_bps": 0.26,
+     "broker_spread_bps": null,
+     "cost_share": 0.0281,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 7,
+     "range_bps": 11.07,
+     "ratio": 1.14,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0234,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 8,
+     "range_bps": 15.39,
+     "ratio": 1.58,
+     "spread_bps": 0.26,
+     "broker_spread_bps": null,
+     "cost_share": 0.0169,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 9,
+     "range_bps": 16.39,
+     "ratio": 1.68,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0158,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 10,
+     "range_bps": 18.59,
+     "ratio": 1.91,
+     "spread_bps": 0.262,
+     "broker_spread_bps": null,
+     "cost_share": 0.0141,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 11,
+     "range_bps": 14.99,
+     "ratio": 1.54,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0173,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 12,
+     "range_bps": 11.42,
+     "ratio": 1.17,
+     "spread_bps": 0.258,
+     "broker_spread_bps": null,
+     "cost_share": 0.0226,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 13,
+     "range_bps": 9.44,
+     "ratio": 0.97,
+     "spread_bps": 0.272,
+     "broker_spread_bps": null,
+     "cost_share": 0.0288,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 14,
+     "range_bps": 8.77,
+     "ratio": 0.9,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0296,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 15,
+     "range_bps": 7.29,
+     "ratio": 0.75,
+     "spread_bps": 0.259,
+     "broker_spread_bps": null,
+     "cost_share": 0.0355,
+     "hours": 104
+    },
+    {
+     "weekday": 4,
+     "hour": 16,
+     "range_bps": 7.2,
+     "ratio": 0.74,
+     "spread_bps": 0.384,
+     "broker_spread_bps": null,
+     "cost_share": 0.0534,
+     "hours": 104
+    }
+   ],
+   "cost_source": "Dukascopy (sem símbolo na HonorPro)"
+  }
+ }
+}

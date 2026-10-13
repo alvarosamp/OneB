@@ -146,7 +146,7 @@ class MacroSnapshot(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     key: Mapped[str] = mapped_column(String(16), index=True)
     symbol: Mapped[str] = mapped_column(String(32))
-    name: Mapped[str] = mapped_column(String(64))
+    name: Mapped[str] = mapped_column(String(256))
     price: Mapped[float] = mapped_column(Float)
     change_pct: Mapped[float] = mapped_column(Float, default=0.0)
     taken_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
@@ -514,6 +514,24 @@ class LessonProgress(Base):
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class LessonUserState(Base):
+    """Estado do aluno numa aula que antes só existia no navegador: anotação,
+    exercício feito e última visita (para "continuar de onde parou" em qualquer aparelho)."""
+
+    __tablename__ = "lms_lesson_user_state"
+    __table_args__ = (UniqueConstraint("user_id", "lesson_id", name="uq_lesson_user_state_user_lesson"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lms_lessons.id"), index=True)
+    note: Mapped[str] = mapped_column(Text, default="")
+    exercise_passed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Índices das questões do quiz já acertadas (o gabarito fica só no servidor).
+    quiz_correct: Mapped[list] = mapped_column(JSON, default=list)
+    visited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
 class LiveStatus(str, enum.Enum):
     SCHEDULED = "SCHEDULED"
     LIVE = "LIVE"
@@ -547,3 +565,72 @@ class MorningReport(Base):
     narrative: Mapped[str] = mapped_column(Text, default="")
     data: Mapped[dict] = mapped_column(JSON, default=dict)
     delivered_telegram: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class OpportunityEvent(Base):
+    """Ledger append-only das oportunidades (app.opportunity_ledger).
+
+    Cada linha é uma transição de estado. `hash` cobre o conteúdo + `prev_hash`
+    da linha anterior do mesmo modo, então editar ou apagar uma linha antiga
+    quebra a cadeia e é detectado por verify_chain().
+    """
+
+    __tablename__ = "opportunity_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    opportunity_id: Mapped[str] = mapped_column(String(160), index=True)
+    setup: Mapped[str] = mapped_column(String(64), index=True)
+    setup_version: Mapped[str] = mapped_column(String(32))
+    symbol: Mapped[str] = mapped_column(String(32), index=True)
+    mode: Mapped[str] = mapped_column(String(16), index=True)
+    state: Mapped[str] = mapped_column(String(32), index=True)
+    from_state: Mapped[str] = mapped_column(String(32))
+    direction: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    approval: Mapped[str] = mapped_column(String(16))
+    reason: Mapped[str] = mapped_column(Text, default="")
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    event_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    prev_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    hash: Mapped[str] = mapped_column(String(64), unique=True)
+
+
+class AIAnswerLog(Base):
+    """Cada resposta da OneB AI com as ferramentas usadas e o veredito do verificador.
+
+    É a memória do Copiloto Temporal ("o que mudou desde a última análise") e
+    a amostra de produção para os evals.
+    """
+
+    __tablename__ = "ai_answer_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    question: Mapped[str] = mapped_column(Text)
+    answer: Mapped[dict] = mapped_column(JSON, default=dict)
+    tool_calls: Mapped[list] = mapped_column(JSON, default=list)
+    tools_hash: Mapped[str] = mapped_column(String(64))
+    model: Mapped[str] = mapped_column(String(64))
+    grounding_ok: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    violations: Mapped[list] = mapped_column(JSON, default=list)
+    fallback_used: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class PaperExecution(Base):
+    """O que o humano fez com uma oportunidade PAPER/LIVE_MANUAL (plano Fase 6)."""
+
+    __tablename__ = "paper_executions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    opportunity_id: Mapped[str] = mapped_column(String(160), index=True)
+    decision: Mapped[str] = mapped_column(String(16))  # OPERATED | SKIPPED | DIFFERENT
+    planned_entry: Mapped[float | None] = mapped_column(Float, nullable=True)
+    executed_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    exit_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    direction: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    slippage: Mapped[float | None] = mapped_column(Float, nullable=True)
+    notes: Mapped[str] = mapped_column(Text, default="")
+    executed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)

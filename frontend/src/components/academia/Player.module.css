@@ -413,3 +413,50 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Texto da aula (LessonBody) */
+.body {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: var(--measure);
+}
+
+.bodyHeading {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.bodyList {
+  display: grid;
+  gap: var(--sp-2);
+  padding-left: var(--sp-5);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-reading);
+  color: var(--text-primary);
+  list-style: disc;
+}
+
+.bodyTableWrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.bodyTable {
+  border-collapse: collapse;
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.bodyTable th,
+.bodyTable td {
+  padding: var(--sp-2) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.bodyTable th {
+  color: var(--text-secondary);
+  font-weight: 500;
+}

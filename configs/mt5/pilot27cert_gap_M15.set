@@ -1,0 +1,7 @@
+Family=5
+BufferCount=1
+ClosedBarLookback=12
+MaxObjects=1000
+RunLabel=pilot27cert_gap_M15
+CalculateEveryTick=true
+OverrideGapSession=false

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
+from app.assistant_market_context import build_cross_asset_context
 from app.db import get_db
 from app.llm_client import answer_question
 from app.models import AlertLog, GlobalNewsItem, NewsItem, PriceSnapshot, User, WatchlistItem
@@ -12,7 +13,7 @@ from app.schemas import AssistantAskRequest, AssistantAskResponse
 router = APIRouter(prefix="/api/assistant", tags=["assistant"], dependencies=[Depends(get_current_user)])
 
 
-def build_assistant_context(db: Session, user_id: int) -> dict:
+def build_assistant_context(db: Session, user_id: int, question: str = "") -> dict:
     """Gathers a compact snapshot of what we already know, for the LLM to
     reason over. No external API calls — only what's already in our DB.
     """
@@ -76,6 +77,7 @@ def build_assistant_context(db: Session, user_id: int) -> dict:
 
     return {
         "watchlist": watchlist,
+        "cross_asset_context": build_cross_asset_context(db, question, watchlist, now=now),
         "recent_news": news_out,
         "global_news": global_news_out,
         "recent_alerts": alerts_out,
@@ -84,7 +86,7 @@ def build_assistant_context(db: Session, user_id: int) -> dict:
 
 @router.post("/ask", response_model=AssistantAskResponse)
 async def ask_assistant(payload: AssistantAskRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    context = build_assistant_context(db, user.id)
+    context = build_assistant_context(db, user.id, payload.question)
     history = [{"role": msg.role, "text": msg.text} for msg in payload.history[-8:]]
     answer = await answer_question(payload.question, context, history=history) if history else await answer_question(payload.question, context)
     return AssistantAskResponse(answer=answer)

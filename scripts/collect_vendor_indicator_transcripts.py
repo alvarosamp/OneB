@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from app.research_paths import VENDOR_RESEARCH  # noqa: E402
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
@@ -18,7 +22,7 @@ VIDEOS = {
 
 
 def main() -> None:
-    destination = Path("output/vendor_indicator_research/transcripts_clean")
+    destination = VENDOR_RESEARCH / "transcripts_clean"
     destination.mkdir(parents=True, exist_ok=True)
     api = YouTubeTranscriptApi()
     manifest = []

@@ -4,3 +4,12 @@ dist
 e2e
 .env
 npm-debug.log*
+
+**/.env*
+**/*.db
+**/*.sqlite*
+**/*.pem
+**/*.key
+**/__pycache__
+**/data
+**/credentials*

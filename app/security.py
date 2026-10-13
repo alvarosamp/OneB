@@ -19,6 +19,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next) -> Response:
+        origin = request.headers.get("origin")
+        if request.method not in {"GET", "HEAD", "OPTIONS"} and origin:
+            from app.config import settings
+            same_origin = str(request.base_url).rstrip("/")
+            if origin not in {same_origin, settings.frontend_origin}:
+                return Response("Origin forbidden", status_code=403)
         request_id = request.headers.get("X-Request-ID") or secrets.token_hex(12)
         started_at = time.perf_counter()
         response = await call_next(request)

@@ -59,3 +59,15 @@
 .invalid {
   border-color: var(--negative);
 }
+
+/* Tela de toque: campo maior e fonte de 16 px (abaixo disso o Safari do iPhone dá zoom ao focar). */
+@media (pointer: coarse) {
+  .control {
+    height: 44px;
+    font-size: 16px;
+  }
+
+  .textarea {
+    height: auto;
+  }
+}

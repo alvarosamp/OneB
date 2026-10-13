@@ -1,0 +1,268 @@
+{
+  "generated_at": "2026-10-10T19:49:58.198643+00:00",
+  "test": "tom_v1",
+  "spec_sha256": "157b51fc61e5c4d492e853cfda7fc8659df553a5e285e5e17be982072c1df642",
+  "status": "NOT_PASSED",
+  "H1": false,
+  "H2": false,
+  "primary_asset": "usa500idxusd",
+  "primary": {
+    "days": 3777,
+    "tom_days": 700,
+    "tom_mean_bps": 3.79,
+    "other_mean_bps": 5.52,
+    "diff_bps": -1.73,
+    "diff_ci95_bps": [
+      -9.76,
+      6.25
+    ],
+    "strategy_months": 175,
+    "strategy_mean_monthly": 0.00063,
+    "strategy_ci95": [
+      -0.00149,
+      0.00289
+    ],
+    "strategy_cost_per_month_est": 0.00085,
+    "recent_diff_bps": 0.17,
+    "share_of_total_return_from_tom": 0.054,
+    "diff_by_year_bps": {
+      "2012": 6.8,
+      "2013": 0.8,
+      "2014": -7.3,
+      "2015": -10.4,
+      "2016": -12.8,
+      "2017": 4.0,
+      "2018": -4.3,
+      "2019": -22.9,
+      "2020": 18.3,
+      "2021": -5.0,
+      "2022": 7.4,
+      "2023": 9.6,
+      "2024": -15.2,
+      "2025": -12.4,
+      "2026": 28.0
+    }
+  },
+  "secondary": {
+    "usatechidxusd": {
+      "days": 3758,
+      "tom_days": 700,
+      "tom_mean_bps": 6.12,
+      "other_mean_bps": 7.72,
+      "diff_bps": -1.6,
+      "diff_ci95_bps": [
+        -11.9,
+        8.62
+      ],
+      "strategy_months": 175,
+      "strategy_mean_monthly": 0.00145,
+      "strategy_ci95": [
+        -0.00104,
+        0.00399
+      ],
+      "strategy_cost_per_month_est": 0.00093,
+      "recent_diff_bps": 0.4,
+      "share_of_total_return_from_tom": 0.041,
+      "diff_by_year_bps": {
+        "2012": 14.9,
+        "2013": 11.5,
+        "2014": -9.7,
+        "2015": -12.9,
+        "2016": -22.2,
+        "2017": 0.8,
+        "2018": 3.4,
+        "2019": -25.7,
+        "2020": 17.1,
+        "2021": -11.7,
+        "2022": 11.0,
+        "2023": 7.0,
+        "2024": -12.7,
+        "2025": -12.0,
+        "2026": 28.7
+      }
+    },
+    "usa30idxusd": {
+      "days": 3344,
+      "tom_days": 620,
+      "tom_mean_bps": 2.16,
+      "other_mean_bps": 4.76,
+      "diff_bps": -2.6,
+      "diff_ci95_bps": [
+        -11.27,
+        5.93
+      ],
+      "strategy_months": 154,
+      "strategy_mean_monthly": 0.0001,
+      "strategy_ci95": [
+        -0.00214,
+        0.00246
+      ],
+      "strategy_cost_per_month_est": 0.00083,
+      "recent_diff_bps": 2.83,
+      "share_of_total_return_from_tom": 0.044,
+      "diff_by_year_bps": {
+        "2013": -36.0,
+        "2014": -7.1,
+        "2015": -8.0,
+        "2016": -12.0,
+        "2017": 5.0,
+        "2018": -7.8,
+        "2019": -29.2,
+        "2020": 21.0,
+        "2021": -1.5,
+        "2022": 4.5,
+        "2023": 9.5,
+        "2024": -18.2,
+        "2025": -5.4,
+        "2026": 36.8
+      }
+    },
+    "deuidxeur": {
+      "days": 3329,
+      "tom_days": 620,
+      "tom_mean_bps": -0.91,
+      "other_mean_bps": 5.21,
+      "diff_bps": -6.12,
+      "diff_ci95_bps": [
+        -17.09,
+        4.73
+      ],
+      "strategy_months": 154,
+      "strategy_mean_monthly": -0.00145,
+      "strategy_ci95": [
+        -0.00501,
+        0.00175
+      ],
+      "strategy_cost_per_month_est": 0.00115,
+      "recent_diff_bps": -0.04,
+      "share_of_total_return_from_tom": -0.045,
+      "diff_by_year_bps": {
+        "2013": -41.1,
+        "2014": -20.3,
+        "2015": -18.7,
+        "2016": -45.2,
+        "2017": 12.2,
+        "2018": -9.6,
+        "2019": -4.9,
+        "2020": 18.2,
+        "2021": 11.3,
+        "2022": -11.2,
+        "2023": 7.2,
+        "2024": -20.7,
+        "2025": -4.8,
+        "2026": 27.3
+      }
+    },
+    "gbridxgbp": {
+      "days": 3744,
+      "tom_days": 700,
+      "tom_mean_bps": 0.93,
+      "other_mean_bps": 2.43,
+      "diff_bps": -1.5,
+      "diff_ci95_bps": [
+        -9.76,
+        6.35
+      ],
+      "strategy_months": 175,
+      "strategy_mean_monthly": -0.00094,
+      "strategy_ci95": [
+        -0.00354,
+        0.00175
+      ],
+      "strategy_cost_per_month_est": 0.0013,
+      "recent_diff_bps": -1.91,
+      "share_of_total_return_from_tom": 0.039,
+      "diff_by_year_bps": {
+        "2012": 24.2,
+        "2013": -9.7,
+        "2014": -6.3,
+        "2015": 1.3,
+        "2016": -20.2,
+        "2017": 13.1,
+        "2018": -19.6,
+        "2019": -20.4,
+        "2020": 3.4,
+        "2021": 23.0,
+        "2022": -1.7,
+        "2023": -3.8,
+        "2024": -10.8,
+        "2025": -1.0,
+        "2026": 12.9
+      }
+    },
+    "fraidxeur": {
+      "days": 3734,
+      "tom_days": 700,
+      "tom_mean_bps": -0.82,
+      "other_mean_bps": 4.1,
+      "diff_bps": -4.92,
+      "diff_ci95_bps": [
+        -15.02,
+        4.83
+      ],
+      "strategy_months": 175,
+      "strategy_mean_monthly": -0.00112,
+      "strategy_ci95": [
+        -0.00442,
+        0.0022
+      ],
+      "strategy_cost_per_month_est": 0.00088,
+      "recent_diff_bps": -6.04,
+      "share_of_total_return_from_tom": -0.064,
+      "diff_by_year_bps": {
+        "2012": 14.8,
+        "2013": -13.4,
+        "2014": -10.5,
+        "2015": -13.9,
+        "2016": -39.4,
+        "2017": 14.4,
+        "2018": -10.9,
+        "2019": -4.1,
+        "2020": 19.5,
+        "2021": 13.2,
+        "2022": -18.0,
+        "2023": 3.5,
+        "2024": -30.9,
+        "2025": -10.5,
+        "2026": 23.7
+      }
+    },
+    "jpnidxjpy": {
+      "days": 3749,
+      "tom_days": 700,
+      "tom_mean_bps": -3.46,
+      "other_mean_bps": 8.5,
+      "diff_bps": -11.96,
+      "diff_ci95_bps": [
+        -23.45,
+        -0.49
+      ],
+      "strategy_months": 175,
+      "strategy_mean_monthly": -0.00233,
+      "strategy_ci95": [
+        -0.00554,
+        0.00071
+      ],
+      "strategy_cost_per_month_est": 0.00094,
+      "recent_diff_bps": -9.54,
+      "share_of_total_return_from_tom": -0.041,
+      "diff_by_year_bps": {
+        "2012": -41.0,
+        "2013": -20.9,
+        "2014": 14.3,
+        "2015": -16.4,
+        "2016": -53.8,
+        "2017": 14.5,
+        "2018": -16.2,
+        "2019": -16.8,
+        "2020": -13.2,
+        "2021": 5.0,
+        "2022": -0.3,
+        "2023": -1.0,
+        "2024": -17.9,
+        "2025": -36.8,
+        "2026": 31.2
+      }
+    }
+  }
+}

@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api/client';
-import type { DecisionDesk, MarketDivergence, RecommendationDecision, ReliabilityScoreboard } from '../types';
+import type { DecisionDesk, MarketDivergence, RecommendationDecision, Reliability, ReliabilityScoreboard } from '../types';
 import { useToast } from '../context/ToastContext';
 import { ReliabilityChart } from '../components/ReliabilityChart';
+import { ReliabilityMeter } from '../components/ReliabilityMeter';
 
 type IntradayCard = {
   symbol: string;
   action: string;
   as_of: string;
-  market_price: number;
+  market_price: number | null;
   setup_family: string | null;
   reasons: string[];
   data_health: { sessions: number; fresh: boolean; median_spread_price: number; p95_spread_price: number };
   holdout_evidence: { trades: number | null; profit_factor: number | null; bh_q_value: number | null };
+  reliability?: Reliability | null;
 };
 
 function actionLabel(action: string) {
@@ -55,7 +57,7 @@ function ConfidenceBadge({ value }: { value: number | null | undefined }) {
   );
 }
 
-export function MesaIA() {
+export function MesaIA({ intradayOnly = false }: { intradayOnly?: boolean }) {
   const toast = useToast();
   const [desk, setDesk] = useState<DecisionDesk | null>(null);
   const [history, setHistory] = useState<RecommendationDecision[]>([]);
@@ -98,8 +100,8 @@ export function MesaIA() {
   }, [toast]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!intradayOnly) void load();
+  }, [load, intradayOnly]);
 
   const recommendations = desk?.recommendations ?? [];
   const buyRows = recommendations.filter((row) => row.action === 'BUY_CONTROLLED');
@@ -109,7 +111,7 @@ export function MesaIA() {
 
   return (
     <div className="container decision-desk">
-      <section className="page-header">
+      {!intradayOnly && <section className="page-header">
         <div>
           <p className="eyebrow">Copiloto Temporal de Mercado</p>
           <h1>Mesa IA</h1>
@@ -119,9 +121,9 @@ export function MesaIA() {
         <button type="button" onClick={() => load(true)} disabled={recording || loading}>
           {recording ? 'Registrando...' : 'Registrar leitura'}
         </button>
-      </section>
+      </section>}
 
-      {loading && <p className="muted">Calculando recomendações...</p>}
+      {!intradayOnly && loading && <p className="muted">Calculando recomendações...</p>}
 
       <section className="decision-history">
         <h2>Nasdaq e ouro · leitura intradiária</h2>
@@ -132,12 +134,13 @@ export function MesaIA() {
               <article key={card.symbol} className="decision-card neutral">
                 <header><strong>{card.symbol}</strong><span>{card.action === 'NO_TRADE' ? 'Aguardar' : card.action}</span></header>
                 <div className="decision-metrics">
-                  <span>Referência <b>{card.market_price.toFixed(2)}</b></span>
+                  <span>Referência <b>{card.market_price == null ? 'Horário não verificado' : card.market_price.toFixed(2)}</b></span>
                   <span>Spread mediano <b>{card.data_health.median_spread_price.toFixed(2)}</b></span>
                   <span>Sessões <b>{card.data_health.sessions}</b></span>
                   <span>Dados <b>{card.data_health.fresh ? 'Atuais' : 'Desatualizados'}</b></span>
                 </div>
                 <p className="muted">Último candle fechado: {new Date(card.as_of).toLocaleString('pt-BR')}</p>
+                <ReliabilityMeter value={card.reliability} />
                 <p className="muted">Setup avaliado: {card.setup_family ?? 'sem setup'}. Holdout: {card.holdout_evidence.trades ?? 0} operações, PF {card.holdout_evidence.profit_factor ?? '-'}, q {card.holdout_evidence.bh_q_value ?? '-'}.</p>
                 <ul>{card.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
               </article>
@@ -238,6 +241,7 @@ export function MesaIA() {
                     <span>P({row.direction === 'short' ? 'queda' : 'ganho'}) <b>{row.probability_win_pct}%</b></span>
                   )}
                 </div>
+                <ReliabilityMeter value={row.reliability} />
                 <p>{row.fair_reason}</p>
                 {row.ai_narrative && <p className="ai-narrative">🤖 {row.ai_narrative}</p>}
                 <ul>

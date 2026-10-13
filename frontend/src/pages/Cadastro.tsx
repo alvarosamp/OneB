@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
+import { postLoginPath } from '../lib/academia';
 import { AuthLayout } from '../components/AuthLayout';
 import styles from '../components/AuthLayout.module.css';
 import { Button, Input } from '../components/ui';
@@ -24,7 +25,7 @@ export function Cadastro() {
     setSubmitting(true);
     try {
       await cadastro(username, password);
-      navigate('/ferramenta', { replace: true });
+      navigate(await postLoginPath(), { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível criar a conta. Tente de novo.');
     } finally {

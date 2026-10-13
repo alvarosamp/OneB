@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findLesson, firstIncomplete, formatMinutes, totalMinutes, trackStatus } from './academia';
+import { afterLoginPath, findLesson, firstIncomplete, formatMinutes, totalMinutes, trackStatus } from './academia';
 import type { CourseDetail } from '../types';
 
 const course = {
@@ -37,5 +37,18 @@ describe('academia', () => {
 
   it('continua da primeira aula não concluída', () => {
     expect(firstIncomplete(course)?.id).toBe(11);
+  });
+});
+
+describe('afterLoginPath', () => {
+  const track = (completed: number, total = 5) => ({ courses: [{ id: 1, slug: 'fundamentos', title: 'F', description: '', order: 1, lesson_count: total, completed_count: completed }] });
+  it('leva para a Academia enquanto os fundamentos não terminaram', () => {
+    expect(afterLoginPath(track(0))).toBe('/academia');
+    expect(afterLoginPath(track(4))).toBe('/academia');
+  });
+  it('vai para Hoje depois dos fundamentos ou sem dados', () => {
+    expect(afterLoginPath(track(5))).toBe('/ferramenta');
+    expect(afterLoginPath(null)).toBe('/ferramenta');
+    expect(afterLoginPath({ courses: [] })).toBe('/ferramenta');
   });
 });

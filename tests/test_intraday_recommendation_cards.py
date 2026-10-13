@@ -29,5 +29,6 @@ def test_future_broker_clock_blocks_trade_even_with_approved_research(tmp_path):
     card = build_card("US100.s", path, research, as_of)
     assert card["action"] == "NO_TRADE"
     assert card["entry_price"] is None
+    assert card["market_price"] is None
     assert card["data_health"]["fresh"] is False
     assert card["data_health"]["timestamp_ahead_minutes"] > 5

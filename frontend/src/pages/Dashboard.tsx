@@ -36,8 +36,11 @@ import type {
   EarningsEvent,
   EconomicEvent,
   GlobalNewsItem,
+  LearningState,
   RegimeReport,
   TechnicalAnalysis,
+  NextSession,
+  TrendReadings,
 } from '../types';
 import styles from './Dashboard.module.css';
 
@@ -59,6 +62,7 @@ export function Dashboard() {
         <HeroChart />
         <DailyRead />
       </div>
+      <ContextBlock />
       <RadarBlock />
       <div className={styles.feeds}>
         <NewsBlock />
@@ -168,6 +172,120 @@ function DailyRead() {
         <p className={styles.partial}>Parte dos dados não carregou: {regime.error ?? tech.error}</p>
       )}
     </aside>
+  );
+}
+
+/** Contexto de médio prazo e estudo: tendência de 1/3/12 meses e a próxima aula. */
+function NextSessionBlock() {
+  const data = useApi<NextSession>('/api/analysis/next-session', { pollMs: 30 * 60_000, isEmpty: (d) => d.assets.every((a) => !a.forecast) });
+  return (
+    <Section
+      title="Próximo pregão"
+      meta="quanto deve mexer (não para onde)"
+      actions={
+        <Link to="/analise?tab=ativo" className={styles.more}>
+          Ver ativo
+        </Link>
+      }
+    >
+      <AsyncContent state={data} loading={<SkeletonLines lines={4} />} empty={<EmptyState title="Sem previsão agora" description="O histórico diário ainda não carregou." />} errorTitle="Previsão indisponível">
+        {(d) => (
+          <ul className={styles.feed}>
+            {d.assets
+              .filter((a) => a.forecast)
+              .map((a) => {
+                const f = a.forecast!;
+                return (
+                  <li key={a.key} className={styles.pairRow}>
+                    <span className={styles.eventBody}>
+                      <span className={styles.eventTitle}>{a.label}</span>
+                      <span className={styles.feedMeta}>
+                        8 em 10 dias: {formatNumber(f.low80_pct, 2)}% a {formatNumber(f.high80_pct, 2)}%{f.event ? ` · ${f.event}` : ''}
+                      </span>
+                    </span>
+                    <Badge tone={f.event ? 'warning' : 'neutral'}>{formatNumber(f.expected_pct, 2)}%</Badge>
+                  </li>
+                );
+              })}
+            {d.events.slice(0, 3).map((e) => (
+              <li key={e.event_name + e.event_date} className={styles.pairRow}>
+                <span className={styles.eventBody}>
+                  <span className={styles.eventTitle}>{e.event_name}</span>
+                  <span className={styles.feedMeta}>
+                    {new Date(e.event_date).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
+                    {e.assets.length ? ` · até ${formatNumber(Math.max(...e.assets.map((x) => x.post30 ?? 0)), 1)}x o movimento normal em 30 min` : ''}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </AsyncContent>
+    </Section>
+  );
+}
+
+function ContextBlock() {
+  const trend = useApi<TrendReadings>('/api/trend/readings', { pollMs: 60 * 60_000, isEmpty: (d) => d.assets.length === 0 });
+  const learning = useApi<LearningState>('/api/lms/learning-state');
+  const next = learning.data?.last_lesson
+    ? { slug: learning.data.last_lesson.course_slug, id: learning.data.last_lesson.lesson_id, title: learning.data.last_lesson.lesson_title, verb: 'Continuar' }
+    : learning.data?.recommendation
+      ? { slug: learning.data.recommendation.course_slug, id: learning.data.recommendation.lesson_id, title: learning.data.recommendation.lesson_title, verb: 'Próxima aula' }
+      : null;
+  const asEvidence = trend.data?.evidence.as_evidence ?? false;
+  return (
+    <div className={styles.feeds}>
+      <NextSessionBlock />
+      <Section
+        title="Tendência"
+        meta={asEvidence ? '1, 3 e 12 meses, com evidência' : '1, 3 e 12 meses, descrição do preço'}
+        actions={
+          <Link to="/analise?tab=tendencia" className={styles.more}>
+            Ver tendência
+          </Link>
+        }
+      >
+        <AsyncContent state={trend} loading={<SkeletonLines lines={4} />} empty={<EmptyState title="Sem leitura de tendência" description="O histórico diário ainda não carregou." />} errorTitle="Tendência indisponível">
+          {(d) => (
+            <ul className={styles.feed}>
+              {d.assets
+                .filter((a) => a.available)
+                .map((a) => (
+                  <li key={a.key} className={styles.pairRow}>
+                    <span className={styles.eventBody}>
+                      <span className={styles.eventTitle}>{a.label}</span>
+                      <span className={styles.feedMeta}>{a.horizons?.map((h) => `${h.label} ${h.direction}`).join(' · ')}</span>
+                    </span>
+                    <Badge tone={a.agreement === 'todos em alta' ? 'positive' : a.agreement === 'todos em baixa' ? 'negative' : 'neutral'}>{a.agreement}</Badge>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </AsyncContent>
+      </Section>
+      <Section
+        title="Academia"
+        meta="seu próximo passo"
+        actions={
+          <Link to="/academia" className={styles.more}>
+            Ver trilhas
+          </Link>
+        }
+      >
+        {next ? (
+          <div className={styles.eventBody}>
+            <span className={styles.eventTitle}>{ptBR(next.title)}</span>
+            <span className={styles.feedMeta}>Termine a aula antes de operar o que ela ensina. O Laboratório deixa você treinar sem risco.</span>
+            <Link to={`/aulas/${next.slug}?aula=${next.id}`} className={buttonClass({ size: 'sm', variant: 'primary' })}>
+              {next.verb}
+            </Link>
+          </div>
+        ) : (
+          <EmptyState title="Comece pela Academia" description="Fundamentos, risco e como avaliar um sinal, com prática no Laboratório." />
+        )}
+      </Section>
+    </div>
   );
 }
 
@@ -289,7 +407,15 @@ function CalendarBlock() {
       key: `e-${e.event_name}-${e.event_date}`,
       date: e.event_date,
       title: e.event_name,
-      detail: [e.country, e.forecast && `proj. ${e.forecast}`, e.previous && `ant. ${e.previous}`].filter(Boolean).join(', '),
+      detail: [
+        e.country,
+        e.forecast && `proj. ${e.forecast}`,
+        e.previous && `ant. ${e.previous}`,
+        // Volatilidade típica medida no estudo calendar_v1 (30 min depois da divulgação).
+        e.risk && `volatilidade típica ${e.risk.assets.map((a) => `${a.label} ${formatNumber(a.post30 ?? null, 1)}x`).join(', ')}`,
+      ]
+        .filter(Boolean)
+        .join(', '),
       impact: e.impact,
       kind: 'macro' as const,
     })),

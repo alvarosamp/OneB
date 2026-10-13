@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app import regime_engine
+from app import regime_engine, response_cache
 from app.auth import get_current_user
 from app.db import get_db
 from app.market_data import macro_data
@@ -13,7 +13,12 @@ router = APIRouter(prefix="/api/regime", tags=["regime"], dependencies=[Depends(
 def macro_overview(db: Session = Depends(get_db)):
     """Latest quote + cross-asset relevance table for every tracked macro
     instrument — the Level 2 (macro regime) read for the platform.
+    Igual para todos os usuários e caro de montar (~1,3 s): cache de 2 min.
     """
+    return response_cache.cached("regime:macro", 120, lambda: _macro_overview(db))
+
+
+def _macro_overview(db: Session):
     instruments = []
     histories = regime_engine.collect_macro_histories(refresh=False)
     for key, (_source, symbol, name) in macro_data.MACRO_INSTRUMENTS.items():

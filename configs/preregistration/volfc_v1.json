@@ -1,0 +1,28 @@
+{
+  "test": "volfc_v1",
+  "registered_at": "2026-10-10",
+  "registered_before_results": true,
+  "question": "Dá para prever quanto o preço vai se mover no próximo dia (amplitude máxima - mínima), melhor que a média dos últimos 14 dias (o ATR que o trader já usa)? E a faixa de 80% prevista cobre de fato ~80% dos dias?",
+  "purpose": "Mostrar no app a 'amplitude esperada de amanhã' com faixa, para dimensionar stop e lote. É previsão de RISCO, não de direção. Nenhuma ordem.",
+  "data": {
+    "source": "Dukascopy M5 bid normalizado em D:/OneB/market-data (mesmos arquivos do lab_v1), 2019-03-01 a 2026-09-26",
+    "assets": ["NAS100", "SPX500", "XAUUSD", "EURUSD"],
+    "day": "dia de negociação de 17:00 a 17:00 de Nova York (virada padrão de CFD e câmbio); dias com menos de 150 barras M5 são descartados",
+    "range": "amplitude do dia = (máxima - mínima) / fechamento do dia anterior; trabalha-se com o log"
+  },
+  "models": {
+    "baseline_atr14": "previsão do log da amplitude de amanhã = log da média das amplitudes dos últimos 14 dias (equivalente ao ATR sem gaps)",
+    "har": "regressão HAR (Corsi, 2009): log amplitude(t+1) = b0 + b1 log R(t) + b2 média log R(t-4..t) + b3 média log R(t-21..t), por ativo, coeficientes estimados SÓ em 2019-03 a 2022-12",
+    "har_calendar": "HAR + 1 variável indicadora 'amanhã tem CPI, payroll ou FOMC' (configs/events/macro_events_2019_2026.json), também estimada só em 2019-2022"
+  },
+  "evaluation": {
+    "period": {"from_inclusive": "2023-01-01", "to_exclusive": "2026-09-26"},
+    "primary_metric": "redução do erro quadrático médio do log da amplitude do HAR contra o baseline_atr14, por ativo, no período de avaliação",
+    "pass_primary": "HAR com erro menor que o baseline nos 4 ativos E redução média >= 5%, com IC 95% bootstrap em blocos de 20 dias (2.000 reamostragens, semente 7) da diferença de erro acima de zero na média dos 4 ativos",
+    "interval": "faixa de 80% = previsão do HAR somada aos quantis 10% e 90% dos resíduos de 2019-2022; passa se a cobertura em 2023-2026 ficar entre 75% e 85% em cada ativo",
+    "secondary": "har_calendar contra har: descritivo, com a mesma métrica; só entra no app se reduzir o erro nos 4 ativos",
+    "multiple_testing": "um teste primário (HAR x baseline, média dos 4 ativos); o resto é secundário e descritivo"
+  },
+  "decision": "Se passar: o app mostra a 'amplitude esperada de amanhã' com a faixa de 80% na aba Ativo e o OneB AI pode citá-la. Se não passar: continua o ATR de 14 dias.",
+  "prohibit_optimization": true
+}

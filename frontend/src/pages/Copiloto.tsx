@@ -101,9 +101,9 @@ export function Copiloto() {
               <span className="muted">{analysis.symbol} a {analysis.entry_price ?? '-'} USD</span>
             </div>
             <div className="metric-card">
-              <span className="metric-label">Confianca</span>
-              <strong>{analysis.confidence}%</strong>
-              <span className="muted">media dos agentes</span>
+              <span className="metric-label">Placar de evidências</span>
+              <strong>{analysis.evidence_balance?.label ?? '-'}</strong>
+              <span className="muted">não é probabilidade</span>
             </div>
             <div className="metric-card">
               <span className="metric-label">Votos comprar</span>
@@ -178,7 +178,7 @@ export function Copiloto() {
                   <div className="panel-title">
                     <h3>{vote.name}</h3>
                     <span className={`status-pill ${vote.vote === 'Comprar' ? 'good' : vote.vote === 'Evitar' ? 'danger' : 'warn'}`}>
-                      {vote.vote} · {vote.confidence}%
+                      {vote.vote} · força {vote.confidence}/100
                     </span>
                   </div>
                   <p className="muted">{vote.summary}</p>

@@ -72,6 +72,19 @@
   --chart-level-stop: #ff6b61;
   --chart-level-zone: #c29bff;
   --chart-level-auto: #9aa6b2;
+  /* Mapa de calor (5 faixas, uma cor só; validadas com o validador de paleta, ordinal, contra a superfície).
+     Azul = volatilidade; laranja = custo. Escuro: valor baixo fica perto da superfície. */
+  --heat-vol-1: #184f95;
+  --heat-vol-2: #256abf;
+  --heat-vol-3: #3987e5;
+  --heat-vol-4: #6da7ec;
+  --heat-vol-5: #b7d3f6;
+  --heat-cost-1: #8a3312;
+  --heat-cost-2: #b2441a;
+  --heat-cost-3: #d95926;
+  --heat-cost-4: #f08a5d;
+  --heat-cost-5: #f9c3a8;
+
   --series-gold: #d4af37;      /* ouro (XAU) — só como cor de série */
   --series-1: #4c9aff;
   --series-2: #c29bff;
@@ -84,6 +97,17 @@
 }
 
 :root.light {
+  --heat-vol-1: #86b6ef;
+  --heat-vol-2: #5598e7;
+  --heat-vol-3: #2a78d6;
+  --heat-vol-4: #1c5cab;
+  --heat-vol-5: #0d366b;
+  --heat-cost-1: #f39f78;
+  --heat-cost-2: #eb6834;
+  --heat-cost-3: #c94f1f;
+  --heat-cost-4: #9a3a14;
+  --heat-cost-5: #66250b;
+
   color-scheme: light;
 
   --bg-0: #ffffff;

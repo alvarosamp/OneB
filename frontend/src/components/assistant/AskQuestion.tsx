@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { api } from '../../api/client';
 import { splitAnswer } from '../../lib/assistant';
 import { formatTime } from '../../lib/format';
-import { Button, chipClass, EmptyState, ErrorState, SkeletonLines, Textarea } from '../ui';
+import type { OneBAskResponse } from '../../types';
+import { Badge, Button, chipClass, EmptyState, ErrorState, SkeletonLines, Textarea } from '../ui';
 import { AnswerCard } from './AnswerCard';
 import styles from './Assistant.module.css';
 
@@ -11,16 +12,17 @@ interface Turn {
   question: string;
   at: string;
   status: 'running' | 'done' | 'error';
-  answer?: string;
+  answer?: OneBAskResponse;
   error?: string;
 }
 
 const SUGGESTIONS = [
-  'Quais ativos da minha watchlist merecem mais atenção agora?',
-  'Resuma os alertas recentes e os riscos envolvidos.',
-  'Há resultados próximos que podem mexer com a carteira?',
-  'Compare as notícias recentes com a variação dos ativos.',
-  'Monte um checklist para validar um setup antes de agir.',
+  'Existe alguma oportunidade sendo monitorada agora?',
+  'O que mudou nos últimos 30 minutos?',
+  'Por que o último Gold Fakeout foi invalidado?',
+  'Como o Gold Fakeout performou no replay? Ele bate a entrada aleatória?',
+  'Compare o sinal atual com eventos parecidos do passado.',
+  'O ouro está correlacionado com o DXY nas últimas semanas?',
 ];
 
 /** Modo "Perguntar": pergunta livre sobre os dados do OneB (antigo Assistente IA). */
@@ -53,14 +55,14 @@ export function AskQuestion({ initialQuestion }: { initialQuestion?: string }) {
       .filter((t) => t.status === 'done')
       .slice(-4)
       .flatMap((t) => [
-        { role: 'user', text: t.question },
-        { role: 'assistant', text: t.answer ?? '' },
+        { role: 'user', content: t.question },
+        { role: 'assistant', content: t.answer ? `${t.answer.answer.headline}. ${t.answer.answer.conclusion}` : '' },
       ]);
     setInput('');
     setTurns((prev) => [...prev, { id, question: q, at: new Date().toISOString(), status: 'running' }]);
     try {
-      const res = await api.post<{ answer: string }>('/api/assistant/ask', { question: q, history });
-      setTurns((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'done', answer: res.answer } : t)));
+      const res = await api.post<OneBAskResponse>('/api/opportunities/ai/ask', { question: q, history });
+      setTurns((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'done', answer: res } : t)));
     } catch (err) {
       setTurns((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'error', error: err instanceof Error ? err.message : 'Erro de conexão' } : t)));
     }
@@ -89,7 +91,7 @@ export function AskQuestion({ initialQuestion }: { initialQuestion?: string }) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKey}
           placeholder="Ex.: compare NVDA e AAPL com base nos alertas e notícias recentes"
-          hint="Enter envia, Shift+Enter quebra linha. Responde com base na watchlist, preços, notícias e alertas já coletados."
+          hint="Enter envia, Shift+Enter quebra linha. A OneB AI consulta o ledger de oportunidades, as estatísticas dos setups, regime, calendário e notícias; cada número é conferido."
         />
         <Button type="submit" variant="primary" loading={running} disabled={!input.trim()}>
           Perguntar
@@ -118,7 +120,7 @@ export function AskQuestion({ initialQuestion }: { initialQuestion?: string }) {
             </p>
             {t.status === 'running' && <SkeletonLines lines={4} label="Buscando nos dados" />}
             {t.status === 'error' && <ErrorState title="O Assistente não respondeu" error={t.error} onRetry={() => void ask(t.question)} />}
-            {t.status === 'done' && t.answer !== undefined && <FreeAnswer text={t.answer} />}
+            {t.status === 'done' && t.answer !== undefined && <OneBAnswerCard response={t.answer} />}
           </div>
         ))}
       </div>
@@ -130,6 +132,51 @@ export function AskQuestion({ initialQuestion }: { initialQuestion?: string }) {
         </div>
       )}
     </div>
+  );
+}
+
+/** Resposta estruturada da OneB AI: estado, claims com evidência, contrapontos e o selo do verificador. */
+export function OneBAnswerCard({ response }: { response: OneBAskResponse }) {
+  const a = response.answer;
+  const state = a.state_summary;
+  const subtitle = [state.symbol, state.setup?.replace(/_/g, ' '), state.state, state.approval].filter(Boolean).join(' · ');
+  const changed = a.what_changed.filter(Boolean);
+  const sources = response.tool_calls.filter((n) => n !== 'submit_answer');
+  return (
+    <AnswerCard
+      subject={a.headline}
+      subtitle={subtitle || undefined}
+      conclusion={a.conclusion}
+      evidences={a.claims.map((c) => c.text)}
+      counterpoints={a.counter_points.map((c) => c.text)}
+      details={
+        <div className={styles.paragraphs}>
+          {changed.length > 0 && (
+            <p>
+              <b>O que mudou:</b> {changed.join(' ')}
+            </p>
+          )}
+          {a.unknowns.length > 0 && (
+            <p>
+              <b>Não sabemos:</b> {a.unknowns.join(' ')}
+            </p>
+          )}
+          <p className="muted">
+            Fontes consultadas: {sources.join(', ') || 'leitura automática do ledger'} · modelo {response.model}
+          </p>
+        </div>
+      }
+    >
+      <div>
+        {response.fallback_used ? (
+          <Badge tone="warning">Resposta automática (sem narrativa de IA)</Badge>
+        ) : response.grounding.ok ? (
+          <Badge tone="positive">{response.grounding.numbers_checked} número(s) conferido(s) com os dados</Badge>
+        ) : (
+          <Badge tone="negative">Verificação falhou</Badge>
+        )}
+      </div>
+    </AnswerCard>
   );
 }
 

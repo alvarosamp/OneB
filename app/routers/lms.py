@@ -1,17 +1,28 @@
+import json
+import re
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 
 from app.auth import get_current_user
 from app.db import get_db
-from app.models import Course, CourseModule, DecisionJournal, Lesson, LessonProgress, TradeSetup, User
+from app.lms_content import LESSON_BODIES, MATERIAL_PRIMEIROS_PASSOS, MATERIAL_SINAIS, MODULE_PRIMEIROS_PASSOS, TRACK_SINAIS
+from app.lms_track_macro import MATERIAL_MACRO, TRACK_MACRO
+from app.models import Course, CourseModule, DecisionJournal, Lesson, LessonProgress, LessonUserState, TradeSetup, User, utcnow
 from app.schemas import (
     CertificateStatusOut,
     CourseOut,
     CourseSummaryOut,
+    LastLessonOut,
     LearningRecommendationOut,
     LearningStateOut,
+    LessonNoteIn,
     LessonOut,
+    LessonStateOut,
     ModuleOut,
+    OpenExerciseIn,
+    QuizAnswerIn,
 )
 
 router = APIRouter(prefix="/api/lms", tags=["lms"], dependencies=[Depends(get_current_user)])
@@ -55,6 +66,7 @@ def _lesson_out(lesson: Lesson, completed_ids: set[int]) -> LessonOut:
         checklist=material["checklist"],
         exercise=material["exercise"],
         required=material["required"],
+        body=LESSON_BODIES.get(lesson.title, ""),
     )
 
 
@@ -196,12 +208,29 @@ def list_courses(db: Session = Depends(get_db), user: User = Depends(get_current
     return _course_summaries(db, user.id)
 
 
+def _last_lesson(db: Session, user_id: int) -> LastLessonOut | None:
+    row = (
+        db.query(LessonUserState, Lesson, Course)
+        .join(Lesson, Lesson.id == LessonUserState.lesson_id)
+        .join(CourseModule, CourseModule.id == Lesson.module_id)
+        .join(Course, Course.id == CourseModule.course_id)
+        .filter(LessonUserState.user_id == user_id, LessonUserState.visited_at.isnot(None), Course.published.is_(True))
+        .order_by(LessonUserState.visited_at.desc())
+        .first()
+    )
+    if row is None:
+        return None
+    state, lesson, course = row
+    return LastLessonOut(course_slug=course.slug, lesson_id=lesson.id, lesson_title=lesson.title, visited_at=state.visited_at)
+
+
 @router.get("/learning-state", response_model=LearningStateOut)
 def learning_state(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     return LearningStateOut(
         courses=_course_summaries(db, user.id),
         recommendation=_next_recommendation(db, user),
         certificate=_certificate_status(db, user),
+        last_lesson=_last_lesson(db, user.id),
     )
 
 
@@ -239,11 +268,79 @@ def get_course(slug: str, db: Session = Depends(get_db), user: User = Depends(ge
     )
 
 
-@router.post("/lessons/{lesson_id}/complete", status_code=204)
-def complete_lesson(lesson_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def _get_lesson(db: Session, lesson_id: int) -> Lesson:
     lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
     if lesson is None:
         raise HTTPException(status_code=404, detail="Aula nao encontrada.")
+    return lesson
+
+
+def _user_state(db: Session, user_id: int, lesson_id: int, *, create: bool) -> LessonUserState | None:
+    state = (
+        db.query(LessonUserState)
+        .filter(LessonUserState.user_id == user_id, LessonUserState.lesson_id == lesson_id)
+        .first()
+    )
+    if state is None and create:
+        state = LessonUserState(user_id=user_id, lesson_id=lesson_id, note="")
+        db.add(state)
+    return state
+
+
+def _state_out(lesson_id: int, state: LessonUserState | None) -> LessonStateOut:
+    if state is None:
+        return LessonStateOut(lesson_id=lesson_id)
+    return LessonStateOut(
+        lesson_id=lesson_id, note=state.note or "", exercise_passed=state.exercise_passed_at is not None, visited_at=state.visited_at
+    )
+
+
+@router.get("/lessons/{lesson_id}/state", response_model=LessonStateOut)
+def lesson_state(lesson_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    _get_lesson(db, lesson_id)
+    return _state_out(lesson_id, _user_state(db, user.id, lesson_id, create=False))
+
+
+@router.post("/lessons/{lesson_id}/visit", response_model=LessonStateOut)
+def visit_lesson(lesson_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    _get_lesson(db, lesson_id)
+    state = _user_state(db, user.id, lesson_id, create=True)
+    state.visited_at = utcnow()
+    db.commit()
+    return _state_out(lesson_id, state)
+
+
+@router.put("/lessons/{lesson_id}/note", response_model=LessonStateOut)
+def save_note(lesson_id: int, payload: LessonNoteIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    _get_lesson(db, lesson_id)
+    state = _user_state(db, user.id, lesson_id, create=True)
+    state.note = payload.note
+    db.commit()
+    return _state_out(lesson_id, state)
+
+
+@router.post("/lessons/{lesson_id}/exercise", response_model=LessonStateOut)
+def pass_exercise(lesson_id: int, payload: OpenExerciseIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Exercício aberto (aulas sem quiz). Aulas com quiz só passam respondendo as
+    questões em /quiz/{index}, corrigidas aqui no servidor."""
+    lesson = _get_lesson(db, lesson_id)
+    if _quizzes().get(lesson.title):
+        raise HTTPException(status_code=409, detail="Esta aula tem quiz: responda as questoes.")
+    if len(payload.answer.strip()) < 40:
+        raise HTTPException(status_code=422, detail="Resposta curta demais.")
+    state = _user_state(db, user.id, lesson_id, create=True)
+    if state.exercise_passed_at is None:
+        state.exercise_passed_at = utcnow()
+    db.commit()
+    return _state_out(lesson_id, state)
+
+
+@router.post("/lessons/{lesson_id}/complete", status_code=204)
+def complete_lesson(lesson_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    _get_lesson(db, lesson_id)
+    state = _user_state(db, user.id, lesson_id, create=False)
+    if state is None or state.exercise_passed_at is None:
+        raise HTTPException(status_code=409, detail="Faca o exercicio da aula antes de concluir.")
     existing = (
         db.query(LessonProgress)
         .filter(LessonProgress.user_id == user.id, LessonProgress.lesson_id == lesson_id)
@@ -268,6 +365,7 @@ _COURSES_SEED = [
         "Fundamentos do mercado americano",
         "Base para entender NASDAQ, ETFs, indices, custos, horarios, dados e apoio a decisao.",
         [
+            MODULE_PRIMEIROS_PASSOS,
             (
                 "Mercado americano sem fantasia",
                 [
@@ -281,6 +379,28 @@ _COURSES_SEED = [
                 [
                     ("Montando sua watchlist piloto", "Escolha poucos ativos, defina objetivo e evite excesso de ruido.", 12),
                     ("Leitura diaria antes da abertura", "Como olhar indices, noticias, calendario e contexto antes de setup.", 15),
+                ],
+            ),
+        ],
+    ),
+    (
+        "gestao-de-risco-e-psicologia",
+        "Gestao de risco e psicologia",
+        "Protecao de capital, tamanho de posicao, disciplina e decisao consciente de nao operar.",
+        [
+            (
+                "Risco por operacao",
+                [
+                    ("Definindo seu risco maximo", "Percentual de risco por trade, por dia e por carteira.", 12),
+                    ("Tamanho de posicao e stop", "Como calcular tamanho antes de pensar no alvo.", 14),
+                    ("Circuit breakers pessoais", "Regras para parar apos sequencia de perdas ou perda diaria.", 10),
+                ],
+            ),
+            (
+                "Psicologia operacional",
+                [
+                    ("Lidando com FOMO e overtrading", "Gatilhos emocionais comuns e como neutraliza-los.", 15),
+                    ("Quando aceitar o NO_TRADE", "Como transformar espera em decisao profissional.", 12),
                 ],
             ),
         ],
@@ -315,28 +435,6 @@ _COURSES_SEED = [
         ],
     ),
     (
-        "gestao-de-risco-e-psicologia",
-        "Gestao de risco e psicologia",
-        "Protecao de capital, tamanho de posicao, disciplina e decisao consciente de nao operar.",
-        [
-            (
-                "Risco por operacao",
-                [
-                    ("Definindo seu risco maximo", "Percentual de risco por trade, por dia e por carteira.", 12),
-                    ("Tamanho de posicao e stop", "Como calcular tamanho antes de pensar no alvo.", 14),
-                    ("Circuit breakers pessoais", "Regras para parar apos sequencia de perdas ou perda diaria.", 10),
-                ],
-            ),
-            (
-                "Psicologia operacional",
-                [
-                    ("Lidando com FOMO e overtrading", "Gatilhos emocionais comuns e como neutraliza-los.", 15),
-                    ("Quando aceitar o NO_TRADE", "Como transformar espera em decisao profissional.", 12),
-                ],
-            ),
-        ],
-    ),
-    (
         "processo-diario-e-revisao",
         "Processo, diario e revisao",
         "Rotina para registrar decisoes, revisar erros e transformar operacao em aprendizado mensuravel.",
@@ -358,6 +456,8 @@ _COURSES_SEED = [
             ),
         ],
     ),
+    TRACK_SINAIS,
+    TRACK_MACRO,
 ]
 
 
@@ -497,6 +597,11 @@ _LESSON_MATERIAL: dict[str, dict] = {
 }
 
 
+_LESSON_MATERIAL.update(MATERIAL_SINAIS)
+_LESSON_MATERIAL.update(MATERIAL_PRIMEIROS_PASSOS)
+_LESSON_MATERIAL.update(MATERIAL_MACRO)
+
+
 def seed_default_courses(db: Session) -> None:
     for course_order, (slug, title, description, modules_data) in enumerate(_COURSES_SEED, start=1):
         course = db.query(Course).filter(Course.slug == slug).first()
@@ -542,3 +647,69 @@ def seed_default_courses(db: Session) -> None:
                     lesson.order = lesson_order
 
     db.commit()
+
+
+# ---- Laboratório: replays guiados de dias reais (gerados por scripts/build_lab_replays.py) ----
+
+_REPLAY_DIR = Path(__file__).resolve().parents[1] / "academy_replays"
+
+
+@router.get("/replays")
+def list_replays():
+    index = _REPLAY_DIR / "index.json"
+    return json.loads(index.read_text(encoding="utf-8")) if index.exists() else []
+
+
+@router.get("/replays/{slug}")
+def get_replay(slug: str):
+    if not re.fullmatch(r"[a-z0-9-]{1,80}", slug):
+        raise HTTPException(status_code=404, detail="Replay nao encontrado.")
+    path = _REPLAY_DIR / f"{slug}.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Replay nao encontrado.")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+# ---- Quiz com gabarito só no servidor ----
+
+_QUIZZES_PATH = Path(__file__).resolve().parents[1] / "academy_quizzes.json"
+
+
+def _quizzes() -> dict[str, list[dict]]:
+    return json.loads(_QUIZZES_PATH.read_text(encoding="utf-8")) if _QUIZZES_PATH.exists() else {}
+
+
+@router.get("/lessons/{lesson_id}/quiz")
+def get_quiz(lesson_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    lesson = _get_lesson(db, lesson_id)
+    questions = _quizzes().get(lesson.title, [])
+    state = _user_state(db, user.id, lesson_id, create=False)
+    done = set(state.quiz_correct or []) if state else set()
+    return {
+        "lesson_id": lesson_id,
+        "questions": [
+            {"index": i, "question": q["question"], "options": q["options"],
+             # explicação e resposta só aparecem para questões que o aluno já acertou
+             **({"answered": True, "correct": q["correct"], "why": q["why"]} if i in done else {"answered": False})}
+            for i, q in enumerate(questions)
+        ],
+        "passed": bool(state and state.exercise_passed_at),
+    }
+
+
+@router.post("/lessons/{lesson_id}/quiz/{index}")
+def answer_quiz(lesson_id: int, index: int, payload: QuizAnswerIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    lesson = _get_lesson(db, lesson_id)
+    questions = _quizzes().get(lesson.title, [])
+    if not 0 <= index < len(questions):
+        raise HTTPException(status_code=404, detail="Questao nao encontrada.")
+    question = questions[index]
+    right = payload.choice == question["correct"]
+    state = _user_state(db, user.id, lesson_id, create=True)
+    if right:
+        state.quiz_correct = sorted(set(state.quiz_correct or []) | {index})
+        if len(state.quiz_correct) == len(questions) and state.exercise_passed_at is None:
+            state.exercise_passed_at = utcnow()
+    db.commit()
+    return {"index": index, "correct": right, "why": question["why"] if right else None,
+            "passed": state.exercise_passed_at is not None}

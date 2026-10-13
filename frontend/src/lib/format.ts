@@ -119,3 +119,12 @@ export function formatPrice(value: number | null | undefined, symbol: string): s
   if (['NASDAQ', 'NQ=F', 'SP500', 'ES=F', '^NDX', '^GSPC'].includes(s)) return formatNumber(value, 2);
   return formatCurrency(value, currencyForSymbol(s));
 }
+
+/** Casas decimais para preço sem perder o movimento: índices e ouro 2, câmbio (~1,1) 5. */
+export function priceDigits(price: number | null | undefined): number {
+  const p = Math.abs(price ?? 0);
+  if (p >= 100) return 2;
+  if (p >= 10) return 3;
+  if (p >= 0.5) return 5;
+  return 6;
+}

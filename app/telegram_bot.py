@@ -224,6 +224,8 @@ async def cmd_pergunta(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     from app.llm_client import answer_question
+    from app.oneb_ai import agent as oneb_agent
+    from app.oneb_ai.tools import ToolContext
     from app.routers.assistant import build_assistant_context
 
     question = " ".join(context.args)
@@ -235,7 +237,12 @@ async def cmd_pergunta(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         if user_id is None:
             await update.message.reply_text("Nenhuma conta cadastrada ainda. Faça o cadastro no dashboard primeiro.")
             return
-        ctx = build_assistant_context(db, user_id)
+        if oneb_agent.is_configured():
+            # Mesmo agente, ferramentas e verificador de números do Terminal.
+            result = await oneb_agent.ask(ToolContext(db=db, user_id=user_id), question)
+            await update.message.reply_text(oneb_agent.to_text(result))
+            return
+        ctx = build_assistant_context(db, user_id, question)
     finally:
         db.close()
 

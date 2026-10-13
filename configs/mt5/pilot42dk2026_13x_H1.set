@@ -1,0 +1,7 @@
+Family=2
+BufferCount=6
+ClosedBarLookback=12
+MaxObjects=1000
+RunLabel=pilot42dk2026_13x_H1
+CalculateEveryTick=true
+OverrideGapSession=false

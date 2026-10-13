@@ -1,0 +1,77 @@
+.page {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.reading {
+  max-width: var(--measure);
+  line-height: var(--lh-reading);
+}
+
+.facts {
+  display: grid;
+  gap: var(--sp-2);
+  padding-left: var(--sp-5);
+  list-style: disc;
+  font-variant-numeric: tabular-nums;
+}
+
+.meta {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: var(--sp-4);
+}
+
+.card {
+  display: grid;
+  gap: var(--sp-3);
+  align-content: start;
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.cardTitle {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: var(--sp-1, 0.25rem) var(--sp-2);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.table th {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.up {
+  color: var(--chart-up);
+}
+
+.down {
+  color: var(--chart-down);
+}

@@ -11,6 +11,7 @@ from app.auth import get_current_user
 from app.db import get_db
 from app.market_data import service as market_data_service
 from app.models import TechnicalLevel, TradeSetup
+from app.reliability import assess_intraday_card
 from app.saas import get_or_create_workspace
 from app.schemas import (
     TechnicalAnalysisOut,
@@ -42,6 +43,8 @@ def intraday_cards():
             card["data_health"]["fresh"] = False
             if "Snapshot desatualizado." not in card["reasons"]:
                 card["reasons"].insert(0, "Snapshot desatualizado.")
+        # Calculada na leitura (não no snapshot) para refletir a idade do dado agora.
+        card["reliability"] = assess_intraday_card(card)
     return payload
 
 

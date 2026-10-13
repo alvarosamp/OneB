@@ -1,0 +1,47 @@
+[
+ {
+  "slug": "nasdaq-dia-de-tendencia",
+  "title": "Nasdaq: dia de tendência",
+  "asset": "NAS100",
+  "label": "Nasdaq 100 (CFD)",
+  "date": "2026-04-14",
+  "summary": "Um dos pregões de 2025–2026 em que o preço andou mais numa só direção em relação à amplitude do dia.",
+  "bars": 114
+ },
+ {
+  "slug": "nasdaq-dia-lateral",
+  "title": "Nasdaq: dia lateral",
+  "asset": "NAS100",
+  "label": "Nasdaq 100 (CFD)",
+  "date": "2025-01-08",
+  "summary": "Um pregão de amplitude comum em que o preço terminou perto de onde começou: rompimentos tendem a falhar.",
+  "bars": 114
+ },
+ {
+  "slug": "ouro-rompimento-falso-londres",
+  "title": "Ouro: rompimento falso em Londres",
+  "asset": "XAUUSD",
+  "label": "Ouro (XAU/USD)",
+  "date": "2026-04-15",
+  "summary": "O dia de 2025–2026 com o rompimento falso mais forte na abertura de Londres (maior queda após romper a máxima da primeira hora).",
+  "bars": 96
+ },
+ {
+  "slug": "sp500-dia-de-cpi",
+  "title": "S&P 500: dia de CPI",
+  "asset": "SPX500",
+  "label": "S&P 500 (CFD)",
+  "date": "2025-01-15",
+  "summary": "O CPI (inflação) de 2025–2026 com o maior movimento na primeira meia hora.",
+  "bars": 48
+ },
+ {
+  "slug": "eurusd-dia-de-payroll",
+  "title": "Euro/dólar: dia de payroll",
+  "asset": "EURUSD",
+  "label": "Euro/dólar",
+  "date": "2025-08-01",
+  "summary": "O payroll (emprego) de 2025–2026 com o maior movimento na primeira meia hora.",
+  "bars": 48
+ }
+]

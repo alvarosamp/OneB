@@ -12,6 +12,7 @@ import { AsyncContent, Button, EmptyState, ICON, Section, SkeletonLines, Table, 
 import { DecisionBadge } from '../terminal/DecisionBadge';
 import { DataAge } from '../terminal/DataAge';
 import { ReliabilityChart } from '../ReliabilityChart';
+import { ReliabilityChip } from '../ReliabilityMeter';
 import { AnswerCard } from './AnswerCard';
 import styles from './Assistant.module.css';
 
@@ -53,7 +54,13 @@ export function MarketView({ onAnalyze }: { onAnalyze: (symbol: string) => void 
     { key: 'ativo', header: 'Ativo', render: (r) => <strong>{r.symbol}</strong>, sortValue: (r) => r.symbol },
     { key: 'estado', header: 'Estado', render: (r) => <DecisionBadge state={r.read.state} bias={r.read.bias} size="sm" />, sortValue: (r) => ORDER[r.read.state] },
     { key: 'preco', header: 'Preço', align: 'right', render: (r) => <span className="num">{formatPrice(r.price, r.symbol)}</span> },
-    { key: 'conf', header: 'Confiança', align: 'right', render: (r) => <span className="num">{r.confidence}%</span>, sortValue: (r) => r.confidence },
+    {
+      key: 'confiabilidade',
+      header: 'Confiabilidade',
+      render: (r) => <ReliabilityChip value={r.reliability} />,
+      sortValue: (r) => r.reliability?.score ?? -1,
+    },
+    { key: 'conf', header: 'Score setup', align: 'right', render: (r) => <span className="num">{r.confidence}</span>, sortValue: (r) => r.confidence },
     { key: 'motivo', header: 'Por quê', wrap: true, render: (r) => <span className="muted">{ptBR(firstClause(r.fair_reason))}</span> },
   ];
 
