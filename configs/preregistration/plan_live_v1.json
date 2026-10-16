@@ -1,0 +1,23 @@
+{
+  "test": "plan_live_v1",
+  "registered_at": "2026-10-14",
+  "registered_before_results": true,
+  "question": "A chance anunciada de cada alvo do plano de trade (taxa-base de trade_plan_rates.json, 2023-2026) se confirma ao vivo, com planos registrados por regra fixa antes de o resultado existir?",
+  "data": {
+    "source": "barras de 5 min do Yahoo (NQ=F para NAS100, GC=F para XAUUSD), as mesmas do gráfico do app; reconstruível a qualquer momento",
+    "assets": ["NAS100", "XAUUSD"]
+  },
+  "plan_rule": {
+    "entry_time": "todo dia útil de Nova York, abertura da barra de 5 min das 10:30 de Brasília (13:30 UTC); sem barra nesse instante, sem plano no dia",
+    "directions": ["long", "short"],
+    "stop": "1,5 x ATR(14) do H1 montado com as barras de 5 min, só com horas já fechadas antes da entrada",
+    "targets_r": [1, 2, 3],
+    "cost": "entrada piorada pelo spread inteiro da corretora (BROKER.spread_points): compra a abertura + spread, venda a abertura - spread; stop e alvo pelo preço da barra",
+    "resolution": "cada alvo é avaliado separadamente: bate o alvo antes do stop = acerto; stop antes (ou os dois na mesma barra) = stop; nenhum em 24 h = expirou (conta como não acerto); menos de 24 h de dados = em andamento (fora da conta)"
+  },
+  "live_start": "2026-10-15",
+  "retro_check": "Os dias de 2026-08-05 a 2026-10-14 são mostrados como 'conferência retroativa', separados e fora do placar ao vivo.",
+  "comparison": "por ativo x direção x alvo: acertos / planos encerrados; intervalo de Wilson de 95%; a taxa anunciada é 'consistente' se cai dentro do intervalo",
+  "verdict": "Com 60 ou mais planos encerrados no ativo e direção: 'confirmado' se a taxa anunciada está dentro do intervalo nos 3 alvos; senão 'divergente' (o produto mostra o aviso e a taxa ao vivo ao lado da anunciada). Antes de 60: 'acumulando'.",
+  "prohibit_optimization": true
+}

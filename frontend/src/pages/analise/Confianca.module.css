@@ -1,0 +1,139 @@
+.page {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.hero {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-6) var(--sp-5);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-lg);
+  background: radial-gradient(120% 140% at 0% 0%, var(--brand-subtle), transparent 60%), var(--surface);
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.heroTitle {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  max-width: 40ch;
+  line-height: 1.3;
+}
+
+.lead,
+.reading {
+  max-width: var(--measure);
+  line-height: var(--lh-reading);
+}
+
+.reading {
+  margin-bottom: var(--sp-3);
+}
+
+.meta {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  line-height: var(--lh-reading);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.tile {
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+.tileValue {
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.tileLabel {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+.tileSub {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+}
+
+.tableWrap {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: var(--sp-3);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.callout {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md);
+  background: var(--warning-subtle);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-reading);
+  max-width: var(--measure);
+}
+
+.checklist {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.checklist li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+.no {
+  color: var(--negative-text);
+  margin-top: 2px;
+}
+
+.yes {
+  color: var(--positive);
+  margin-top: 2px;
+}
+
+@media (max-width: 760px) {
+  .heroTitle {
+    font-size: var(--fs-lg);
+  }
+}

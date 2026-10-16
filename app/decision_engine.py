@@ -862,6 +862,14 @@ def _apply_decision_health_gate(rows: list[dict], health: dict) -> bool:
 
 
 async def build_decision_desk(db: Session, user, record: bool = False) -> dict:
+    # A parte síncrona baixa o histórico de ~100 ativos (rede, segundos a minutos):
+    # roda numa thread para não travar o servidor inteiro (inclusive a OneB AI).
+    state = await asyncio.to_thread(_desk_rows, db, user)
+    await _attach_ai_narratives(state["rows"])
+    return await asyncio.to_thread(_desk_finish, db, user, record, state)
+
+
+def _desk_rows(db: Session, user) -> dict:
     evaluate_pending_outcomes(db)
     symbols = _active_symbols(db)
     benchmark = sim.benchmark_context()
@@ -905,8 +913,17 @@ async def build_decision_desk(db: Session, user, record: bool = False) -> dict:
             "method": row["reliability"]["method"],
         }
         row["decision_card"] = build_decision_card(row)
-    await _attach_ai_narratives(rows)
+    return {"rows": rows, "skipped": skipped, "thresholds": thresholds, "short_thresholds": short_thresholds,
+            "macro_context": macro_context, "performance": performance, "breaker_tripped": breaker_tripped,
+            "health_gate_tripped": health_gate_tripped, "decision_health": decision_health}
 
+
+def _desk_finish(db: Session, user, record: bool, state: dict) -> dict:
+    rows, skipped = state["rows"], state["skipped"]
+    thresholds, short_thresholds = state["thresholds"], state["short_thresholds"]
+    macro_context, performance = state["macro_context"], state["performance"]
+    breaker_tripped, health_gate_tripped = state["breaker_tripped"], state["health_gate_tripped"]
+    decision_health = state["decision_health"]
     workspace = get_or_create_workspace(db, user)
     recorded = 0
     if record:

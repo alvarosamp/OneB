@@ -63,5 +63,30 @@
   "sha256": "157b51fc61e5c4d492e853cfda7fc8659df553a5e285e5e17be982072c1df642",
   "locked_at": "2026-10-10",
   "note": "Congelado antes de qualquer c\u00e1lculo de virada de m\u00eas."
+ },
+ "ctx_v1": {
+  "sha256": "2deb46a2cbd0b1980894fc6d30c935064b802d4fcc7a2954caade85170c150f9",
+  "locked_at": "2026-10-13",
+  "note": "Congelado antes de qualquer c\u00e1lculo condicional."
+ },
+ "hours_v1": {
+  "sha256": "e111f98e62dbe99b0024ac58046c6adad2fb64fa5f0e5da984f19ef0d0a78e85",
+  "locked_at": "2026-10-13",
+  "note": "Congelado antes de qualquer c\u00e1lculo por hora."
+ },
+ "replay_v1": {
+  "sha256": "2ffc0267cc2439b2a34a91508065a005b38f95fbd2435eb4413044a0ccd62c6c",
+  "locked_at": "2026-10-14",
+  "note": "Congelado antes de qualquer simula\u00e7\u00e3o."
+ },
+ "plan_live_v1": {
+  "sha256": "758380edeb2a7581017880315722060d9567f1259a106441c176b48029e0e239",
+  "locked_at": "2026-10-14",
+  "note": "Congelado antes de reconstruir qualquer plano."
+ },
+ "sessfc_v1": {
+  "sha256": "e41f3c7f9f4e2eb75980c49369c2ac97a901fe1574851b52513a78848380c863",
+  "locked_at": "2026-10-15",
+  "note": "Congelado antes de qualquer c\u00e1lculo."
  }
 }

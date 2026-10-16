@@ -39,6 +39,7 @@ export function Horarios() {
                   {table ? 'Ver mapa' : 'Ver tabela'}
                 </Button>
               </div>
+              <QuickGuide assetKey={asset} />
               {table ? <HeatTable cells={a.cells} /> : <HeatGrid key={asset} cells={a.cells} metric={metric} />}
               <Legend metric={metric} />
               <Summary cells={a.cells} label={a.label} brokerSymbol={a.broker_symbol} costSource={a.cost_source} />
@@ -47,6 +48,31 @@ export function Horarios() {
         );
       }}
     </AsyncContent>
+  );
+}
+
+interface HoursGuide {
+  assets: Record<string, { label: string; bullets: string[]; criteria: string; direction_test: { status: string; summary: string } } | null>;
+}
+
+/** Guia rápido: as conclusões do mapa em frases prontas (horário de Brasília de hoje). */
+function QuickGuide({ assetKey }: { assetKey: string }) {
+  const guide = useApi<HoursGuide>('/api/analysis/hours-guide');
+  const g = guide.data?.assets[assetKey];
+  if (!g) return null;
+  return (
+    <div className={styles.guide}>
+      <p className={styles.guideTitle}>Guia rápido — {g.label}</p>
+      <ul className={styles.guideList}>
+        {g.bullets.map((b) => (
+          <li key={b}>{b}</li>
+        ))}
+      </ul>
+      <details className={styles.meta}>
+        <summary>Como classificamos as horas</summary>
+        <p className={styles.criteria}>{g.criteria}</p>
+      </details>
+    </div>
   );
 }
 

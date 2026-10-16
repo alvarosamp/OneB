@@ -225,3 +225,8 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.planLinks {
+  display: inline-flex;
+  gap: var(--sp-3);
+}

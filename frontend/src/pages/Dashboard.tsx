@@ -30,6 +30,7 @@ import { formatDateTime, formatLongDate, formatNumber, formatPrice, formatSigned
 import { ptBR } from '../lib/text';
 import type { RadarRow } from '../hooks/useRadar';
 import type {
+  PlanScoreboard,
   ChartData,
   DailyMarketSummary,
   DashboardSummary,
@@ -225,6 +226,64 @@ function NextSessionBlock() {
   );
 }
 
+const PLAN_RESULT: Record<string, string> = { hit: 'bateu o alvo', stop: 'stop antes', expired: 'expirou', open: 'em andamento' };
+
+/** Plano das 10:30 (placar ao vivo, regra fixa): o estado do alvo 2R de cada plano do dia. */
+function PlanTodayBlock() {
+  const data = useApi<PlanScoreboard>('/api/analysis/plan-scoreboard', {
+    pollMs: 15 * 60_000,
+    isEmpty: (d) => Object.values(d.assets).every((a) => !a.live || a.live.rows.length === 0),
+  });
+  return (
+    <Section
+      title="Plano das 10:30"
+      meta="placar ao vivo, regra fixa (não é sinal)"
+      actions={
+        <span className={styles.planLinks}>
+          <Link to="/analise?tab=conta" className={styles.more}>
+            Quanto operar
+          </Link>
+          <Link to="/analise?tab=confianca" className={styles.more}>
+            Placar
+          </Link>
+        </span>
+      }
+    >
+      <AsyncContent
+        state={data}
+        loading={<SkeletonLines lines={4} />}
+        empty={<EmptyState title="Nenhum plano ao vivo ainda" description="Todo dia útil às 10:30 de Brasília o OneB registra um plano de compra e um de venda." />}
+        errorTitle="Placar indisponível"
+      >
+        {(d) => (
+          <ul className={styles.feed}>
+            {Object.entries(d.assets).flatMap(([key, a]) => {
+              const rows = a.live?.rows ?? [];
+              const last = rows.reduce((m, r) => (r.date > m ? r.date : m), '');
+              return rows
+                .filter((r) => r.date === last)
+                .map((r) => (
+                  <li key={`${key}-${r.date}-${r.direction}`} className={styles.pairRow}>
+                    <span className={styles.eventBody}>
+                      <span className={styles.eventTitle}>
+                        {a.label} · {r.direction === 'long' ? 'compra' : 'venda'}
+                      </span>
+                      <span className={styles.feedMeta}>
+                        {r.date.split('-').reverse().slice(0, 2).join('/')}
+                        {r.stop_distance != null ? ` · stop de ${formatNumber(r.stop_distance, r.stop_distance >= 0.1 ? 2 : 5)}` : ''} · TP1 {PLAN_RESULT[r.results['1']]}
+                      </span>
+                    </span>
+                    <Badge tone={r.results['2'] === 'hit' ? 'positive' : r.results['2'] === 'open' ? 'neutral' : 'negative'}>2R: {PLAN_RESULT[r.results['2']]}</Badge>
+                  </li>
+                ));
+            })}
+          </ul>
+        )}
+      </AsyncContent>
+    </Section>
+  );
+}
+
 function ContextBlock() {
   const trend = useApi<TrendReadings>('/api/trend/readings', { pollMs: 60 * 60_000, isEmpty: (d) => d.assets.length === 0 });
   const learning = useApi<LearningState>('/api/lms/learning-state');
@@ -237,6 +296,7 @@ function ContextBlock() {
   return (
     <div className={styles.feeds}>
       <NextSessionBlock />
+      <PlanTodayBlock />
       <Section
         title="Tendência"
         meta={asEvidence ? '1, 3 e 12 meses, com evidência' : '1, 3 e 12 meses, descrição do preço'}

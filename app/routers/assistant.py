@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends
@@ -86,7 +87,8 @@ def build_assistant_context(db: Session, user_id: int, question: str = "") -> di
 
 @router.post("/ask", response_model=AssistantAskResponse)
 async def ask_assistant(payload: AssistantAskRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    context = build_assistant_context(db, user.id, payload.question)
+    # Contexto busca cotações na rede: numa thread, para não travar o servidor.
+    context = await asyncio.to_thread(build_assistant_context, db, user.id, payload.question)
     history = [{"role": msg.role, "text": msg.text} for msg in payload.history[-8:]]
     answer = await answer_question(payload.question, context, history=history) if history else await answer_question(payload.question, context)
     return AssistantAskResponse(answer=answer)

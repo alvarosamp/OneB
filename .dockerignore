@@ -10,6 +10,13 @@
 !scripts/**
 !migrations/
 !migrations/**
+# Configs que o app lê em produção: pré-registros (com o LOCK), especificação da corretora e advisors.
+!configs/
+!configs/preregistration/
+!configs/preregistration/**
+!configs/broker/
+!configs/broker/**
+!configs/manual_advisors_v1.json
 
 **/.env
 **/__pycache__/

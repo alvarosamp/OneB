@@ -1,0 +1,25 @@
+{
+  "test": "ctx_v1",
+  "registered_at": "2026-10-13",
+  "registered_before_results": true,
+  "question": "O plano de trade padrão (stop 1,5 x ATR(1h), alvo 2R, até 24 h) paga mais quando segue a tendência de 3 meses do que quando vai contra ela, comparando DENTRO da mesma direção (para não confundir com a alta geral do período)?",
+  "purpose": "Se aprovado, a 'confiança' do plano no app passa a ser condicional ao contexto (a favor/contra a tendência). Se não, continua a taxa-base. Nenhuma ordem.",
+  "data": {
+    "source": "Dukascopy M5 bid/ask normalizado (mesmos arquivos do lab_v1), compra no ask e venda no bid",
+    "assets": ["NAS100", "XAUUSD"],
+    "entries": "toda hora cheia (minuto 0), compra e venda, mesma simulação de scripts/build_trade_plan_rates.py: stop 1,5 x ATR(14) do H1 fechado, alvo 2R, stop primeiro se os dois tocam na mesma barra, saída no fechamento após 24 h"
+  },
+  "context": {
+    "trend_3m": "sinal de (fechamento do último dia UTC completo antes da entrada) / (fechamento 63 dias de negociação antes) - 1; 'a favor' = compra com sinal positivo ou venda com sinal negativo",
+    "secondary_descriptive": ["dia de CPI, payroll ou FOMC (data de NY da entrada) contra demais dias", "faixa de horário de NY"]
+  },
+  "metric": "resultado em R por plano. Efeito = média de [R(compra a favor) - R(compra contra)] e [R(venda a favor) - R(venda contra)], peso igual para as duas direções, por ativo",
+  "split": {
+    "discovery": {"from_inclusive": "2019-03-01", "to_exclusive": "2023-01-01"},
+    "confirmation": {"from_inclusive": "2023-01-01", "to_exclusive": "2026-09-26"}
+  },
+  "bootstrap": "IC 95% por reamostragem de DIAS inteiros (as entradas de um mesmo dia se sobrepõem), 5.000 reamostragens, semente 7",
+  "pass": "APROVADO num ativo se: efeito > 0 com IC 95% acima de zero na descoberta E na confirmação, E o plano a favor tem resultado médio > 0 R nas duas direções na confirmação. Ativos avaliados separadamente; correção de Bonferroni para 2 ativos (IC 97,5%).",
+  "decision": "Aprovado: o app mostra a chance condicional (a favor/contra) com o selo do teste. Reprovado: o app mostra só a taxa-base e a aula registra o resultado.",
+  "prohibit_optimization": true
+}

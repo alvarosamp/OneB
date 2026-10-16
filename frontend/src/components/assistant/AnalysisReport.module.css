@@ -1,0 +1,33 @@
+.report {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.section {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.list {
+  display: grid;
+  gap: var(--sp-1);
+  padding-left: var(--sp-5);
+  list-style: disc;
+  line-height: var(--lh-reading);
+  font-variant-numeric: tabular-nums;
+}
+
+.disclaimer {
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}

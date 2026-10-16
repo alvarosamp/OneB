@@ -6,7 +6,7 @@ from app.oneb_ai import agent, evals
 def test_golden_set_is_well_formed():
     golden = evals.load_golden()
     assert len(golden["cases"]) >= 12
-    assert {c["category"] for c in golden["cases"]} >= {"estado", "recusa", "temporal", "adversarial", "estatística"}
+    assert {c["category"] for c in golden["cases"]} >= {"estado", "recusa", "temporal", "adversarial", "estatística", "risco"}
     for case in golden["cases"]:
         assert case["fixture"] in golden["fixtures"]
 
@@ -17,6 +17,9 @@ def test_template_baseline_never_breaks_hard_rules(tmp_path, monkeypatch):
     assert report["ungrounded_number_cases"] == 0
     assert report["order_language_cases"] == 0
     assert report["fallback_rate"] == 1.0
+    # A resposta automática (sem LLM) precisa passar em TODOS os casos, inclusive os de risco.
+    failed = [r["id"] for r in report["rows"] if not r["passed"]]
+    assert not failed, failed
 
 
 def test_grader_flags_order_language_and_missing_state():

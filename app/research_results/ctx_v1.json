@@ -1,0 +1,149 @@
+{
+  "generated_at": "2026-10-14T00:55:49.555610+00:00",
+  "test": "ctx_v1",
+  "spec_sha256": "2deb46a2cbd0b1980894fc6d30c935064b802d4fcc7a2954caade85170c150f9",
+  "assets": {
+    "NAS100": {
+      "discovery": {
+        "entries": 33310,
+        "effect_r": -0.0844,
+        "ci975": [
+          -0.1903,
+          0.0215
+        ],
+        "groups": {
+          "long_a_favor": {
+            "n": 11207,
+            "mean_r": -0.0044,
+            "p_target": 0.2763
+          },
+          "long_contra": {
+            "n": 5448,
+            "mean_r": 0.0904,
+            "p_target": 0.304
+          },
+          "short_a_favor": {
+            "n": 5448,
+            "mean_r": -0.1622,
+            "p_target": 0.2423
+          },
+          "short_contra": {
+            "n": 11207,
+            "mean_r": -0.0882,
+            "p_target": 0.2765
+          }
+        },
+        "event_days_mean_r": -0.0352,
+        "other_days_mean_r": -0.0436,
+        "event_days_p_target": 0.2774,
+        "other_days_p_target": 0.2752
+      },
+      "confirmation": {
+        "entries": 33916,
+        "effect_r": 0.0009,
+        "ci975": [
+          -0.1149,
+          0.1139
+        ],
+        "groups": {
+          "long_a_favor": {
+            "n": 12930,
+            "mean_r": 0.009,
+            "p_target": 0.2893
+          },
+          "long_contra": {
+            "n": 4028,
+            "mean_r": 0.0086,
+            "p_target": 0.2885
+          },
+          "short_a_favor": {
+            "n": 4028,
+            "mean_r": -0.0506,
+            "p_target": 0.2781
+          },
+          "short_contra": {
+            "n": 12930,
+            "mean_r": -0.052,
+            "p_target": 0.2818
+          }
+        },
+        "event_days_mean_r": -0.0206,
+        "other_days_mean_r": -0.0215,
+        "event_days_p_target": 0.2951,
+        "other_days_p_target": 0.284
+      },
+      "status": "NOT_PASSED"
+    },
+    "XAUUSD": {
+      "discovery": {
+        "entries": 33966,
+        "effect_r": 0.0861,
+        "ci975": [
+          -0.0141,
+          0.1841
+        ],
+        "groups": {
+          "long_a_favor": {
+            "n": 9774,
+            "mean_r": 0.0151,
+            "p_target": 0.261
+          },
+          "long_contra": {
+            "n": 7209,
+            "mean_r": -0.0718,
+            "p_target": 0.2472
+          },
+          "short_a_favor": {
+            "n": 7209,
+            "mean_r": -0.0564,
+            "p_target": 0.2594
+          },
+          "short_contra": {
+            "n": 9774,
+            "mean_r": -0.1417,
+            "p_target": 0.2312
+          }
+        },
+        "event_days_mean_r": -0.0526,
+        "other_days_mean_r": -0.0647,
+        "event_days_p_target": 0.2636,
+        "other_days_p_target": 0.2478
+      },
+      "confirmation": {
+        "entries": 34948,
+        "effect_r": 0.0226,
+        "ci975": [
+          -0.0902,
+          0.1366
+        ],
+        "groups": {
+          "long_a_favor": {
+            "n": 13015,
+            "mean_r": 0.0464,
+            "p_target": 0.2838
+          },
+          "long_contra": {
+            "n": 4459,
+            "mean_r": 0.0105,
+            "p_target": 0.2785
+          },
+          "short_a_favor": {
+            "n": 4438,
+            "mean_r": -0.0984,
+            "p_target": 0.2557
+          },
+          "short_contra": {
+            "n": 13036,
+            "mean_r": -0.1078,
+            "p_target": 0.2494
+          }
+        },
+        "event_days_mean_r": -0.0589,
+        "other_days_mean_r": -0.0314,
+        "event_days_p_target": 0.2722,
+        "other_days_p_target": 0.2662
+      },
+      "status": "NOT_PASSED"
+    }
+  }
+}

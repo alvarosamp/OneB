@@ -614,6 +614,10 @@ class AIAnswerLog(Base):
     grounding_ok: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     violations: Mapped[list] = mapped_column(JSON, default=list)
     fallback_used: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Avaliação do usuário: 1 = útil, -1 = não útil (migração d20261013a01).
+    rating: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    feedback_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    feedback_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
 
 
@@ -634,3 +638,76 @@ class PaperExecution(Base):
     notes: Mapped[str] = mapped_column(Text, default="")
     executed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class PlanLiveRecord(Base):
+    """Plano do placar ao vivo (plan_live_v1), gravado na hora em que existe.
+
+    Encerrado (nenhum alvo 'open'), o registro não muda mais: o histórico do placar não
+    depende da janela de ~60 dias das barras gratuitas nem pode ser reescrito depois.
+    """
+
+    __tablename__ = "plan_live_records"
+    __table_args__ = (UniqueConstraint("asset", "plan_date", "direction", name="uq_plan_live_record"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    asset: Mapped[str] = mapped_column(String(16), index=True)
+    plan_date: Mapped[str] = mapped_column(String(10), index=True)  # dia de Nova York, ISO
+    direction: Mapped[str] = mapped_column(String(8))
+    entry: Mapped[float] = mapped_column(Float)
+    stop_distance: Mapped[float] = mapped_column(Float)
+    results: Mapped[dict] = mapped_column(JSON, default=dict)  # {"1": "hit"|"stop"|"expired"|"open", "2": ..., "3": ...}
+    closed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    rule_sha256: Mapped[str] = mapped_column(String(64))
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ForecastLiveRecord(Base):
+    """Previsão de amplitude do próximo pregão (volfc_v1), gravada na primeira vez que é calculada.
+
+    Nunca é reescrita: o placar ao vivo compara o realizado com o que estava gravado, e mostra se a
+    gravação foi antes do pregão começar (18:00 de NY da véspera)."""
+
+    __tablename__ = "forecast_live_records"
+    __table_args__ = (UniqueConstraint("kind", "asset", "target_date", name="uq_forecast_live_record"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(16), index=True)
+    asset: Mapped[str] = mapped_column(String(16), index=True)
+    target_date: Mapped[str] = mapped_column(String(10), index=True)
+    based_on: Mapped[str] = mapped_column(String(10))
+    expected_pct: Mapped[float] = mapped_column(Float)
+    low80_pct: Mapped[float] = mapped_column(Float)
+    high80_pct: Mapped[float] = mapped_column(Float)
+    event: Mapped[bool] = mapped_column(Boolean, default=False)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class SignalRecord(Base):
+    """Sinal colado pelo usuário em 'Avaliar um sinal' e acompanhado no placar da fonte (ex.: um serviço de sinais).
+
+    Conferido como entrada a mercado no momento em que foi colado, pelas distâncias do sinal, até 24 h.
+    Alvo já decidido não muda; o placar compara o resultado com a taxa-base medida na hora da avaliação."""
+
+    __tablename__ = "signal_records"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    source: Mapped[str] = mapped_column(String(64), index=True)
+    asset: Mapped[str] = mapped_column(String(16))
+    direction: Mapped[str] = mapped_column(String(8))
+    entry: Mapped[float] = mapped_column(Float)
+    stop: Mapped[float] = mapped_column(Float)
+    targets: Mapped[list] = mapped_column(JSON, default=list)
+    stop_distance: Mapped[float] = mapped_column(Float)
+    target_distances: Mapped[list] = mapped_column(JSON, default=list)
+    base_p: Mapped[list] = mapped_column(JSON, default=list)  # chance medida de cada alvo na hora da avaliação
+    base_mean_r: Mapped[list] = mapped_column(JSON, default=list)
+    raw_text: Mapped[str] = mapped_column(Text)
+    results: Mapped[list] = mapped_column(JSON, default=list)  # 'hit' | 'stop' | 'expired' | 'open' por alvo
+    result_r: Mapped[list] = mapped_column(JSON, default=list)
+    ref_entry: Mapped[float | None] = mapped_column(Float, nullable=True)
+    closed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

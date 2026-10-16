@@ -28,6 +28,7 @@ from app.routers import (
     reports,
     saas,
     share,
+    signals,
     technical,
     trend,
     watchlist,
@@ -112,6 +113,7 @@ app.include_router(lms.router)
 app.include_router(lives.router)
 app.include_router(trend.router)
 app.include_router(asset_brief.router)
+app.include_router(signals.router)
 
 
 @app.get("/health")

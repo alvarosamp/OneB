@@ -24,6 +24,7 @@ _SKIP_PATTERNS = [
     re.compile(r"\b\d{1,2}/\d{1,2}(?:/\d{2,4})?\b"),  # datas dd/mm
     re.compile(r"\bMM\s?\d+\b|\bM\d{1,2}\b|\bH\d\b", re.I),  # nomes de média/timeframe
     re.compile(r"\b(?:confirma[cç][aã]o|confirmation)\s*\d\b", re.I),
+    re.compile(r"(?:nasdaq|s&p|dow|ftse|dax|nikkei|russell|ibovespa)\s?-?\d{2,4}\b", re.I),  # nomes de índice (Nasdaq 100, S&P 500)
 ]
 
 

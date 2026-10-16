@@ -1,0 +1,38 @@
+{
+ "broker": "HonorPro",
+ "verified_at": "2026-10-14",
+ "source": "MT5 (somente leitura): symbol_info + mediana do spread das barras M5 dos últimos 60 dias. Atualize com: python scripts/check_broker_specs.py --write",
+ "history": [
+  "2026-10-14: US100.s lote mínimo 1,0 -> 0,1 (a corretora mudou sem aviso); EURUSD.s spread medido (0,00012)."
+ ],
+ "assets": {
+  "NAS100": {
+   "symbol": "US100.s",
+   "contract_size": 1.0,
+   "volume_min": 0.1,
+   "volume_step": 0.1,
+   "spread_points": 0.7
+  },
+  "SPX500": {
+   "symbol": "US500.s",
+   "contract_size": 1.0,
+   "volume_min": 0.1,
+   "volume_step": 0.1,
+   "spread_points": 5.3
+  },
+  "XAUUSD": {
+   "symbol": "XAUUSD.s",
+   "contract_size": 100.0,
+   "volume_min": 0.01,
+   "volume_step": 0.01,
+   "spread_points": 0.26
+  },
+  "EURUSD": {
+   "symbol": "EURUSD.s",
+   "contract_size": 100000.0,
+   "volume_min": 0.01,
+   "volume_step": 0.01,
+   "spread_points": 0.00012
+  }
+ }
+}

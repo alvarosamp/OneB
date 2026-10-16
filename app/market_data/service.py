@@ -20,9 +20,13 @@ CACHE_ONLY = os.getenv("MARKET_DATA_CACHE_ONLY", "false").lower() == "true"
 CACHE_TTL_SECONDS = {"1m": 60, "2m": 60, "5m": 120, "15m": 300, "30m": 300, "60m": 600, "1h": 600, "90m": 600,
                      "1d": 1800, "5d": 3600, "1wk": 6 * 3600, "1mo": 12 * 3600}
 DEFAULT_CACHE_TTL_SECONDS = 1800
+# Histórico diário LONGO (1 ano ou mais) só ganha uma barra por dia: rebaixar a cada 30 min fazia a
+# Mesa de Decisão buscar ~100 ações de novo a cada meia hora (minutos de espera). Curto (preço, previsão) segue 30 min.
+LONG_PERIODS = {"1y", "2y", "5y", "10y", "max", "ytd"}
+LONG_DAILY_TTL_SECONDS = 6 * 3600
 
 
-def cache_is_fresh(fetched_at: str | None, interval: str, now: datetime | None = None) -> bool:
+def cache_is_fresh(fetched_at: str | None, interval: str, now: datetime | None = None, period: str | None = None) -> bool:
     if not fetched_at:
         return False
     try:
@@ -32,6 +36,8 @@ def cache_is_fresh(fetched_at: str | None, interval: str, now: datetime | None =
     if fetched.tzinfo is None:
         fetched = fetched.replace(tzinfo=timezone.utc)
     age = ((now or datetime.now(timezone.utc)) - fetched).total_seconds()
+    if interval in ("1d", "5d", "1wk", "1mo") and (period or "").lower() in LONG_PERIODS:
+        return age < max(LONG_DAILY_TTL_SECONDS, CACHE_TTL_SECONDS.get(interval, 0))
     return age < CACHE_TTL_SECONDS.get(interval, DEFAULT_CACHE_TTL_SECONDS)
 FORMAT_VERSION = 1
 REQUIRED_COLUMNS = ["open", "high", "low", "close", "volume"]
@@ -133,7 +139,7 @@ class MarketDataService:
     ) -> pd.DataFrame:
         cached_fallback = self.load_cached_bars(symbol, period=period, interval=interval) if use_cache else None
         has_cache = cached_fallback is not None and not cached_fallback.empty
-        if use_cache and not refresh and has_cache and (cache_only or cache_is_fresh(cached_fallback.attrs.get("fetched_at"), interval)):
+        if use_cache and not refresh and has_cache and (cache_only or cache_is_fresh(cached_fallback.attrs.get("fetched_at"), interval, period=period)):
             return cached_fallback
         if cache_only:
             return cached_fallback if has_cache else pd.DataFrame(columns=REQUIRED_COLUMNS)

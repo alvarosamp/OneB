@@ -1,0 +1,20 @@
+{
+  "test": "hours_v1",
+  "registered_at": "2026-10-13",
+  "registered_before_results": true,
+  "question": "A hora do dia em que se entra muda o resultado do plano de trade padrão? Existe hora em que comprar (ou vender) paga mais que nas outras, de forma que se repita em outro período?",
+  "data": {
+    "source": "mesma simulação do ctx_v1 (scripts/run_ctx.py, per_entry): Dukascopy M5, compra no ask, venda no bid, stop 1,5 x ATR(14) do H1, alvo 2R, até 24 h",
+    "assets": ["NAS100", "XAUUSD"],
+    "cells": "hora de entrada de Nova York (0-23) x direção (compra, venda) x ativo = 96 células"
+  },
+  "metric": "resultado médio em R da célula MENOS o resultado médio da mesma direção em todas as horas do mesmo ativo (isola a hora da alta geral do período)",
+  "split": {
+    "discovery": {"from_inclusive": "2019-03-01", "to_exclusive": "2023-01-01"},
+    "confirmation": {"from_inclusive": "2023-01-01", "to_exclusive": "2026-09-26"}
+  },
+  "selection": "Descoberta: p-valor bilateral por bootstrap de dias inteiros (2.000 reamostragens, semente 7) da diferença de cada célula; Benjamini-Hochberg sobre as 96 células, q <= 0,10. Sobreviventes vão para a confirmação.",
+  "pass": "Célula APROVADA se, na confirmação, a diferença tem o mesmo sinal da descoberta e IC (Bonferroni pelo número de sobreviventes) que exclui zero, E o resultado médio absoluto da célula (não a diferença) é > 0 R na direção indicada.",
+  "decision": "Células aprovadas aparecem no guia de horários como 'hora com vantagem medida' com o selo do teste. Sem aprovadas, o guia usa só critérios de risco e custo (movimento, spread, eventos, pausas), descritos como tal.",
+  "prohibit_optimization": true
+}

@@ -14,6 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 
 from app.db import Base
@@ -36,7 +37,8 @@ def load_golden(path: Path = GOLDEN_PATH) -> dict:
 
 
 def build_context(golden: dict, case: dict, research_dir: Path):
-    engine = create_engine("sqlite://")
+    # StaticPool: o agente roda ferramentas em thread separada; todas as threads enxergam o mesmo banco em memória.
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)
     db = sessionmaker(bind=engine)()
     for at, frm, to, reason, payload in golden["fixtures"][case["fixture"]]:
@@ -45,8 +47,9 @@ def build_context(golden: dict, case: dict, research_dir: Path):
                           setup="gold_fakeout_open", setup_version="eval", symbol="XAUUSD.s", mode="SHADOW",
                           approval=Approval.SHADOW)
     empty = Path(tempfile.mkdtemp(prefix="oneb_eval_empty_"))  # casos sem relatório de setup
+    market = golden.get("market_fixtures", {}).get(case["market"]) if case.get("market") else None
     return ToolContext(db=db, now=datetime.fromisoformat(golden["now"]),
-                       research_dir=research_dir if case.get("research") else empty)
+                       research_dir=research_dir if case.get("research") else empty, market_override=market)
 
 
 def grade(case: dict, result: dict) -> dict:
@@ -69,6 +72,8 @@ def grade(case: dict, result: dict) -> dict:
         checks["counter_points"] = len(answer.get("counter_points", [])) >= expect["counter_points_min"]
     if expect.get("what_changed_min"):
         checks["what_changed"] = len([w for w in answer.get("what_changed", []) if w]) >= expect["what_changed_min"]
+    if expect.get("must_not_include"):
+        checks["forbidden"] = not any(_norm(k) in text for k in expect["must_not_include"])
     if expect.get("no_levels"):
         checks["no_levels"] = not any(w in text for w in ("stop em", "alvo em", "entrada em"))
     return {"id": case["id"], "category": case["category"], "passed": all(checks.values()), "checks": checks,

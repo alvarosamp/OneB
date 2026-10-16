@@ -3,7 +3,8 @@ import { api } from '../../api/client';
 import { splitAnswer } from '../../lib/assistant';
 import { formatTime } from '../../lib/format';
 import type { OneBAskResponse } from '../../types';
-import { Badge, Button, chipClass, EmptyState, ErrorState, SkeletonLines, Textarea } from '../ui';
+import { ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Badge, Button, chipClass, EmptyState, ErrorState, ICON, SkeletonLines, Textarea } from '../ui';
 import { AnswerCard } from './AnswerCard';
 import styles from './Assistant.module.css';
 
@@ -17,12 +18,18 @@ interface Turn {
 }
 
 const SUGGESTIONS = [
-  'Existe alguma oportunidade sendo monitorada agora?',
-  'O que mudou nos últimos 30 minutos?',
-  'Por que o último Gold Fakeout foi invalidado?',
-  'Como o Gold Fakeout performou no replay? Ele bate a entrada aleatória?',
-  'Compare o sinal atual com eventos parecidos do passado.',
-  'O ouro está correlacionado com o DXY nas últimas semanas?',
+  'Como está o mercado hoje? O que preciso saber?',
+  'Qual o melhor horário para operar o Nasdaq?',
+  'Se eu comprar ouro agora, qual seria o plano?',
+  'Tenho US$ 1.000: qual ativo cabe na minha conta?',
+  'O plano de hoje bateu o alvo?',
+  'Quanto o Nasdaq deve mexer no próximo pregão?',
+  'Quando sai o próximo CPI?',
+  'Compro ou vendo Nasdaq agora?',
+  'Quanto a IA acerta?',
+  'Um serviço promete 90% de acerto. Isso é bom?',
+  'Quanto custa operar o S&P 500?',
+  'O que é ATR?',
 ];
 
 /** Modo "Perguntar": pergunta livre sobre os dados do OneB (antigo Assistente IA). */
@@ -167,7 +174,7 @@ export function OneBAnswerCard({ response }: { response: OneBAskResponse }) {
         </div>
       }
     >
-      <div>
+      <div className={styles.answerFooter}>
         {response.fallback_used ? (
           <Badge tone="warning">Resposta automática (sem narrativa de IA)</Badge>
         ) : response.grounding.ok ? (
@@ -175,8 +182,48 @@ export function OneBAnswerCard({ response }: { response: OneBAskResponse }) {
         ) : (
           <Badge tone="negative">Verificação falhou</Badge>
         )}
+        {response.answer_id != null && <AnswerRating answerId={response.answer_id} />}
       </div>
     </AnswerCard>
+  );
+}
+
+/** Gostei / não gostei de uma resposta; o "não" abre um campo opcional para dizer o que faltou. */
+function AnswerRating({ answerId }: { answerId: number }) {
+  const [sent, setSent] = useState<1 | -1 | null>(null);
+  const [comment, setComment] = useState('');
+  const [asking, setAsking] = useState(false);
+  async function send(rating: 1 | -1, text?: string) {
+    try {
+      await api.post('/api/opportunities/ai/feedback', { answer_id: answerId, rating, comment: text || null });
+      setSent(rating);
+      setAsking(false);
+    } catch {
+      /* avaliação é opcional: falha silenciosa */
+    }
+  }
+  if (sent) return <span className={styles.hint}>{sent === 1 ? 'Obrigado pela avaliação.' : 'Obrigado: vamos usar isso para melhorar.'}</span>;
+  return (
+    <span className={styles.rating}>
+      <span className={styles.hint}>Esta resposta ajudou?</span>
+      <Button variant="ghost" size="sm" icon={<ThumbsUp {...ICON} />} aria-label="Ajudou" onClick={() => void send(1)} />
+      <Button variant="ghost" size="sm" icon={<ThumbsDown {...ICON} />} aria-label="Não ajudou" onClick={() => setAsking(true)} />
+      {asking && (
+        <span className={styles.ratingForm}>
+          <input
+            className={styles.ratingInput}
+            aria-label="O que faltou?"
+            placeholder="O que faltou? (opcional)"
+            value={comment}
+            maxLength={1000}
+            onChange={(e) => setComment(e.target.value)}
+          />
+          <Button size="sm" variant="secondary" onClick={() => void send(-1, comment)}>
+            Enviar
+          </Button>
+        </span>
+      )}
+    </span>
   );
 }
 

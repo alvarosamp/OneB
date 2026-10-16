@@ -1206,6 +1206,8 @@ export interface OneBAskResponse {
   fallback_used: boolean;
   model: string;
   tool_calls: string[];
+  /** id do registro da resposta, para o usuário avaliar (gostei / não gostei). */
+  answer_id?: number | null;
 }
 
 // ---- Laboratório da Academia (app/routers/lms.py, replays de dias reais) ----
@@ -1299,7 +1301,26 @@ export interface HourHeatmap {
   assets: Record<string, { label: string; broker_symbol: string | null; period: { from: string; to: string }; typical_range_bps: number; cost_source: string; cells: HeatCell[] }>;
 }
 
+/** Quanto o preço ainda deve andar das 10:30 de Brasília ao fechamento de NY (sessfc_v1); só para ativo aprovado no teste. */
+export interface SessionForecast {
+  date: string;
+  entry_price: number;
+  entry_utc: string;
+  close_utc: string;
+  expected_pct: number;
+  low80_pct: number;
+  high80_pct: number;
+  expected_points: number;
+  low80_points: number;
+  high80_points: number;
+  so_far_pct: number;
+  event: boolean;
+  closed: boolean;
+  test: string;
+}
+
 export interface AssetBrief {
+  session_forecast?: SessionForecast | null;
   key: string;
   label: string;
   symbol: string;
@@ -1326,8 +1347,17 @@ export interface AssetBrief {
     high80_price: number;
     atr14_pct: number;
     event: string | null;
+    us_holiday?: string | null;
     coverage80_test: number | null;
     note: string;
+  } | null;
+  freshness?: {
+    status: 'ok' | 'warn' | 'fail';
+    daily_as_of?: string;
+    intraday_age_minutes?: number;
+    source: string;
+    checks: { name: string; status: 'ok' | 'warn' | 'fail'; detail: string }[];
+    broker_note: string;
   } | null;
   hours_ahead: { starts_at: string; ny_hour: number; weekday: number; ratio: number | null; cost_share: number | null; range_bps: number | null }[];
   heatmap_meta: { typical_range_bps: number; period: { from: string; to: string }; cost_source: string } | null;
@@ -1341,4 +1371,77 @@ export interface NextSession {
   assets: { key: string; label: string; forecast: AssetBrief['range_forecast'] }[];
   events: { event_name: string; event_date: string; type: string | null; assets: { label: string; post30: number | null }[] }[];
   note: string;
+}
+
+export interface VolfcScoreboard {
+  generated_at: string;
+  assets: Record<string, {
+    label: string;
+    start?: string;
+    note?: string;
+    summary: { days: number; inside80: number; coverage80: number | null; beats_atr_days: number; mse_ratio_vs_atr: number | null; registered_before?: number } | null;
+    /** registered: 'antes' = previsão gravada antes do pregão começar; 'durante' = gravada já com o pregão aberto; null = reconstruída. */
+    rows: { date: string; expected_pct: number; low80_pct: number; high80_pct: number; realized_pct: number; atr14_pct: number; inside80: boolean; event: boolean; registered?: 'antes' | 'durante' | null }[];
+  }>;
+}
+
+export interface TradePlan {
+  available: boolean;
+  reason?: string;
+  asset: string;
+  direction: 'long' | 'short';
+  stop_atr: number;
+  entry: number;
+  entry_source?: 'chart' | 'mt5';
+  basis_note?: string | null;
+  /** Lote mínimo da corretora neste stop: quanto arrisca e o saldo para isso ser 1% ou 2%. */
+  min_lot?: { symbol: string; volume_min: number; risk_usd: number; balance_1pct: number; balance_2pct: number };
+  stop: number;
+  stop_distance: number;
+  atr_h1: number;
+  ny_hour: number;
+  targets: {
+    target_r: number;
+    price: number;
+    distance: number;
+    p_target: number | null;
+    p_stop: number | null;
+    p_open_24h: number | null;
+    mean_r: number | null;
+    n: number | null;
+    p_target_this_hour: number | null;
+    n_this_hour: number | null;
+    p_target_2019_2022: number | null;
+    share_of_expected_range?: number;
+  }[];
+  warnings: string[];
+  measured_period: string;
+  method: string;
+  note: string;
+}
+
+export interface PlanLiveTarget {
+  target_r: number;
+  closed: number;
+  hits: number;
+  open: number;
+  rate: number | null;
+  wilson95: [number, number] | null;
+  announced: number | null;
+  consistent: boolean | null;
+}
+
+export type PlanLiveSummary = Record<'long' | 'short', { plans: number; status: 'acumulando' | 'confirmado' | 'divergente'; targets: PlanLiveTarget[] }>;
+
+/** Placar ao vivo do plano de trade (plan_live_v1). */
+export interface PlanScoreboard {
+  generated_at: string;
+  assets: Record<string, {
+    label: string;
+    start?: string;
+    entry_time_brasilia?: string;
+    note?: string;
+    live: { summary: PlanLiveSummary; stored?: number; rows: { date: string; direction: 'long' | 'short'; entry?: number; stop_distance?: number; results: Record<string, 'hit' | 'stop' | 'expired' | 'open'> }[] } | null;
+    retro: { from: string; summary: PlanLiveSummary } | null;
+  }>;
 }

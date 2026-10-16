@@ -1,0 +1,858 @@
+{
+ "test": "replay_v1",
+ "sha256": "2ffc0267cc2439b2a34a91508065a005b38f95fbd2435eb4413044a0ccd62c6c",
+ "generated_at": "2026-10-14T14:46:11.487268+00:00",
+ "assets": {
+  "NAS100": {
+   "entries": 10366,
+   "skipped_by_oneb": {
+    "hora_ruim": 770,
+    "evento": 223
+   },
+   "users": {
+    "discovery": {
+     "segue_oneb": {
+      "aleatorio": {
+       "trades": 4758,
+       "p_target": 0.2967,
+       "mean_r": -0.0369,
+       "sum_r": -175.7,
+       "max_drawdown_r": 185.7,
+       "final_balance": 154.0,
+       "spread_r": 0.0567
+      },
+      "acompanha_24h": {
+       "trades": 4758,
+       "p_target": 0.2972,
+       "mean_r": -0.0371,
+       "sum_r": -176.5,
+       "max_drawdown_r": 226.3,
+       "final_balance": 110.0,
+       "spread_r": 0.0567
+      },
+      "contra_1h": {
+       "trades": 4758,
+       "p_target": 0.2907,
+       "mean_r": -0.0561,
+       "sum_r": -266.9,
+       "max_drawdown_r": 269.7,
+       "final_balance": 45.0,
+       "spread_r": 0.0567
+      }
+     },
+     "ignora_oneb": {
+      "aleatorio": {
+       "trades": 5261,
+       "p_target": 0.2939,
+       "mean_r": -0.0351,
+       "sum_r": -184.6,
+       "max_drawdown_r": 194.6,
+       "final_balance": 139.0,
+       "spread_r": 0.054
+      },
+      "acompanha_24h": {
+       "trades": 5261,
+       "p_target": 0.2927,
+       "mean_r": -0.0385,
+       "sum_r": -202.3,
+       "max_drawdown_r": 253.7,
+       "final_balance": 81.0,
+       "spread_r": 0.054
+      },
+      "contra_1h": {
+       "trades": 5261,
+       "p_target": 0.2901,
+       "mean_r": -0.0483,
+       "sum_r": -254.0,
+       "max_drawdown_r": 260.3,
+       "final_balance": 49.0,
+       "spread_r": 0.054
+      }
+     }
+    },
+    "confirmation": {
+     "segue_oneb": {
+      "aleatorio": {
+       "trades": 4615,
+       "p_target": 0.3046,
+       "mean_r": -0.0246,
+       "sum_r": -113.4,
+       "max_drawdown_r": 122.1,
+       "final_balance": 288.0,
+       "spread_r": 0.0372
+      },
+      "acompanha_24h": {
+       "trades": 4615,
+       "p_target": 0.2938,
+       "mean_r": -0.0585,
+       "sum_r": -270.1,
+       "max_drawdown_r": 332.4,
+       "final_balance": 44.0,
+       "spread_r": 0.0372
+      },
+      "contra_1h": {
+       "trades": 4615,
+       "p_target": 0.3031,
+       "mean_r": -0.0301,
+       "sum_r": -139.1,
+       "max_drawdown_r": 167.2,
+       "final_balance": 161.0,
+       "spread_r": 0.0372
+      }
+     },
+     "ignora_oneb": {
+      "aleatorio": {
+       "trades": 5105,
+       "p_target": 0.3016,
+       "mean_r": -0.0254,
+       "sum_r": -129.7,
+       "max_drawdown_r": 142.7,
+       "final_balance": 242.0,
+       "spread_r": 0.0358
+      },
+      "acompanha_24h": {
+       "trades": 5105,
+       "p_target": 0.293,
+       "mean_r": -0.0503,
+       "sum_r": -256.6,
+       "max_drawdown_r": 336.5,
+       "final_balance": 48.0,
+       "spread_r": 0.0358
+      },
+      "contra_1h": {
+       "trades": 5105,
+       "p_target": 0.3023,
+       "mean_r": -0.0269,
+       "sum_r": -137.4,
+       "max_drawdown_r": 181.5,
+       "final_balance": 157.0,
+       "spread_r": 0.0358
+      }
+     }
+    }
+   },
+   "by_slot": {
+    "discovery": {
+     "aleatorio": [
+      {
+       "slot": "05:00",
+       "trades": 787,
+       "p_target": 0.2973,
+       "mean_r": -0.0462
+      },
+      {
+       "slot": "09:00",
+       "trades": 742,
+       "p_target": 0.3032,
+       "mean_r": -0.0696
+      },
+      {
+       "slot": "10:30",
+       "trades": 769,
+       "p_target": 0.3082,
+       "mean_r": -0.0593
+      },
+      {
+       "slot": "11:30",
+       "trades": 786,
+       "p_target": 0.3085,
+       "mean_r": -0.0393
+      },
+      {
+       "slot": "13:00",
+       "trades": 762,
+       "p_target": 0.3064,
+       "mean_r": 0.0305
+      },
+      {
+       "slot": "15:00",
+       "trades": 733,
+       "p_target": 0.2633,
+       "mean_r": -0.0454
+      },
+      {
+       "slot": "17:00",
+       "trades": 179,
+       "p_target": 0.2598,
+       "mean_r": -0.0064
+      }
+     ],
+     "acompanha_24h": [
+      {
+       "slot": "05:00",
+       "trades": 787,
+       "p_target": 0.3037,
+       "mean_r": -0.0386
+      },
+      {
+       "slot": "09:00",
+       "trades": 742,
+       "p_target": 0.2938,
+       "mean_r": -0.0947
+      },
+      {
+       "slot": "10:30",
+       "trades": 769,
+       "p_target": 0.3108,
+       "mean_r": -0.0478
+      },
+      {
+       "slot": "11:30",
+       "trades": 786,
+       "p_target": 0.2913,
+       "mean_r": -0.0949
+      },
+      {
+       "slot": "13:00",
+       "trades": 762,
+       "p_target": 0.3084,
+       "mean_r": 0.0396
+      },
+      {
+       "slot": "15:00",
+       "trades": 733,
+       "p_target": 0.2756,
+       "mean_r": -0.0113
+      },
+      {
+       "slot": "17:00",
+       "trades": 179,
+       "p_target": 0.2905,
+       "mean_r": 0.0758
+      }
+     ],
+     "contra_1h": [
+      {
+       "slot": "05:00",
+       "trades": 787,
+       "p_target": 0.3126,
+       "mean_r": -0.0112
+      },
+      {
+       "slot": "09:00",
+       "trades": 742,
+       "p_target": 0.2992,
+       "mean_r": -0.0924
+      },
+      {
+       "slot": "10:30",
+       "trades": 769,
+       "p_target": 0.2874,
+       "mean_r": -0.1226
+      },
+      {
+       "slot": "11:30",
+       "trades": 786,
+       "p_target": 0.3028,
+       "mean_r": -0.0614
+      },
+      {
+       "slot": "13:00",
+       "trades": 762,
+       "p_target": 0.2861,
+       "mean_r": -0.0377
+      },
+      {
+       "slot": "15:00",
+       "trades": 733,
+       "p_target": 0.2606,
+       "mean_r": -0.0327
+      },
+      {
+       "slot": "17:00",
+       "trades": 179,
+       "p_target": 0.2626,
+       "mean_r": 0.0313
+      }
+     ]
+    },
+    "confirmation": {
+     "aleatorio": [
+      {
+       "slot": "05:00",
+       "trades": 768,
+       "p_target": 0.2969,
+       "mean_r": -0.0554
+      },
+      {
+       "slot": "09:00",
+       "trades": 720,
+       "p_target": 0.3111,
+       "mean_r": -0.0546
+      },
+      {
+       "slot": "10:30",
+       "trades": 747,
+       "p_target": 0.33,
+       "mean_r": -0.0017
+      },
+      {
+       "slot": "11:30",
+       "trades": 762,
+       "p_target": 0.3281,
+       "mean_r": 0.0162
+      },
+      {
+       "slot": "13:00",
+       "trades": 735,
+       "p_target": 0.2912,
+       "mean_r": -0.0326
+      },
+      {
+       "slot": "15:00",
+       "trades": 707,
+       "p_target": 0.2808,
+       "mean_r": -0.015
+      },
+      {
+       "slot": "17:00",
+       "trades": 176,
+       "p_target": 0.2528,
+       "mean_r": -0.0455
+      }
+     ],
+     "acompanha_24h": [
+      {
+       "slot": "05:00",
+       "trades": 768,
+       "p_target": 0.2812,
+       "mean_r": -0.1118
+      },
+      {
+       "slot": "09:00",
+       "trades": 720,
+       "p_target": 0.2861,
+       "mean_r": -0.1268
+      },
+      {
+       "slot": "10:30",
+       "trades": 747,
+       "p_target": 0.2985,
+       "mean_r": -0.0978
+      },
+      {
+       "slot": "11:30",
+       "trades": 762,
+       "p_target": 0.332,
+       "mean_r": 0.0217
+      },
+      {
+       "slot": "13:00",
+       "trades": 735,
+       "p_target": 0.2776,
+       "mean_r": -0.0652
+      },
+      {
+       "slot": "15:00",
+       "trades": 707,
+       "p_target": 0.3041,
+       "mean_r": 0.0531
+      },
+      {
+       "slot": "17:00",
+       "trades": 176,
+       "p_target": 0.2216,
+       "mean_r": -0.1485
+      }
+     ],
+     "contra_1h": [
+      {
+       "slot": "05:00",
+       "trades": 768,
+       "p_target": 0.3099,
+       "mean_r": -0.018
+      },
+      {
+       "slot": "09:00",
+       "trades": 720,
+       "p_target": 0.3069,
+       "mean_r": -0.0669
+      },
+      {
+       "slot": "10:30",
+       "trades": 747,
+       "p_target": 0.3414,
+       "mean_r": 0.0307
+      },
+      {
+       "slot": "11:30",
+       "trades": 762,
+       "p_target": 0.311,
+       "mean_r": -0.037
+      },
+      {
+       "slot": "13:00",
+       "trades": 735,
+       "p_target": 0.2803,
+       "mean_r": -0.0734
+      },
+      {
+       "slot": "15:00",
+       "trades": 707,
+       "p_target": 0.2744,
+       "mean_r": -0.0321
+      },
+      {
+       "slot": "17:00",
+       "trades": 176,
+       "p_target": 0.2727,
+       "mean_r": 0.0277
+      }
+     ]
+    }
+   },
+   "direction_test": {
+    "acompanha_24h": {
+     "diff_discovery": -0.0002,
+     "diff_confirmation": -0.034,
+     "ci": [
+      -0.096,
+      0.0257
+     ],
+     "ci_level": 0.9875,
+     "mean_r_confirmation": -0.0585,
+     "trades_confirmation": 4615,
+     "passed": false
+    },
+    "contra_1h": {
+     "diff_discovery": -0.0192,
+     "diff_confirmation": -0.0056,
+     "ci": [
+      -0.0492,
+      0.0405
+     ],
+     "ci_level": 0.9875,
+     "mean_r_confirmation": -0.0301,
+     "trades_confirmation": 4615,
+     "passed": false
+    }
+   }
+  },
+  "XAUUSD": {
+   "entries": 10598,
+   "skipped_by_oneb": {
+    "hora_ruim": 770,
+    "evento": 234
+   },
+   "users": {
+    "discovery": {
+     "segue_oneb": {
+      "aleatorio": {
+       "trades": 4860,
+       "p_target": 0.2548,
+       "mean_r": -0.0713,
+       "sum_r": -346.5,
+       "max_drawdown_r": 349.7,
+       "final_balance": 28.0,
+       "spread_r": 0.0612
+      },
+      "acompanha_24h": {
+       "trades": 4860,
+       "p_target": 0.2578,
+       "mean_r": -0.0633,
+       "sum_r": -307.4,
+       "max_drawdown_r": 317.8,
+       "final_balance": 30.0,
+       "spread_r": 0.0612
+      },
+      "contra_1h": {
+       "trades": 4858,
+       "p_target": 0.2456,
+       "mean_r": -0.0981,
+       "sum_r": -476.8,
+       "max_drawdown_r": 507.1,
+       "final_balance": 6.0,
+       "spread_r": 0.0612
+      }
+     },
+     "ignora_oneb": {
+      "aleatorio": {
+       "trades": 5365,
+       "p_target": 0.2541,
+       "mean_r": -0.0669,
+       "sum_r": -359.0,
+       "max_drawdown_r": 362.1,
+       "final_balance": 25.0,
+       "spread_r": 0.0609
+      },
+      "acompanha_24h": {
+       "trades": 5365,
+       "p_target": 0.2572,
+       "mean_r": -0.0588,
+       "sum_r": -315.4,
+       "max_drawdown_r": 325.8,
+       "final_balance": 27.0,
+       "spread_r": 0.0609
+      },
+      "contra_1h": {
+       "trades": 5362,
+       "p_target": 0.2451,
+       "mean_r": -0.089,
+       "sum_r": -477.4,
+       "max_drawdown_r": 506.4,
+       "final_balance": 5.0,
+       "spread_r": 0.0609
+      }
+     }
+    },
+    "confirmation": {
+     "segue_oneb": {
+      "aleatorio": {
+       "trades": 4734,
+       "p_target": 0.2759,
+       "mean_r": -0.0285,
+       "sum_r": -135.0,
+       "max_drawdown_r": 168.5,
+       "final_balance": 234.0,
+       "spread_r": 0.0439
+      },
+      "acompanha_24h": {
+       "trades": 4734,
+       "p_target": 0.2951,
+       "mean_r": 0.0159,
+       "sum_r": 75.3,
+       "max_drawdown_r": 108.2,
+       "final_balance": 1375.0,
+       "spread_r": 0.0439
+      },
+      "contra_1h": {
+       "trades": 4733,
+       "p_target": 0.277,
+       "mean_r": -0.0227,
+       "sum_r": -107.6,
+       "max_drawdown_r": 141.5,
+       "final_balance": 223.0,
+       "spread_r": 0.0439
+      }
+     },
+     "ignora_oneb": {
+      "aleatorio": {
+       "trades": 5233,
+       "p_target": 0.2749,
+       "mean_r": -0.0299,
+       "sum_r": -156.3,
+       "max_drawdown_r": 200.1,
+       "final_balance": 187.0,
+       "spread_r": 0.0441
+      },
+      "acompanha_24h": {
+       "trades": 5233,
+       "p_target": 0.292,
+       "mean_r": 0.0083,
+       "sum_r": 43.5,
+       "max_drawdown_r": 112.7,
+       "final_balance": 958.0,
+       "spread_r": 0.0441
+      },
+      "contra_1h": {
+       "trades": 5232,
+       "p_target": 0.2756,
+       "mean_r": -0.0262,
+       "sum_r": -137.3,
+       "max_drawdown_r": 182.4,
+       "final_balance": 159.0,
+       "spread_r": 0.0441
+      }
+     }
+    }
+   },
+   "by_slot": {
+    "discovery": {
+     "aleatorio": [
+      {
+       "slot": "05:00",
+       "trades": 793,
+       "p_target": 0.2913,
+       "mean_r": -0.0485
+      },
+      {
+       "slot": "09:00",
+       "trades": 749,
+       "p_target": 0.259,
+       "mean_r": -0.1291
+      },
+      {
+       "slot": "10:30",
+       "trades": 776,
+       "p_target": 0.2816,
+       "mean_r": -0.0563
+      },
+      {
+       "slot": "11:30",
+       "trades": 790,
+       "p_target": 0.2627,
+       "mean_r": -0.069
+      },
+      {
+       "slot": "13:00",
+       "trades": 766,
+       "p_target": 0.2213,
+       "mean_r": -0.0837
+      },
+      {
+       "slot": "15:00",
+       "trades": 745,
+       "p_target": 0.2235,
+       "mean_r": -0.0576
+      },
+      {
+       "slot": "17:00",
+       "trades": 241,
+       "p_target": 0.2137,
+       "mean_r": -0.0251
+      }
+     ],
+     "acompanha_24h": [
+      {
+       "slot": "05:00",
+       "trades": 793,
+       "p_target": 0.3039,
+       "mean_r": 0.0064
+      },
+      {
+       "slot": "09:00",
+       "trades": 749,
+       "p_target": 0.2483,
+       "mean_r": -0.1455
+      },
+      {
+       "slot": "10:30",
+       "trades": 776,
+       "p_target": 0.2951,
+       "mean_r": -0.0219
+      },
+      {
+       "slot": "11:30",
+       "trades": 790,
+       "p_target": 0.257,
+       "mean_r": -0.0789
+      },
+      {
+       "slot": "13:00",
+       "trades": 766,
+       "p_target": 0.2324,
+       "mean_r": -0.0579
+      },
+      {
+       "slot": "15:00",
+       "trades": 745,
+       "p_target": 0.2161,
+       "mean_r": -0.1063
+      },
+      {
+       "slot": "17:00",
+       "trades": 241,
+       "p_target": 0.2282,
+       "mean_r": -0.0023
+      }
+     ],
+     "contra_1h": [
+      {
+       "slot": "05:00",
+       "trades": 793,
+       "p_target": 0.29,
+       "mean_r": -0.0621
+      },
+      {
+       "slot": "09:00",
+       "trades": 749,
+       "p_target": 0.2577,
+       "mean_r": -0.1466
+      },
+      {
+       "slot": "10:30",
+       "trades": 776,
+       "p_target": 0.2745,
+       "mean_r": -0.0835
+      },
+      {
+       "slot": "11:30",
+       "trades": 789,
+       "p_target": 0.237,
+       "mean_r": -0.1343
+      },
+      {
+       "slot": "13:00",
+       "trades": 766,
+       "p_target": 0.2206,
+       "mean_r": -0.0782
+      },
+      {
+       "slot": "15:00",
+       "trades": 744,
+       "p_target": 0.2137,
+       "mean_r": -0.0621
+      },
+      {
+       "slot": "17:00",
+       "trades": 241,
+       "p_target": 0.1743,
+       "mean_r": -0.1693
+      }
+     ]
+    },
+    "confirmation": {
+     "aleatorio": [
+      {
+       "slot": "05:00",
+       "trades": 772,
+       "p_target": 0.2902,
+       "mean_r": -0.0106
+      },
+      {
+       "slot": "09:00",
+       "trades": 722,
+       "p_target": 0.2853,
+       "mean_r": -0.0341
+      },
+      {
+       "slot": "10:30",
+       "trades": 751,
+       "p_target": 0.2929,
+       "mean_r": -0.032
+      },
+      {
+       "slot": "11:30",
+       "trades": 771,
+       "p_target": 0.2763,
+       "mean_r": -0.0433
+      },
+      {
+       "slot": "13:00",
+       "trades": 746,
+       "p_target": 0.2627,
+       "mean_r": -0.0373
+      },
+      {
+       "slot": "15:00",
+       "trades": 732,
+       "p_target": 0.252,
+       "mean_r": -0.0279
+      },
+      {
+       "slot": "17:00",
+       "trades": 240,
+       "p_target": 0.2604,
+       "mean_r": 0.0148
+      }
+     ],
+     "acompanha_24h": [
+      {
+       "slot": "05:00",
+       "trades": 772,
+       "p_target": 0.3096,
+       "mean_r": 0.0554
+      },
+      {
+       "slot": "09:00",
+       "trades": 722,
+       "p_target": 0.3061,
+       "mean_r": 0.0294
+      },
+      {
+       "slot": "10:30",
+       "trades": 751,
+       "p_target": 0.3129,
+       "mean_r": 0.0166
+      },
+      {
+       "slot": "11:30",
+       "trades": 771,
+       "p_target": 0.3061,
+       "mean_r": 0.0444
+      },
+      {
+       "slot": "13:00",
+       "trades": 746,
+       "p_target": 0.2788,
+       "mean_r": -0.0213
+      },
+      {
+       "slot": "15:00",
+       "trades": 732,
+       "p_target": 0.2623,
+       "mean_r": -0.0294
+      },
+      {
+       "slot": "17:00",
+       "trades": 240,
+       "p_target": 0.275,
+       "mean_r": 0.0087
+      }
+     ],
+     "contra_1h": [
+      {
+       "slot": "05:00",
+       "trades": 771,
+       "p_target": 0.2957,
+       "mean_r": 0.008
+      },
+      {
+       "slot": "09:00",
+       "trades": 722,
+       "p_target": 0.2909,
+       "mean_r": -0.0223
+      },
+      {
+       "slot": "10:30",
+       "trades": 751,
+       "p_target": 0.2836,
+       "mean_r": -0.0601
+      },
+      {
+       "slot": "11:30",
+       "trades": 771,
+       "p_target": 0.262,
+       "mean_r": -0.0871
+      },
+      {
+       "slot": "13:00",
+       "trades": 746,
+       "p_target": 0.2721,
+       "mean_r": -0.0082
+      },
+      {
+       "slot": "15:00",
+       "trades": 732,
+       "p_target": 0.2705,
+       "mean_r": 0.0307
+      },
+      {
+       "slot": "17:00",
+       "trades": 240,
+       "p_target": 0.2375,
+       "mean_r": -0.0072
+      }
+     ]
+    }
+   },
+   "direction_test": {
+    "acompanha_24h": {
+     "diff_discovery": 0.008,
+     "diff_confirmation": 0.0444,
+     "ci": [
+      -0.0244,
+      0.1104
+     ],
+     "ci_level": 0.9875,
+     "mean_r_confirmation": 0.0159,
+     "trades_confirmation": 4734,
+     "passed": false
+    },
+    "contra_1h": {
+     "diff_discovery": -0.0267,
+     "diff_confirmation": 0.0056,
+     "ci": [
+      -0.0341,
+      0.0471
+     ],
+     "ci_level": 0.9875,
+     "mean_r_confirmation": -0.0227,
+     "trades_confirmation": 4733,
+     "passed": false
+    }
+   }
+  }
+ },
+ "passed_rules": []
+}

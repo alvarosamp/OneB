@@ -890,5 +890,47 @@
    "correct": 1,
    "why": "Operar mesmo assim arriscaria mais do que o seu limite."
   }
+ ],
+ "Como conferir o OneB: placar, diário e o que não prometemos": [
+  {
+   "question": "A previsão de amplitude do OneB diz:",
+   "options": [
+    "Para onde o preço vai",
+    "Quanto o preço deve mexer",
+    "Quando comprar"
+   ],
+   "correct": 1,
+   "why": "É previsão de risco (tamanho do movimento), não de direção."
+  },
+  {
+   "question": "No plano das 10:30, a compra bateu o alvo e a venda bateu o stop. O que isso mostra?",
+   "options": [
+    "Que comprar era o certo",
+    "Nada sobre um dia isolado: o placar confere a chance ao longo de muitos dias",
+    "Que o OneB errou"
+   ],
+   "correct": 1,
+   "why": "É regra fixa dos dois lados; o que se confere é se a chance anunciada se confirma no acumulado."
+  },
+  {
+   "question": "Na calculadora, o menor lote do ativo arrisca mais que o seu limite. O que fazer?",
+   "options": [
+    "Operar mesmo assim",
+    "Não operar esse ativo com esse saldo",
+    "Aumentar o stop até caber"
+   ],
+   "correct": 1,
+   "why": "Operar arriscaria mais do que o combinado; aumentar o stop só para caber muda o plano."
+  },
+  {
+   "question": "Qual destas provas um serviço de sinais confiável deveria mostrar?",
+   "options": [
+    "Taxa de acerto acima de 80%",
+    "Depoimentos de clientes",
+    "Histórico completo sinal a sinal, publicado antes, com resultado médio depois do custo"
+   ],
+   "correct": 2,
+   "why": "Acerto alto sai até do cara ou coroa com alvo curto; o que importa é o resultado médio, verificável."
+  }
  ]
 }

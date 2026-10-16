@@ -85,6 +85,54 @@ async def oneb_ai_ask(payload: OneBAskRequest, db: Session = Depends(get_db), us
     return await agent.ask(ToolContext(db=db, user_id=user.id), payload.question, history=payload.history)
 
 
+class AnswerFeedback(BaseModel):
+    answer_id: int
+    rating: int = Field(ge=-1, le=1)
+    comment: str | None = Field(default=None, max_length=1000)
+
+
+@router.post("/ai/feedback")
+def oneb_ai_feedback(payload: AnswerFeedback, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Gostei / não gostei de uma resposta da OneB AI (só do próprio usuário)."""
+    from datetime import datetime, timezone
+
+    from app.models import AIAnswerLog
+
+    row = db.get(AIAnswerLog, payload.answer_id)
+    if row is None or row.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Resposta não encontrada.")
+    if payload.rating == 0:
+        raise HTTPException(status_code=422, detail="rating deve ser 1 (útil) ou -1 (não útil).")
+    row.rating = payload.rating
+    row.feedback_comment = (payload.comment or "").strip() or None
+    row.feedback_at = datetime.now(timezone.utc)
+    db.commit()
+    return {"ok": True, "answer_id": row.id, "rating": row.rating}
+
+
+@router.get("/ai/feedback/summary")
+def oneb_ai_feedback_summary(days: int = 30, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Placar das respostas: útil x não útil por tipo de resposta e os comentários negativos recentes."""
+    from datetime import datetime, timedelta, timezone
+
+    from app.models import AIAnswerLog
+
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+    rows = db.query(AIAnswerLog).filter(AIAnswerLog.created_at >= since).all()
+    by_kind: dict[str, dict] = {}
+    for r in rows:
+        kind = (r.answer or {}).get("headline", "")[:40] or "sem título"
+        k = by_kind.setdefault(kind, {"answers": 0, "useful": 0, "not_useful": 0})
+        k["answers"] += 1
+        k["useful"] += int(r.rating == 1)
+        k["not_useful"] += int(r.rating == -1)
+    negatives = [{"question": r.question, "comment": r.feedback_comment, "at": r.created_at.isoformat() if r.created_at else None}
+                 for r in sorted(rows, key=lambda x: x.created_at or since, reverse=True) if r.rating == -1][:20]
+    return {"days": days, "answers": len(rows), "rated": sum(r.rating is not None for r in rows),
+            "useful": sum(r.rating == 1 for r in rows), "not_useful": sum(r.rating == -1 for r in rows),
+            "grounding_failures": sum(not r.grounding_ok for r in rows), "by_kind": by_kind, "recent_negative": negatives}
+
+
 class PaperFeedback(BaseModel):
     decision: str = Field(pattern="^(OPERATED|SKIPPED|DIFFERENT)$")
     executed_price: float | None = Field(default=None, gt=0)

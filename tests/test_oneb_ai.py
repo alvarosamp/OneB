@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 
 from app.db import Base
@@ -16,7 +17,8 @@ from app.opportunity_ledger import record_transition
 
 @pytest.fixture()
 def ctx(tmp_path):
-    engine = create_engine("sqlite://")
+    # StaticPool: o agente roda ferramentas em thread separada; todas as threads enxergam o mesmo banco em memória.
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)
     db = sessionmaker(bind=engine)()
     for at, frm, to, extra in [
@@ -185,3 +187,35 @@ def test_position_size_flags_minimum_lot():
 
     s = position_size(500, 1, 60, 1.0, 1.0, 1.0, 0.7)
     assert s["below_minimum"] and s["lots"] == 0 and s["min_lot_risk"] == 60
+
+
+def test_llm_path_runs_trade_plan_tool_and_verifier_accepts_plan_numbers(ctx):
+    import json
+
+    ctx.market_override = {"XAUUSD": {
+        "market": {"price": 4000.0, "atr_h1": 10.0, "atr_d1": 70.0},
+        "range_forecast": {"target_date": "2026-10-06", "expected_price": 50.0, "us_holiday": None},
+        "events": [],
+    }}
+
+    def plan_answer(kw):
+        result = None
+        for message in reversed(kw["messages"]):
+            if message["role"] == "user" and isinstance(message["content"], list):
+                result = json.loads(message["content"][0]["content"])
+                break
+        tp2 = result["targets"][1]
+        return _submit({
+            "headline": "Plano de compra no ouro",
+            "state_summary": {"symbol": "XAUUSD", "setup": None, "state": None, "approval": None},
+            "claims": [{"text": f"Stop em {result['stop']:.2f}; TP2 em {tp2['price']:.2f}, atingido antes do stop em "
+                                f"{tp2['p_target'] * 100:.0f}% das entradas medidas.", "evidence_ids": [tp2["evidence_id"]]}],
+            "counter_points": [{"text": "Taxa-base, não sinal.", "evidence_ids": [result["evidence_id"]]}],
+            "what_changed": [], "unknowns": [], "conclusion": "É o seu plano de risco; a decisão é sua.",
+        })
+
+    client = FakeClient([_tool_call("get_trade_plan", {"asset": "XAUUSD", "direction": "long", "stop_atr": None}), plan_answer])
+    out = asyncio.run(agent.ask(ctx, "Se eu comprar ouro, qual o plano?", client=client))
+    assert out["fallback_used"] is False and out["grounding"]["ok"], out["grounding"]
+    assert out["tool_calls"] == ["get_trade_plan", "submit_answer"]
+    assert "Stop em 3985.00" in out["answer"]["claims"][0]["text"]  # compra: stop abaixo, 4000 - 1,5 x 10

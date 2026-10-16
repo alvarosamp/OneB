@@ -64,3 +64,39 @@ def test_forecast_skips_open_session_and_flags_event(monkeypatch):
     fc = asset_brief.range_forecast("NAS100", daily, DB(), now)
     assert fc["target_date"] == "2026-10-15" and fc["event"] == "CPI m/m"
     assert fc["low80_pct"] < fc["expected_pct"] < fc["high80_pct"]
+
+
+def test_scoreboard_uses_only_previous_day_and_counts_coverage():
+    from app.routers import asset_brief
+
+    class Q:
+        def filter(self, *a):
+            return self
+
+        def all(self):
+            return []
+
+    class DB:
+        def query(self, *_):
+            return Q()
+
+    idx = pd.bdate_range("2026-06-01", "2026-10-16")
+    rng = np.random.default_rng(3)
+    close = 100 * np.exp(np.cumsum(rng.normal(0, 0.01, len(idx))))
+    daily = pd.DataFrame({"high": close * 1.01, "low": close * 0.99, "close": close}, index=idx)
+    now = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
+    sb = asset_brief.volfc_scoreboard("NAS100", daily, DB(), now)
+    assert [r["date"] for r in sb["rows"]] == ["2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16"]
+    assert sb["summary"]["days"] == 5 and 0 <= sb["summary"]["inside80"] <= 5
+    json.dumps(sb)  # tipos nativos: a API serializa sem erro
+    # mudar o dia 16 não pode alterar a previsão do dia 16 (só a véspera conta)
+    before = sb["rows"][-1]["expected_pct"]
+    daily.loc[idx[-1], "high"] *= 1.5
+    assert asset_brief.volfc_scoreboard("NAS100", daily, DB(), now)["rows"][-1]["expected_pct"] == before
+
+
+def test_us_holiday_flag():
+    from app.routers import asset_brief
+
+    assert asset_brief.us_holiday(pd.Timestamp("2026-10-12")) == "Columbus Day"
+    assert asset_brief.us_holiday(pd.Timestamp("2026-10-13")) is None

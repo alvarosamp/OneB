@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-10-14T14:20:01.022451+00:00",
+  "period": "jan/2025 a ago/2026",
+  "stop": "1,5 x ATR(14) do H1",
+  "method": "A ilusão da taxa de acerto: entradas ALEATÓRIAS (direção sorteada) com spread real.\n\n    python scripts/build_win_rate_illusion.py\n\nConta como \"acerto\" qualquer toque no TP1 antes do stop (como fazem serviços de sinais que\nanunciam 80%+ de acerto) e mostra, lado a lado, o resultado real em R. Stop 1,5 x ATR(14) do H1,\naté 24 h, compra no ask e venda no bid, stop primeiro se os dois tocam na mesma barra.\nGrava app/research_results/win_rate_illusion.json.",
+  "assets": {
+    "NAS100": {
+      "entries": 9692,
+      "rows": [
+        {
+          "tp1_r": 0.1,
+          "win_rate": 0.8911,
+          "mean_r": -0.0195
+        },
+        {
+          "tp1_r": 0.2,
+          "win_rate": 0.8188,
+          "mean_r": -0.017
+        },
+        {
+          "tp1_r": 0.3,
+          "win_rate": 0.7558,
+          "mean_r": -0.0166
+        },
+        {
+          "tp1_r": 0.5,
+          "win_rate": 0.6563,
+          "mean_r": -0.0132
+        },
+        {
+          "tp1_r": 1.0,
+          "win_rate": 0.4903,
+          "mean_r": -0.0061
+        }
+      ]
+    },
+    "XAUUSD": {
+      "entries": 9805,
+      "rows": [
+        {
+          "tp1_r": 0.1,
+          "win_rate": 0.8694,
+          "mean_r": -0.0436
+        },
+        {
+          "tp1_r": 0.2,
+          "win_rate": 0.7939,
+          "mean_r": -0.047
+        },
+        {
+          "tp1_r": 0.3,
+          "win_rate": 0.7339,
+          "mean_r": -0.0451
+        },
+        {
+          "tp1_r": 0.5,
+          "win_rate": 0.6332,
+          "mean_r": -0.0483
+        },
+        {
+          "tp1_r": 1.0,
+          "win_rate": 0.4722,
+          "mean_r": -0.0403
+        }
+      ]
+    }
+  }
+}

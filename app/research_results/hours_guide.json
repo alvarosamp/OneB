@@ -1,0 +1,1194 @@
+{
+ "generated_at": "2026-10-14T01:41:15.213368+00:00",
+ "timezone": "America/New_York",
+ "criteria": "(escolhas declaradas, não testes):\n- fechado: sem negociação na hora;\n- evitar: spread consome >= 5% do movimento típico da hora OU spread >= 2x o spread mediano do ativo (virada de dia);\n- parado: movimento < 0,7x a hora típica (o stop vira ruído e o custo pesa mais);\n- pico: movimento >= 1,8x (melhor para atingir alvo, mas o stop também é atingido mais rápido: reduza o lote);\n- boa: o resto.\n- janela principal: horas boas ou de pico com movimento >= 1,2x (o mercado anda o bastante para stop e alvo fazerem sentido).",
+ "direction_test": {
+  "test": "hours_v1",
+  "status": "NOT_PASSED",
+  "cells": 92,
+  "summary": "Nenhuma das 92 combinações de hora, direção e ativo teve vantagem que se repetisse (correção para múltiplos testes). A hora muda o tamanho do movimento e o custo, não a chance de acertar a direção."
+ },
+ "assets": {
+  "NAS100": {
+   "label": "Nasdaq 100",
+   "broker_symbol": "US100.s",
+   "period": {
+    "from": "2024-09-25",
+    "to": "2026-09-25"
+   },
+   "hours": [
+    {
+     "ny_hour": 0,
+     "ratio": 0.57,
+     "cost_share": 0.0208,
+     "spread_bps": 0.834,
+     "class": "parado",
+     "reason": "Mercado parado (0.6x a hora típica): o custo pesa mais e o stop vira ruído.",
+     "p2r_long": 0.2721,
+     "p2r_short": 0.2656
+    },
+    {
+     "ny_hour": 1,
+     "ratio": 0.66,
+     "cost_share": 0.0177,
+     "spread_bps": 0.523,
+     "class": "parado",
+     "reason": "Mercado parado (0.7x a hora típica): o custo pesa mais e o stop vira ruído.",
+     "p2r_long": 0.2812,
+     "p2r_short": 0.276
+    },
+    {
+     "ny_hour": 2,
+     "ratio": 0.76,
+     "cost_share": 0.0153,
+     "spread_bps": 0.801,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.2995,
+     "p2r_short": 0.293
+    },
+    {
+     "ny_hour": 3,
+     "ratio": 1.03,
+     "cost_share": 0.0115,
+     "spread_bps": 0.536,
+     "class": "boa",
+     "reason": "Movimento normal (1.0x) e custo baixo.",
+     "p2r_long": 0.3125,
+     "p2r_short": 0.2943
+    },
+    {
+     "ny_hour": 4,
+     "ratio": 0.96,
+     "cost_share": 0.0121,
+     "spread_bps": 0.521,
+     "class": "boa",
+     "reason": "Movimento normal (1.0x) e custo baixo.",
+     "p2r_long": 0.2956,
+     "p2r_short": 0.2995
+    },
+    {
+     "ny_hour": 5,
+     "ratio": 0.76,
+     "cost_share": 0.0151,
+     "spread_bps": 0.506,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.3281,
+     "p2r_short": 0.3177
+    },
+    {
+     "ny_hour": 6,
+     "ratio": 0.74,
+     "cost_share": 0.0158,
+     "spread_bps": 0.517,
+     "class": "boa",
+     "reason": "Movimento normal (0.7x) e custo baixo.",
+     "p2r_long": 0.3177,
+     "p2r_short": 0.319
+    },
+    {
+     "ny_hour": 7,
+     "ratio": 0.88,
+     "cost_share": 0.0132,
+     "spread_bps": 0.516,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.3116,
+     "p2r_short": 0.309
+    },
+    {
+     "ny_hour": 8,
+     "ratio": 1.24,
+     "cost_share": 0.0093,
+     "spread_bps": 0.525,
+     "class": "boa",
+     "reason": "Movimento normal (1.2x) e custo baixo.",
+     "p2r_long": 0.3001,
+     "p2r_short": 0.308
+    },
+    {
+     "ny_hour": 9,
+     "ratio": 2.47,
+     "cost_share": 0.0047,
+     "spread_bps": 0.499,
+     "class": "pico",
+     "reason": "Hora mais agitada (2.5x a hora típica): alvo chega mais rápido, mas o stop também. Use lote menor.",
+     "p2r_long": 0.3132,
+     "p2r_short": 0.3421
+    },
+    {
+     "ny_hour": 10,
+     "ratio": 2.33,
+     "cost_share": 0.0049,
+     "spread_bps": 0.481,
+     "class": "pico",
+     "reason": "Hora mais agitada (2.3x a hora típica): alvo chega mais rápido, mas o stop também. Use lote menor.",
+     "p2r_long": 0.3237,
+     "p2r_short": 0.3093
+    },
+    {
+     "ny_hour": 11,
+     "ratio": 1.76,
+     "cost_share": 0.0067,
+     "spread_bps": 0.478,
+     "class": "boa",
+     "reason": "Movimento normal (1.8x) e custo baixo.",
+     "p2r_long": 0.3333,
+     "p2r_short": 0.3005
+    },
+    {
+     "ny_hour": 12,
+     "ratio": 1.42,
+     "cost_share": 0.0082,
+     "spread_bps": 0.485,
+     "class": "boa",
+     "reason": "Movimento normal (1.4x) e custo baixo.",
+     "p2r_long": 0.295,
+     "p2r_short": 0.3042
+    },
+    {
+     "ny_hour": 13,
+     "ratio": 1.33,
+     "cost_share": 0.0087,
+     "spread_bps": 0.48,
+     "class": "boa",
+     "reason": "Movimento normal (1.3x) e custo baixo.",
+     "p2r_long": 0.3072,
+     "p2r_short": 0.2869
+    },
+    {
+     "ny_hour": 14,
+     "ratio": 1.23,
+     "cost_share": 0.0095,
+     "spread_bps": 0.481,
+     "class": "boa",
+     "reason": "Movimento normal (1.2x) e custo baixo.",
+     "p2r_long": 0.2803,
+     "p2r_short": 0.2667
+    },
+    {
+     "ny_hour": 15,
+     "ratio": 1.35,
+     "cost_share": 0.0086,
+     "spread_bps": 0.482,
+     "class": "boa",
+     "reason": "Movimento normal (1.4x) e custo baixo.",
+     "p2r_long": 0.2785,
+     "p2r_short": 0.2532
+    },
+    {
+     "ny_hour": 16,
+     "ratio": null,
+     "cost_share": null,
+     "spread_bps": null,
+     "class": "fechado",
+     "reason": "Sem negociação nesta hora.",
+     "p2r_long": 0.2658,
+     "p2r_short": 0.2369
+    },
+    {
+     "ny_hour": 17,
+     "ratio": null,
+     "cost_share": null,
+     "spread_bps": null,
+     "class": "fechado",
+     "reason": "Sem negociação nesta hora.",
+     "p2r_long": null,
+     "p2r_short": null
+    },
+    {
+     "ny_hour": 18,
+     "ratio": 0.79,
+     "cost_share": 0.0148,
+     "spread_bps": 0.6699999999999999,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.2479,
+     "p2r_short": 0.2428
+    },
+    {
+     "ny_hour": 19,
+     "ratio": 0.6950000000000001,
+     "cost_share": 0.0168,
+     "spread_bps": 0.5205,
+     "class": "parado",
+     "reason": "Mercado parado (0.7x a hora típica): o custo pesa mais e o stop vira ruído.",
+     "p2r_long": 0.249,
+     "p2r_short": 0.2346
+    },
+    {
+     "ny_hour": 20,
+     "ratio": 0.885,
+     "cost_share": 0.0132,
+     "spread_bps": 0.823,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.2464,
+     "p2r_short": 0.2321
+    },
+    {
+     "ny_hour": 21,
+     "ratio": 0.72,
+     "cost_share": 0.016300000000000002,
+     "spread_bps": 0.7455,
+     "class": "boa",
+     "reason": "Movimento normal (0.7x) e custo baixo.",
+     "p2r_long": 0.2588,
+     "p2r_short": 0.2367
+    },
+    {
+     "ny_hour": 22,
+     "ratio": 0.655,
+     "cost_share": 0.017849999999999998,
+     "spread_bps": 0.6685,
+     "class": "parado",
+     "reason": "Mercado parado (0.7x a hora típica): o custo pesa mais e o stop vira ruído.",
+     "p2r_long": 0.2526,
+     "p2r_short": 0.2487
+    },
+    {
+     "ny_hour": 23,
+     "ratio": 0.545,
+     "cost_share": 0.021400000000000002,
+     "spread_bps": 0.815,
+     "class": "parado",
+     "reason": "Mercado parado (0.5x a hora típica): o custo pesa mais e o stop vira ruído.",
+     "p2r_long": 0.2617,
+     "p2r_short": 0.2565
+    }
+   ],
+   "windows": {
+    "principal": [
+     [
+      8,
+      16
+     ]
+    ],
+    "operar": [
+     [
+      2,
+      16
+     ],
+     [
+      18,
+      19
+     ],
+     [
+      20,
+      22
+     ]
+    ],
+    "pico": [
+     [
+      9,
+      11
+     ]
+    ],
+    "evitar": [],
+    "parado": [
+     [
+      0,
+      2
+     ],
+     [
+      19,
+      20
+     ],
+     [
+      22,
+      24
+     ]
+    ]
+   },
+   "plan_p2r_range": [
+    0.2321,
+    0.3421
+   ],
+   "weekday_ratio": {
+    "segunda": 0.9,
+    "terça": 0.85,
+    "quarta": 0.87,
+    "quinta": 0.95,
+    "sexta": 1.05
+   },
+   "all_expensive": false
+  },
+  "SPX500": {
+   "label": "S&P 500",
+   "broker_symbol": "US500.s",
+   "period": {
+    "from": "2024-09-25",
+    "to": "2026-09-25"
+   },
+   "hours": [
+    {
+     "ny_hour": 0,
+     "ratio": 0.52,
+     "cost_share": 0.8798,
+     "spread_bps": 0.895,
+     "class": "evitar",
+     "reason": "O spread consome 88% do movimento típico da hora.",
+     "p2r_long": 0.263,
+     "p2r_short": 0.2474
+    },
+    {
+     "ny_hour": 1,
+     "ratio": 0.63,
+     "cost_share": 0.726,
+     "spread_bps": 0.896,
+     "class": "evitar",
+     "reason": "O spread consome 73% do movimento típico da hora.",
+     "p2r_long": 0.2865,
+     "p2r_short": 0.2526
+    },
+    {
+     "ny_hour": 2,
+     "ratio": 0.79,
+     "cost_share": 0.5839,
+     "spread_bps": 0.901,
+     "class": "evitar",
+     "reason": "O spread consome 58% do movimento típico da hora.",
+     "p2r_long": 0.2904,
+     "p2r_short": 0.2643
+    },
+    {
+     "ny_hour": 3,
+     "ratio": 1.03,
+     "cost_share": 0.4455,
+     "spread_bps": 0.896,
+     "class": "evitar",
+     "reason": "O spread consome 45% do movimento típico da hora.",
+     "p2r_long": 0.3034,
+     "p2r_short": 0.2852
+    },
+    {
+     "ny_hour": 4,
+     "ratio": 0.9,
+     "cost_share": 0.5086,
+     "spread_bps": 0.898,
+     "class": "evitar",
+     "reason": "O spread consome 51% do movimento típico da hora.",
+     "p2r_long": 0.3164,
+     "p2r_short": 0.2943
+    },
+    {
+     "ny_hour": 5,
+     "ratio": 0.76,
+     "cost_share": 0.6015,
+     "spread_bps": 0.89,
+     "class": "evitar",
+     "reason": "O spread consome 60% do movimento típico da hora.",
+     "p2r_long": 0.3216,
+     "p2r_short": 0.293
+    },
+    {
+     "ny_hour": 6,
+     "ratio": 0.77,
+     "cost_share": 0.5938,
+     "spread_bps": 0.896,
+     "class": "evitar",
+     "reason": "O spread consome 59% do movimento típico da hora.",
+     "p2r_long": 0.3112,
+     "p2r_short": 0.2956
+    },
+    {
+     "ny_hour": 7,
+     "ratio": 0.89,
+     "cost_share": 0.5127,
+     "spread_bps": 0.894,
+     "class": "evitar",
+     "reason": "O spread consome 51% do movimento típico da hora.",
+     "p2r_long": 0.309,
+     "p2r_short": 0.3051
+    },
+    {
+     "ny_hour": 8,
+     "ratio": 1.3,
+     "cost_share": 0.3491,
+     "spread_bps": 0.893,
+     "class": "evitar",
+     "reason": "O spread consome 35% do movimento típico da hora.",
+     "p2r_long": 0.3102,
+     "p2r_short": 0.3141
+    },
+    {
+     "ny_hour": 9,
+     "ratio": 2.15,
+     "cost_share": 0.2136,
+     "spread_bps": 0.881,
+     "class": "evitar",
+     "reason": "O spread consome 21% do movimento típico da hora.",
+     "p2r_long": 0.2988,
+     "p2r_short": 0.3303
+    },
+    {
+     "ny_hour": 10,
+     "ratio": 2.25,
+     "cost_share": 0.2045,
+     "spread_bps": 0.775,
+     "class": "evitar",
+     "reason": "O spread consome 20% do movimento típico da hora.",
+     "p2r_long": 0.3211,
+     "p2r_short": 0.3237
+    },
+    {
+     "ny_hour": 11,
+     "ratio": 1.77,
+     "cost_share": 0.2579,
+     "spread_bps": 0.781,
+     "class": "evitar",
+     "reason": "O spread consome 26% do movimento típico da hora.",
+     "p2r_long": 0.3211,
+     "p2r_short": 0.3198
+    },
+    {
+     "ny_hour": 12,
+     "ratio": 1.45,
+     "cost_share": 0.3168,
+     "spread_bps": 0.777,
+     "class": "evitar",
+     "reason": "O spread consome 32% do movimento típico da hora.",
+     "p2r_long": 0.2814,
+     "p2r_short": 0.3078
+    },
+    {
+     "ny_hour": 13,
+     "ratio": 1.36,
+     "cost_share": 0.3349,
+     "spread_bps": 0.771,
+     "class": "evitar",
+     "reason": "O spread consome 33% do movimento típico da hora.",
+     "p2r_long": 0.3194,
+     "p2r_short": 0.2815
+    },
+    {
+     "ny_hour": 14,
+     "ratio": 1.41,
+     "cost_share": 0.3268,
+     "spread_bps": 0.774,
+     "class": "evitar",
+     "reason": "O spread consome 33% do movimento típico da hora.",
+     "p2r_long": 0.2844,
+     "p2r_short": 0.268
+    },
+    {
+     "ny_hour": 15,
+     "ratio": 1.53,
+     "cost_share": 0.2984,
+     "spread_bps": 0.777,
+     "class": "evitar",
+     "reason": "O spread consome 30% do movimento típico da hora.",
+     "p2r_long": 0.2568,
+     "p2r_short": 0.2658
+    },
+    {
+     "ny_hour": 16,
+     "ratio": null,
+     "cost_share": null,
+     "spread_bps": null,
+     "class": "fechado",
+     "reason": "Sem negociação nesta hora.",
+     "p2r_long": 0.2459,
+     "p2r_short": 0.2152
+    },
+    {
+     "ny_hour": 17,
+     "ratio": null,
+     "cost_share": null,
+     "spread_bps": null,
+     "class": "fechado",
+     "reason": "Sem negociação nesta hora.",
+     "p2r_long": null,
+     "p2r_short": null
+    },
+    {
+     "ny_hour": 18,
+     "ratio": 0.79,
+     "cost_share": 0.57965,
+     "spread_bps": 0.896,
+     "class": "evitar",
+     "reason": "O spread consome 58% do movimento típico da hora.",
+     "p2r_long": 0.246,
+     "p2r_short": 0.2366
+    },
+    {
+     "ny_hour": 19,
+     "ratio": 0.685,
+     "cost_share": 0.66815,
+     "spread_bps": 0.89,
+     "class": "evitar",
+     "reason": "O spread consome 67% do movimento típico da hora.",
+     "p2r_long": 0.2298,
+     "p2r_short": 0.2193
+    },
+    {
+     "ny_hour": 20,
+     "ratio": 0.835,
+     "cost_share": 0.5461,
+     "spread_bps": 0.8955,
+     "class": "evitar",
+     "reason": "O spread consome 55% do movimento típico da hora.",
+     "p2r_long": 0.2435,
+     "p2r_short": 0.2266
+    },
+    {
+     "ny_hour": 21,
+     "ratio": 0.67,
+     "cost_share": 0.68805,
+     "spread_bps": 0.9005000000000001,
+     "class": "evitar",
+     "reason": "O spread consome 69% do movimento típico da hora.",
+     "p2r_long": 0.2432,
+     "p2r_short": 0.2237
+    },
+    {
+     "ny_hour": 22,
+     "ratio": 0.6,
+     "cost_share": 0.7665,
+     "spread_bps": 0.905,
+     "class": "evitar",
+     "reason": "O spread consome 77% do movimento típico da hora.",
+     "p2r_long": 0.2383,
+     "p2r_short": 0.2331
+    },
+    {
+     "ny_hour": 23,
+     "ratio": 0.535,
+     "cost_share": 0.8639,
+     "spread_bps": 0.8935,
+     "class": "evitar",
+     "reason": "O spread consome 86% do movimento típico da hora.",
+     "p2r_long": 0.2578,
+     "p2r_short": 0.2396
+    }
+   ],
+   "windows": {
+    "principal": [],
+    "operar": [],
+    "pico": [],
+    "evitar": [
+     [
+      0,
+      16
+     ],
+     [
+      18,
+      24
+     ]
+    ],
+    "parado": []
+   },
+   "plan_p2r_range": [
+    0.2152,
+    0.3303
+   ],
+   "weekday_ratio": {
+    "segunda": 0.85,
+    "terça": 0.85,
+    "quarta": 0.87,
+    "quinta": 0.96,
+    "sexta": 1.16
+   },
+   "all_expensive": true
+  },
+  "XAUUSD": {
+   "label": "Ouro",
+   "broker_symbol": "XAUUSD.s",
+   "period": {
+    "from": "2024-09-25",
+    "to": "2026-09-25"
+   },
+   "hours": [
+    {
+     "ny_hour": 0,
+     "ratio": 0.74,
+     "cost_share": 0.0303,
+     "spread_bps": 1.682,
+     "class": "boa",
+     "reason": "Movimento normal (0.7x) e custo baixo.",
+     "p2r_long": 0.2681,
+     "p2r_short": 0.2422
+    },
+    {
+     "ny_hour": 1,
+     "ratio": 1.02,
+     "cost_share": 0.0221,
+     "spread_bps": 1.701,
+     "class": "boa",
+     "reason": "Movimento normal (1.0x) e custo baixo.",
+     "p2r_long": 0.294,
+     "p2r_short": 0.2552
+    },
+    {
+     "ny_hour": 2,
+     "ratio": 1.03,
+     "cost_share": 0.0222,
+     "spread_bps": 1.576,
+     "class": "boa",
+     "reason": "Movimento normal (1.0x) e custo baixo.",
+     "p2r_long": 0.285,
+     "p2r_short": 0.2759
+    },
+    {
+     "ny_hour": 3,
+     "ratio": 1.05,
+     "cost_share": 0.0219,
+     "spread_bps": 1.518,
+     "class": "boa",
+     "reason": "Movimento normal (1.1x) e custo baixo.",
+     "p2r_long": 0.2733,
+     "p2r_short": 0.2837
+    },
+    {
+     "ny_hour": 4,
+     "ratio": 0.98,
+     "cost_share": 0.0233,
+     "spread_bps": 1.513,
+     "class": "boa",
+     "reason": "Movimento normal (1.0x) e custo baixo.",
+     "p2r_long": 0.2915,
+     "p2r_short": 0.2889
+    },
+    {
+     "ny_hour": 5,
+     "ratio": 0.92,
+     "cost_share": 0.0256,
+     "spread_bps": 1.527,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.2759,
+     "p2r_short": 0.2876
+    },
+    {
+     "ny_hour": 6,
+     "ratio": 0.86,
+     "cost_share": 0.0253,
+     "spread_bps": 1.507,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.2876,
+     "p2r_short": 0.2876
+    },
+    {
+     "ny_hour": 7,
+     "ratio": 0.96,
+     "cost_share": 0.0236,
+     "spread_bps": 1.527,
+     "class": "boa",
+     "reason": "Movimento normal (1.0x) e custo baixo.",
+     "p2r_long": 0.2733,
+     "p2r_short": 0.2953
+    },
+    {
+     "ny_hour": 8,
+     "ratio": 1.51,
+     "cost_share": 0.0154,
+     "spread_bps": 1.587,
+     "class": "boa",
+     "reason": "Movimento normal (1.5x) e custo baixo.",
+     "p2r_long": 0.2902,
+     "p2r_short": 0.285
+    },
+    {
+     "ny_hour": 9,
+     "ratio": 1.77,
+     "cost_share": 0.0128,
+     "spread_bps": 1.615,
+     "class": "boa",
+     "reason": "Movimento normal (1.8x) e custo baixo.",
+     "p2r_long": 0.2892,
+     "p2r_short": 0.3061
+    },
+    {
+     "ny_hour": 10,
+     "ratio": 1.63,
+     "cost_share": 0.0135,
+     "spread_bps": 1.613,
+     "class": "boa",
+     "reason": "Movimento normal (1.6x) e custo baixo.",
+     "p2r_long": 0.3035,
+     "p2r_short": 0.249
+    },
+    {
+     "ny_hour": 11,
+     "ratio": 1.31,
+     "cost_share": 0.0174,
+     "spread_bps": 1.59,
+     "class": "boa",
+     "reason": "Movimento normal (1.3x) e custo baixo.",
+     "p2r_long": 0.3061,
+     "p2r_short": 0.2348
+    },
+    {
+     "ny_hour": 12,
+     "ratio": 0.95,
+     "cost_share": 0.023,
+     "spread_bps": 1.572,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.3055,
+     "p2r_short": 0.2219
+    },
+    {
+     "ny_hour": 13,
+     "ratio": 0.91,
+     "cost_share": 0.0258,
+     "spread_bps": 1.557,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.2827,
+     "p2r_short": 0.2147
+    },
+    {
+     "ny_hour": 14,
+     "ratio": 0.76,
+     "cost_share": 0.0298,
+     "spread_bps": 1.513,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.2878,
+     "p2r_short": 0.2273
+    },
+    {
+     "ny_hour": 15,
+     "ratio": 0.81,
+     "cost_share": 0.0282,
+     "spread_bps": 1.502,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.2974,
+     "p2r_short": 0.2167
+    },
+    {
+     "ny_hour": 16,
+     "ratio": 0.57,
+     "cost_share": 0.0416,
+     "spread_bps": 1.562,
+     "class": "parado",
+     "reason": "Mercado parado (0.6x a hora típica): o custo pesa mais e o stop vira ruído.",
+     "p2r_long": 0.2966,
+     "p2r_short": 0.2098
+    },
+    {
+     "ny_hour": 17,
+     "ratio": null,
+     "cost_share": null,
+     "spread_bps": null,
+     "class": "fechado",
+     "reason": "Sem negociação nesta hora.",
+     "p2r_long": null,
+     "p2r_short": null
+    },
+    {
+     "ny_hour": 18,
+     "ratio": 0.7,
+     "cost_share": 0.032049999999999995,
+     "spread_bps": 1.881,
+     "class": "boa",
+     "reason": "Movimento normal (0.7x) e custo baixo.",
+     "p2r_long": 0.2643,
+     "p2r_short": 0.207
+    },
+    {
+     "ny_hour": 19,
+     "ratio": 0.755,
+     "cost_share": 0.030699999999999998,
+     "spread_bps": 1.7785,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.2672,
+     "p2r_short": 0.2257
+    },
+    {
+     "ny_hour": 20,
+     "ratio": 1.12,
+     "cost_share": 0.0203,
+     "spread_bps": 1.7295,
+     "class": "boa",
+     "reason": "Movimento normal (1.1x) e custo baixo.",
+     "p2r_long": 0.2711,
+     "p2r_short": 0.2322
+    },
+    {
+     "ny_hour": 21,
+     "ratio": 1.295,
+     "cost_share": 0.01785,
+     "spread_bps": 1.7365,
+     "class": "boa",
+     "reason": "Movimento normal (1.3x) e custo baixo.",
+     "p2r_long": 0.2655,
+     "p2r_short": 0.2448
+    },
+    {
+     "ny_hour": 22,
+     "ratio": 1.01,
+     "cost_share": 0.022949999999999998,
+     "spread_bps": 1.7065000000000001,
+     "class": "boa",
+     "reason": "Movimento normal (1.0x) e custo baixo.",
+     "p2r_long": 0.2655,
+     "p2r_short": 0.2396
+    },
+    {
+     "ny_hour": 23,
+     "ratio": 0.81,
+     "cost_share": 0.02825,
+     "spread_bps": 1.712,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.2604,
+     "p2r_short": 0.228
+    }
+   ],
+   "windows": {
+    "principal": [
+     [
+      8,
+      12
+     ],
+     [
+      21,
+      22
+     ]
+    ],
+    "operar": [
+     [
+      0,
+      16
+     ],
+     [
+      18,
+      24
+     ]
+    ],
+    "pico": [],
+    "evitar": [],
+    "parado": [
+     [
+      16,
+      17
+     ]
+    ]
+   },
+   "plan_p2r_range": [
+    0.207,
+    0.3061
+   ],
+   "weekday_ratio": {
+    "segunda": 0.94,
+    "terça": 1.0,
+    "quarta": 0.95,
+    "quinta": 0.97,
+    "sexta": 0.98
+   },
+   "all_expensive": false
+  },
+  "EURUSD": {
+   "label": "Euro/dólar",
+   "broker_symbol": null,
+   "period": {
+    "from": "2024-09-25",
+    "to": "2026-09-25"
+   },
+   "hours": [
+    {
+     "ny_hour": 0,
+     "ratio": 0.61,
+     "cost_share": 0.0507,
+     "spread_bps": 0.302,
+     "class": "evitar",
+     "reason": "O spread consome 5% do movimento típico da hora.",
+     "p2r_long": 0.292,
+     "p2r_short": 0.292
+    },
+    {
+     "ny_hour": 1,
+     "ratio": 0.79,
+     "cost_share": 0.0393,
+     "spread_bps": 0.301,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.3043,
+     "p2r_short": 0.3022
+    },
+    {
+     "ny_hour": 2,
+     "ratio": 1.23,
+     "cost_share": 0.022,
+     "spread_bps": 0.274,
+     "class": "boa",
+     "reason": "Movimento normal (1.2x) e custo baixo.",
+     "p2r_long": 0.3033,
+     "p2r_short": 0.3169
+    },
+    {
+     "ny_hour": 3,
+     "ratio": 1.4,
+     "cost_share": 0.019,
+     "spread_bps": 0.261,
+     "class": "boa",
+     "reason": "Movimento normal (1.4x) e custo baixo.",
+     "p2r_long": 0.3189,
+     "p2r_short": 0.3137
+    },
+    {
+     "ny_hour": 4,
+     "ratio": 1.31,
+     "cost_share": 0.0204,
+     "spread_bps": 0.261,
+     "class": "boa",
+     "reason": "Movimento normal (1.3x) e custo baixo.",
+     "p2r_long": 0.3021,
+     "p2r_short": 0.3116
+    },
+    {
+     "ny_hour": 5,
+     "ratio": 1.1,
+     "cost_share": 0.024,
+     "spread_bps": 0.258,
+     "class": "boa",
+     "reason": "Movimento normal (1.1x) e custo baixo.",
+     "p2r_long": 0.3116,
+     "p2r_short": 0.2958
+    },
+    {
+     "ny_hour": 6,
+     "ratio": 1.07,
+     "cost_share": 0.0249,
+     "spread_bps": 0.259,
+     "class": "boa",
+     "reason": "Movimento normal (1.1x) e custo baixo.",
+     "p2r_long": 0.3098,
+     "p2r_short": 0.2972
+    },
+    {
+     "ny_hour": 7,
+     "ratio": 1.25,
+     "cost_share": 0.0213,
+     "spread_bps": 0.259,
+     "class": "boa",
+     "reason": "Movimento normal (1.2x) e custo baixo.",
+     "p2r_long": 0.2845,
+     "p2r_short": 0.2898
+    },
+    {
+     "ny_hour": 8,
+     "ratio": 1.58,
+     "cost_share": 0.0169,
+     "spread_bps": 0.259,
+     "class": "boa",
+     "reason": "Movimento normal (1.6x) e custo baixo.",
+     "p2r_long": 0.3077,
+     "p2r_short": 0.2771
+    },
+    {
+     "ny_hour": 9,
+     "ratio": 1.66,
+     "cost_share": 0.016,
+     "spread_bps": 0.259,
+     "class": "boa",
+     "reason": "Movimento normal (1.7x) e custo baixo.",
+     "p2r_long": 0.275,
+     "p2r_short": 0.2856
+    },
+    {
+     "ny_hour": 10,
+     "ratio": 1.89,
+     "cost_share": 0.0141,
+     "spread_bps": 0.258,
+     "class": "pico",
+     "reason": "Hora mais agitada (1.9x a hora típica): alvo chega mais rápido, mas o stop também. Use lote menor.",
+     "p2r_long": 0.274,
+     "p2r_short": 0.2698
+    },
+    {
+     "ny_hour": 11,
+     "ratio": 1.52,
+     "cost_share": 0.0174,
+     "spread_bps": 0.258,
+     "class": "boa",
+     "reason": "Movimento normal (1.5x) e custo baixo.",
+     "p2r_long": 0.2413,
+     "p2r_short": 0.2571
+    },
+    {
+     "ny_hour": 12,
+     "ratio": 1.17,
+     "cost_share": 0.0225,
+     "spread_bps": 0.257,
+     "class": "boa",
+     "reason": "Movimento normal (1.2x) e custo baixo.",
+     "p2r_long": 0.2434,
+     "p2r_short": 0.235
+    },
+    {
+     "ny_hour": 13,
+     "ratio": 0.98,
+     "cost_share": 0.0268,
+     "spread_bps": 0.258,
+     "class": "boa",
+     "reason": "Movimento normal (1.0x) e custo baixo.",
+     "p2r_long": 0.2466,
+     "p2r_short": 0.2371
+    },
+    {
+     "ny_hour": 14,
+     "ratio": 0.9,
+     "cost_share": 0.0296,
+     "spread_bps": 0.258,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.2445,
+     "p2r_short": 0.2255
+    },
+    {
+     "ny_hour": 15,
+     "ratio": 0.75,
+     "cost_share": 0.0355,
+     "spread_bps": 0.259,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.2244,
+     "p2r_short": 0.2308
+    },
+    {
+     "ny_hour": 16,
+     "ratio": 0.63,
+     "cost_share": 0.0534,
+     "spread_bps": 0.34,
+     "class": "evitar",
+     "reason": "O spread consome 5% do movimento típico da hora.",
+     "p2r_long": 0.2276,
+     "p2r_short": 0.2213
+    },
+    {
+     "ny_hour": 17,
+     "ratio": 0.56,
+     "cost_share": 0.4178,
+     "spread_bps": 2.2664999999999997,
+     "class": "evitar",
+     "reason": "O spread consome 42% do movimento típico da hora.",
+     "p2r_long": 0.2145,
+     "p2r_short": 0.2187
+    },
+    {
+     "ny_hour": 18,
+     "ratio": 0.535,
+     "cost_share": 0.0842,
+     "spread_bps": 0.438,
+     "class": "evitar",
+     "reason": "O spread consome 8% do movimento típico da hora.",
+     "p2r_long": 0.2166,
+     "p2r_short": 0.2408
+    },
+    {
+     "ny_hour": 19,
+     "ratio": 0.605,
+     "cost_share": 0.05875,
+     "spread_bps": 0.3455,
+     "class": "evitar",
+     "reason": "O spread consome 6% do movimento típico da hora.",
+     "p2r_long": 0.25,
+     "p2r_short": 0.2532
+    },
+    {
+     "ny_hour": 20,
+     "ratio": 0.87,
+     "cost_share": 0.037849999999999995,
+     "spread_bps": 0.304,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.2605,
+     "p2r_short": 0.25
+    },
+    {
+     "ny_hour": 21,
+     "ratio": 0.86,
+     "cost_share": 0.03605,
+     "spread_bps": 0.3015,
+     "class": "boa",
+     "reason": "Movimento normal (0.9x) e custo baixo.",
+     "p2r_long": 0.2529,
+     "p2r_short": 0.2665
+    },
+    {
+     "ny_hour": 22,
+     "ratio": 0.75,
+     "cost_share": 0.041249999999999995,
+     "spread_bps": 0.303,
+     "class": "boa",
+     "reason": "Movimento normal (0.8x) e custo baixo.",
+     "p2r_long": 0.2647,
+     "p2r_short": 0.2752
+    },
+    {
+     "ny_hour": 23,
+     "ratio": 0.65,
+     "cost_share": 0.0478,
+     "spread_bps": 0.302,
+     "class": "parado",
+     "reason": "Mercado parado (0.7x a hora típica): o custo pesa mais e o stop vira ruído.",
+     "p2r_long": 0.2794,
+     "p2r_short": 0.2847
+    }
+   ],
+   "windows": {
+    "principal": [
+     [
+      2,
+      5
+     ],
+     [
+      7,
+      12
+     ]
+    ],
+    "operar": [
+     [
+      1,
+      16
+     ],
+     [
+      20,
+      23
+     ]
+    ],
+    "pico": [
+     [
+      10,
+      11
+     ]
+    ],
+    "evitar": [
+     [
+      0,
+      1
+     ],
+     [
+      16,
+      20
+     ]
+    ],
+    "parado": [
+     [
+      23,
+      24
+     ]
+    ]
+   },
+   "plan_p2r_range": [
+    0.2145,
+    0.3189
+   ],
+   "weekday_ratio": {
+    "segunda": 0.95,
+    "terça": 0.95,
+    "quarta": 1.04,
+    "quinta": 0.94,
+    "sexta": 1.14
+   },
+   "all_expensive": false
+  }
+ }
+}

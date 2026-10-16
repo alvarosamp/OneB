@@ -258,3 +258,15 @@ def test_stale_cache_is_returned_marked_when_provider_fails(tmp_path):
     service.fallback_provider = down
     bars = service.get_bars("NQ=F", period="6mo", interval="1d")
     assert len(bars) == 3 and bars.attrs.get("cache_fallback") is True
+
+
+
+def test_long_daily_history_cache_lasts_longer_than_short():
+    from datetime import timedelta
+
+    from app.market_data.service import cache_is_fresh
+
+    now = datetime(2026, 10, 14, 15, 0, tzinfo=timezone.utc)
+    two_hours_ago = (now - timedelta(hours=2)).isoformat()
+    assert cache_is_fresh(two_hours_ago, "1d", now, period="2y") is True  # 100 ações da Mesa: não rebaixa
+    assert cache_is_fresh(two_hours_ago, "1d", now, period="6mo") is False  # preço/previsão: rebaixa

@@ -195,3 +195,37 @@
   font-size: var(--fs-sm);
   max-width: var(--measure);
 }
+
+.answerFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.rating {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.ratingForm {
+  display: inline-flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.ratingInput {
+  min-width: 0;
+  width: 16rem;
+  max-width: 100%;
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-sm);
+}

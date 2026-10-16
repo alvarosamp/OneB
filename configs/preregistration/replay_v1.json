@@ -1,0 +1,32 @@
+{
+  "test": "replay_v1",
+  "registered_at": "2026-10-14",
+  "registered_before_results": true,
+  "question": "O que acontece com a conta de um usuário que abre o OneB em vários horários e segue o plano da IA (stop 1,5 ATR, alvo 2R, lote de 1% de risco, evita eventos e horas ruins)? E uma direção 'sem indicadores', como a dos serviços de sinais, só com o preço, faz melhor que o cara ou coroa?",
+  "data": {
+    "source": "Dukascopy M5 bid/ask (app.lab.data.DUKASCOPY_FILES); compra no ask, venda no bid; stop e alvo na mesma barra contam como stop; até 24 h, depois sai no fechamento",
+    "assets": ["NAS100", "XAUUSD"],
+    "slots_brasilia": ["05:00", "09:00", "10:30", "11:30", "13:00", "15:00", "17:00"],
+    "brasilia_utc_offset_hours": -3
+  },
+  "plan": {"stop_atr_h1": 1.5, "target_r": 2.0, "risk_per_trade": 0.01, "start_balance_usd": 1000, "one_trade_per_slot_per_day": true},
+  "users": {
+    "segue_oneb": "só entra se a hora de NY do slot NÃO é 'fechado', 'evitar' ou 'parado' no guia de horários atual do app (app/research_results/hours_guide.json) E não há divulgação de CPI, payroll ou FOMC (configs/events/macro_events_2019_2026.json) entre 30 min antes e 2 h depois da entrada",
+    "ignora_oneb": "entra em todos os slots com dados"
+  },
+  "direction_rules": {
+    "aleatorio": "controle: média exata de compra e venda na mesma entrada (valor esperado do cara ou coroa, sem semente)",
+    "acompanha_24h": "compra se o preço médio (bid+ask)/2 na entrada está acima do de 24 h antes; vende se abaixo",
+    "contra_1h": "vende se o preço subiu na última hora; compra se caiu"
+  },
+  "split": {
+    "discovery": {"from_inclusive": "2019-03-01", "to_exclusive": "2023-01-01"},
+    "confirmation": {"from_inclusive": "2023-01-01", "to_exclusive": "2026-09-26"}
+  },
+  "metrics": "por usuário x regra x ativo x período: trades, % alvo, resultado médio em R, soma em R, pior sequência (drawdown máximo em R), saldo final com 1% de risco composto; por slot: trades, % alvo, resultado médio em R",
+  "pass": "Regra de direção APROVADA (por ativo, usuário segue_oneb) se, na confirmação, resultado médio da regra MENOS o do aleatório nas mesmas entradas > 0 com IC bilateral por bootstrap de dias inteiros (2.000 reamostragens, semente 7) com Bonferroni para 4 comparações (2 regras x 2 ativos, IC de 98,75%) que exclui zero, E mesma direção da diferença na descoberta, E resultado médio absoluto da regra > 0 R.",
+  "filter_claim": "O filtro do OneB (horas e eventos) é de RISCO: só se afirma o que for medido (custo do spread em R, pior sequência). Não se afirma melhora de resultado sem teste.",
+  "known_limitation": "O guia de horários foi calculado com dados de 2024-09 a 2026-09 (dentro da confirmação). Ele classifica movimento e custo, não direção; a limitação é divulgada.",
+  "decision": "Aprovada: pode aparecer no produto como direção sugerida, com o selo do teste e o placar ao vivo. Reprovada: o produto continua sem direção e a simulação vira material de transparência (o que acontece com quem segue sinais de direção).",
+  "prohibit_optimization": true
+}

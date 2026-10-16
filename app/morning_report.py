@@ -10,6 +10,8 @@ discretionary hand-drawn trendline.
 """
 from __future__ import annotations
 
+import asyncio
+
 from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
@@ -181,7 +183,8 @@ async def generate_and_store(db: Session, user_id: int) -> MorningReport:
     """Builds the report, optionally enriches it with an LLM narrative, and
     persists it so the dashboard/history can show it without recomputing.
     """
-    data = build_report_data(db, user_id)
+    # Cotações via rede: numa thread, para não travar o servidor enquanto o relatório é montado.
+    data = await asyncio.to_thread(build_report_data, db, user_id)
     narrative = render_text(data)
 
     if settings.llm_daily_narrative_enabled:

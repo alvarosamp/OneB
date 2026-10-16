@@ -1,0 +1,33 @@
+{
+  "test": "sessfc_v1",
+  "registered_at": "2026-10-15",
+  "registered_before_results": true,
+  "question": "Na hora do plano do OneB (10:30 de Brasília), dá para prever quanto o preço ainda vai andar até o fechamento de Nova York (máxima - mínima da janela) melhor que a média simples dessa mesma janela nos últimos 22 dias? E a faixa de 80% cobre de fato ~80% dos dias?",
+  "purpose": "Mostrar no app 'até o fechamento, deve andar X (faixa de 80%: A a B)', para o cliente saber se o alvo do plano cabe no resto do dia. Previsão de RISCO, não de direção. Nenhuma ordem.",
+  "data": {
+    "source": "Dukascopy M5 bid normalizado (app.lab.data.DUKASCOPY_FILES), 2019-03-01 a 2026-09-26",
+    "assets": ["NAS100", "XAUUSD"],
+    "window": "da abertura da barra M5 das 13:30 UTC (10:30 de Brasília) até as 16:00 de Nova York do mesmo dia; dias úteis de NY; janela com menos de 24 barras M5 é descartada",
+    "range": "amplitude da janela = (máxima - mínima) / preço de abertura das 13:30 UTC; trabalha-se com o log"
+  },
+  "features_known_at_entry": {
+    "d": "log da amplitude da mesma janela no dia útil anterior",
+    "w": "média do log da amplitude da janela nos 5 dias anteriores",
+    "m": "média do log da amplitude da janela nos 22 dias anteriores",
+    "pre": "log da amplitude de 18:00 de NY do dia anterior até a entrada (madrugada e manhã), sobre o preço de entrada",
+    "event": "1 se o dia tem CPI, payroll ou FOMC (configs/events/macro_events_2019_2026.json), senão 0"
+  },
+  "models": {
+    "baseline": "previsão do log da amplitude = m (média simples dos últimos 22 dias da mesma janela)",
+    "model": "OLS: log amplitude = b0 + b1 d + b2 w + b3 m + b4 pre + b5 event, por ativo, coeficientes estimados SÓ em 2019-03 a 2022-12"
+  },
+  "evaluation": {
+    "period": {"from_inclusive": "2023-01-01", "to_exclusive": "2026-09-26"},
+    "primary_metric": "redução do erro quadrático médio do log da amplitude do modelo contra o baseline, por ativo, no período de avaliação",
+    "pass_primary": "em CADA ativo: redução >= 5% E IC 95% bootstrap em blocos de 20 dias (2.000 reamostragens, semente 7) da diferença de erro (baseline - modelo) acima de zero, com Bonferroni para 2 ativos (IC de 97,5%)",
+    "interval": "faixa de 80% = previsão do modelo somada aos quantis 10% e 90% dos resíduos de 2019-2022; passa se a cobertura no período de avaliação ficar entre 75% e 85% em cada ativo",
+    "multiple_testing": "um teste por ativo (2), Bonferroni; nenhum outro modelo ou janela será testado nesta versão"
+  },
+  "decision": "Ativo aprovado nas duas condições (erro e cobertura): o app mostra a previsão até o fechamento na aba Ativo, no plano de trade e na IA, com placar ao vivo a partir do primeiro dia útil depois do teste. Reprovado: não aparece.",
+  "prohibit_optimization": true
+}

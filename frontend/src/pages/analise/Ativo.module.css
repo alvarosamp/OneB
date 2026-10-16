@@ -48,6 +48,10 @@
   color: var(--negative-text);
 }
 
+.heroAction {
+  margin-top: var(--sp-3);
+}
+
 .tiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
@@ -115,6 +119,73 @@
   list-style: disc;
   font-size: var(--fs-sm);
   color: var(--text-secondary);
+}
+
+.scoreWrap {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: var(--sp-3);
+}
+
+.scoreTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.scoreTable th,
+.scoreTable td {
+  padding: var(--sp-1) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.scoreTable th {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.planControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.plan {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.planHead {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-1) var(--sp-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.planHead dt {
+  color: var(--text-secondary);
+}
+
+.planBasis {
+  padding: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--info-subtle);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-reading);
+}
+
+.planWarnings {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-6);
+  border-radius: var(--radius-md);
+  background: var(--warning-subtle);
+  list-style: disc;
+  font-size: var(--fs-sm);
 }
 
 .chart {
@@ -260,4 +331,15 @@
   .evidence li {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.retro {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+}
+
+.retro summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-2);
 }

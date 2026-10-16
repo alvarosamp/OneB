@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from app import morning_report
 from app.db import Base
@@ -12,7 +13,8 @@ from app.models import GlobalNewsItem, PriceSnapshot, WatchlistItem
 
 
 def _make_session():
-    engine = create_engine("sqlite:///:memory:")
+    # StaticPool: o relatório é montado numa thread (asyncio.to_thread) e precisa ver o mesmo banco em memória.
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)
     return sessionmaker(bind=engine)()
 

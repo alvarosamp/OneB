@@ -113,6 +113,11 @@ def _ensure_sqlite_saas_columns():
         "global_news_items": {
             "sentiment_score": "REAL",
         },
+        "ai_answer_logs": {  # avaliação do usuário (migração d20261013a01)
+            "rating": "INTEGER",
+            "feedback_comment": "TEXT",
+            "feedback_at": "DATETIME",
+        },
     }
     with engine.begin() as conn:
         for table, columns in additions.items():

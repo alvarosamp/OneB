@@ -38,6 +38,7 @@ TRACK_SINAIS = (
             [
                 ("64 regras testadas: o que reprovou e por quê", "Duck, RSI, médias, Bollinger e rompimentos com custo real, de 2019 a 2026.", 16),
                 ("Horário e spread: quando o custo come o movimento", "O mapa de horários e por que o mesmo trade custa 25 vezes mais em outro símbolo.", 14),
+                ("Como conferir o OneB: placar, diário e o que não prometemos", "Placar ao vivo, diário, saldo mínimo e por que a IA não dá compra e venda.", 15),
             ],
         ),
     ],
@@ -119,6 +120,18 @@ MATERIAL_SINAIS: dict[str, dict] = {
             "Calculo o lote pelo risco e confiro se o lote mínimo cabe.",
         ],
         "exercise": "Na aba Análise › Ativo, informe seu saldo e risco e anote o lote sugerido para Nasdaq e para ouro. Algum ficou abaixo do lote mínimo?",
+        "required": True,
+    },
+    "Como conferir o OneB: placar, diário e o que não prometemos": {
+        "summary": "Tudo o que o OneB afirma tem um placar: a previsão de amplitude e o plano das 10:30 são gravados antes do resultado e conferidos depois, dia a dia, inclusive os dias ruins.",
+        "checklist": [
+            "Sei onde ver o placar ao vivo e o diário (Análise › Por que confiar).",
+            "Sei que a previsão diz QUANTO o mercado deve mexer, não PARA ONDE.",
+            "Sei que o plano das 10:30 é regra fixa de compra e venda, não sinal.",
+            "Confiro o saldo mínimo de cada ativo antes de operar (Análise › Quanto operar).",
+            "Desconfio de qualquer serviço que não publica o placar completo, sinal a sinal, antes do resultado.",
+        ],
+        "exercise": "Abra Análise › Por que confiar e anote, do diário, quantos dos últimos pregões ficaram dentro da faixa prevista. Depois abra Quanto operar com o seu saldo real e anote quais ativos cabem.",
         "required": True,
     },
 }
@@ -461,11 +474,54 @@ Os dois índices andam juntos, mas o custo não. Em proporção ao preço, opera
 
 ## Quanto operar
 
-Na aba **Análise › Ativo**, a calculadora faz a conta pelo risco:
+Na aba **Análise › Quanto operar**, a calculadora faz a conta pelo risco, para todos os ativos de uma vez:
 
 - **lote = (saldo × risco %) ÷ (distância do stop × tamanho do contrato)**, arredondado para baixo;
 - ela mostra o custo do spread daquele lote e **avisa quando nem o lote mínimo cabe no seu risco**.
 
-Exemplo real: com US$ 1.000 e 1% de risco (US$ 10), um stop de 1,5 ATR no US100.s arriscaria US$ 112 com o lote mínimo. A resposta honesta é: **com esse saldo, esse trade não cabe**.
+Exemplo: com US$ 1.000 e 1% de risco (US$ 10), um stop de 150 pontos no US100.s arrisca US$ 15 mesmo com o lote mínimo (0,1). A resposta honesta é: **com esse saldo, esse trade não cabe**. A corretora pode mudar o lote mínimo sem aviso; o OneB confere a especificação no MT5.
+""",
+    "Como conferir o OneB: placar, diário e o que não prometemos": """\
+Qualquer serviço pode dizer que acerta. A diferença está em **mostrar o placar completo, com regra definida antes do resultado**. Esta aula mostra onde o OneB faz isso e como você confere sozinho.
+
+## 1. O que é comprovado (e o que não é)
+
+- **Quanto o mercado deve mexer no próximo pregão.** Testado em 2023 a 2026, anos que o modelo nunca viu: erra menos que a média de 14 dias (o ATR), e a faixa de 80% acerta perto de 8 em cada 10 dias.
+- **Quanto os eventos mexem.** CPI, payroll e FOMC multiplicam o movimento da primeira meia hora; o OneB avisa antes.
+- **A chance real de cada alvo do plano**, medida em milhares de entradas, já com o spread.
+- **Direção não.** Nenhuma regra de compra ou venda passou nos testes: indicadores, tendência, horário, nem regras "sem indicador" como as de serviços de sinais. Por isso a IA não diz "compre" ou "venda".
+
+## 2. O placar ao vivo
+
+Todo pregão, a previsão do dia seguinte é **gravada no banco antes do pregão começar** e não muda mais. Depois que o pregão fecha, o OneB compara com o que aconteceu. Na aba **Análise › Ativo** você vê, pregão a pregão, o previsto, a faixa, o realizado e se a previsão foi gravada antes.
+
+O mesmo vale para o **plano das 10:30**: todo dia útil, às 10:30 de Brasília, o OneB registra por regra fixa um plano de compra e um de venda (stop de 1,5 ATR de 1 hora, alvos de 1R, 2R e 3R) e confere se cada alvo veio antes do stop. Ninguém escolhe o dia, a direção ou o resultado.
+
+> Num dia, um lado bate o alvo e o outro bate o stop. Isso é esperado: o que o placar confere é se a **chance anunciada** de cada alvo se confirma ao longo de muitos dias.
+
+## 3. O diário
+
+Em **Análise › Por que confiar**, o diário junta, dia a dia, o que foi registrado antes e o que aconteceu. **Os dias ruins aparecem do mesmo jeito que os bons**: um pregão de CPI que passou da faixa fica marcado com ✗, sem filtro.
+
+## 4. Quanto a sua conta aguenta
+
+Em **Análise › Quanto operar**, informe o saldo da sua conta no MT5 e o risco por operação. O OneB mostra:
+
+- se o **menor lote** de cada ativo cabe no seu risco;
+- o lote certo e o risco real em dólar;
+- quanto o **spread** come do stop (acima de 10%, o custo é alto);
+- o **saldo mínimo** para operar cada ativo.
+
+Se nem o menor lote cabe, a resposta honesta é **não operar esse ativo com esse saldo**.
+
+## 5. O teste que você pode fazer com qualquer serviço
+
+Antes de pagar por sinais, peça:
+
+1. o **resultado médio por trade** já descontando o spread (não a "taxa de acerto");
+2. o **histórico completo, sinal a sinal, publicado antes do resultado**;
+3. a comparação com **entrar no cara ou coroa** com as mesmas regras.
+
+O OneB fez esse teste: com o alvo curto, entradas aleatórias chegam a 80% a 90% de "acerto" e mesmo assim perdem dinheiro.
 """,
 })

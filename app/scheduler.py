@@ -249,20 +249,28 @@ def purge_legacy_economic_events(db) -> int:
     return removed
 
 
+def _utc_key(dt):
+    if isinstance(dt, datetime):
+        return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt.astimezone(timezone.utc)
+    return dt
+
+
 async def refresh_calendars() -> None:
     db = SessionLocal()
     try:
         today = date.today()
 
-        econ_events = fred_client.get_economic_calendar(today, today + timedelta(days=21))
+        econ_events = fred_client.get_economic_calendar(today, today + timedelta(days=45))  # 45 dias: sempre cobre o próximo CPI, payroll e FOMC
         purge_legacy_economic_events(db)
+        # Chave em UTC com fuso: o SQLite devolve datas sem fuso e o FRED com fuso; sem normalizar, o mesmo
+        # evento parecia novo, o INSERT batia na constraint única e o job inteiro era desfeito.
         existing_econ_keys = {
-            (name, country, dt) for name, country, dt in db.query(
+            (name, country, _utc_key(dt)) for name, country, dt in db.query(
                 EconomicEvent.event_name, EconomicEvent.country, EconomicEvent.event_date
             ).all()
         }
         new_econ = filter_new_by_key(
-            econ_events, existing_econ_keys, key_fn=lambda e: (e.event_name, e.country, e.event_date)
+            econ_events, existing_econ_keys, key_fn=lambda e: (e.event_name, e.country, _utc_key(e.event_date))
         )
         for event in new_econ:
             db.add(
@@ -402,6 +410,32 @@ async def daily_summary(telegram_app: Application | None) -> None:
                 message = f"📊 Resumo do dia:\n{narrative}"
 
         await send_alert(telegram_app, message)
+    finally:
+        db.close()
+
+
+def record_plan_live() -> None:
+    """Grava os planos do placar ao vivo (plan_live_v1) e a previsão do próximo pregão (volfc_v1); idempotente."""
+    from app.routers import asset_brief as ab
+
+    db = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        # só este job grava (as telas só leem): dados baixados agora, sem cache
+        for key in ab.PLAN_LIVE_ASSETS:
+            m5 = market_data_service.get_bars(ab.ASSETS[key]["symbol"], period="60d", interval="5m", refresh=True)
+            ab.plan_scoreboard(key, m5, db, record=True)
+            ab.session_forecast(key, db, now, m5=m5, record=True)
+        # previsão do próximo pregão: gravada às 17:20 de NY (fechado o pregão-base, antes do próximo abrir)
+        for key in ab.ASSETS:
+            ab.range_forecast(key, ab._daily(ab.ASSETS[key]["symbol"], refresh=True), db, now, record=True)
+        # sinais colados em 'Avaliar um sinal': grava o resultado dos alvos já decididos
+        from app.routers import signals as signals_router
+
+        signals_router.resolve_open(db)
+    except Exception:
+        logger.exception("Erro no job record_plan_live")
+        db.rollback()
     finally:
         db.close()
 
@@ -616,6 +650,8 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
         minute=0,
         id="recalibrate_decision_strategy",
     )
+    # De hora em hora (minuto 20): grava o plano das 10:30 de Brasília e vai encerrando os de até 24 h atrás.
+    scheduler.add_job(record_plan_live, "cron", minute=20, id="record_plan_live")
     scheduler.add_job(
         record_decision_desk_snapshot,
         "cron",

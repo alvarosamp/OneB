@@ -197,3 +197,31 @@
     height: 22px; /* alvo de toque maior */
   }
 }
+
+.guide {
+  display: grid;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-lg);
+  background: var(--brand-subtle);
+}
+
+.guideTitle {
+  font-weight: 600;
+}
+
+.guideList {
+  display: grid;
+  gap: var(--sp-2);
+  padding-left: var(--sp-5);
+  list-style: disc;
+  line-height: var(--lh-reading);
+  max-width: var(--measure);
+}
+
+.criteria {
+  margin-top: var(--sp-2);
+  white-space: pre-line;
+}

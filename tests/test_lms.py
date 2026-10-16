@@ -52,7 +52,7 @@ def test_tracks_follow_academia_order_with_new_track(client):
 def test_new_track_lessons_have_body_and_material(client):
     course = client.get("/api/lms/courses/como-avaliar-um-sinal").json()
     lessons = [l for m in course["modules"] for l in m["lessons"]]
-    assert len(lessons) == 7  # inclui o módulo "O laboratório do OneB" (10/10/2026)
+    assert len(lessons) == 8  # inclui o módulo "O laboratório do OneB" (10/10/2026) e a aula de conferir o placar (16/10/2026)
     for lesson in lessons:
         assert lesson["body"], lesson["title"]
         assert lesson["exercise"] == MATERIAL_SINAIS[lesson["title"]]["exercise"]

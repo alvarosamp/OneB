@@ -15,6 +15,7 @@ RUN addgroup --system app && adduser --system --ingroup app app
 COPY --chown=app:app app ./app
 COPY --chown=app:app scripts ./scripts
 COPY --chown=app:app migrations ./migrations
+COPY --chown=app:app configs ./configs
 COPY --chown=app:app alembic.ini ./alembic.ini
 
 RUN mkdir -p /app/data && chown app:app /app/data
