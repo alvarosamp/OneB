@@ -112,7 +112,7 @@ export function Topbar({ onOpenMenu, status }: { onOpenMenu: () => void; status?
             <div className={styles.menu} role="menu" aria-label="Conta">
               <div className={styles.menuHeader}>
                 <strong>{user.username}</strong>
-                {user.is_admin ? 'Administrador' : 'Conta pessoal'}
+                {import.meta.env.VITE_PUBLIC_MODE === 'true' ? 'Acesso público' : user.is_admin ? 'Administrador' : 'Conta pessoal'}
               </div>
               <NavLink to="/configuracoes" role="menuitem" className={styles.menuItem} onClick={() => setMenuOpen(false)}>
                 <Settings {...ICON} aria-hidden="true" />
@@ -122,10 +122,10 @@ export function Topbar({ onOpenMenu, status }: { onOpenMenu: () => void; status?
                 <FileDown {...ICON} aria-hidden="true" />
                 {downloading ? 'Gerando relatório…' : 'Baixar relatório em PDF'}
               </button>
-              <button type="button" role="menuitem" className={styles.menuItem} onClick={handleLogout}>
+              {import.meta.env.VITE_PUBLIC_MODE !== 'true' && <button type="button" role="menuitem" className={styles.menuItem} onClick={handleLogout}>
                 <LogOut {...ICON} aria-hidden="true" />
                 Sair
-              </button>
+              </button>}
             </div>
           )}
         </div>

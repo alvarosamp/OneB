@@ -39,6 +39,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // refresh (httpOnly), então a sessão é reconstruída pedindo um access token novo.
     let cancelled = false;
     (async () => {
+      if (import.meta.env.VITE_PUBLIC_MODE === 'true') {
+        try {
+          const visitor = await api.get<User>('/api/auth/me');
+          if (!cancelled) setUser(visitor);
+        } catch {
+          if (!cancelled) setUser(null);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+        return;
+      }
       const renewed = await refreshSession();
       if (cancelled) return;
       if (!renewed) {

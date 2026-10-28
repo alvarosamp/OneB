@@ -39,6 +39,9 @@ export function AppShell({ status, bottomNav }: { status?: ReactNode; bottomNav?
         </div>
         <div className={styles.main}>
           <main id="conteudo" className={styles.content} tabIndex={-1}>
+            {import.meta.env.VITE_PUBLIC_MODE === 'true' && (
+              <p role="note">Acesso público · explore as ferramentas e aulas sem login. Dados pessoais, alterações e progresso não são salvos nesta versão.</p>
+            )}
             <Suspense fallback={<SkeletonLines lines={8} label="Carregando a página" />}>
               <Outlet />
             </Suspense>

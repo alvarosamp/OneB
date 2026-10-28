@@ -92,8 +92,8 @@ function AppRoutes() {
       <Route path="/comunidade" element={<Comunidade />} />
       <Route path="/planos" element={<Planos />} />
       <Route path="/sobre" element={<Sobre />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/cadastro" element={<Cadastro />} />
+      <Route path="/login" element={import.meta.env.VITE_PUBLIC_MODE === 'true' ? <RedirectTo to="/ferramenta" /> : <Login />} />
+      <Route path="/cadastro" element={import.meta.env.VITE_PUBLIC_MODE === 'true' ? <RedirectTo to="/ferramenta" /> : <Cadastro />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>

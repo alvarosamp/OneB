@@ -1,0 +1,20 @@
+.env*
+hostinger*.env
+*.db
+*.pptx
+*.bundle
+*.patch
+.venv
+.git
+data
+output
+tmp
+Claude outputs
+frontend/node_modules
+frontend/dist
+frontend/playwright-report
+frontend/test-results
+tests
+docs
+mql5
+mt5

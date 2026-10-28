@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "fastapi",
+  "buildCommand": "npm ci --prefix frontend && VITE_API_URL= VITE_PUBLIC_MODE=true npm run build --prefix frontend && python scripts/build_vercel_frontend.py",
+  "rewrites": [
+    { "source": "/((?!api(?:/|$)|health$|assets/).*)", "destination": "/index.html" }
+  ],
+  "functions": {
+    "serverless.py": {
+      "maxDuration": 300,
+      "excludeFiles": "{tests/**,frontend/node_modules/**,frontend/src/**,frontend/e2e/**,data/**,output/**,tmp/**,docs/**,mql5/**,mt5/**,*.db,*.pptx,*.bundle,*.patch,.env*,hostinger*.env}"
+    }
+  }
+}

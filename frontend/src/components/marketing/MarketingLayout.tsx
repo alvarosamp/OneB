@@ -39,12 +39,16 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="oneb-header-actions">
+          {import.meta.env.VITE_PUBLIC_MODE === 'true' ? (
+            <NavLink to="/ferramenta" className="oneb-primary">Explorar a plataforma</NavLink>
+          ) : <>
           <NavLink to="/login" className="oneb-login">
             Entrar
           </NavLink>
           <NavLink to="/cadastro" className="oneb-primary">
             Criar conta
           </NavLink>
+          </>}
         </div>
       </header>
       {children}
