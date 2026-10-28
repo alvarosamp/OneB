@@ -23,6 +23,10 @@ assert "must-not-connect" not in settings.database_url
 assert not settings.run_embedded_scheduler
 client = TestClient(app)
 assert client.get("/health").status_code == 200
+from pathlib import Path
+if Path("frontend/dist/index.html").exists():
+    page = client.get("/index.html")
+    assert page.status_code == 200 and '<div id="root">' in page.text, page.text
 visitor = client.get("/api/auth/me")
 assert visitor.status_code == 200, visitor.text
 assert visitor.json()["username"] == "Visitante"

@@ -51,6 +51,10 @@ def public_visitor(db: Session = Depends(get_db)) -> User:
 
 app.dependency_overrides[get_current_user] = public_visitor
 
+# Register Vite with FastAPI so Vercel can discover the generated assets even
+# with application middleware; API routes always take precedence.
+app.frontend("/", directory=Path(__file__).resolve().parent / "frontend" / "dist", fallback="index.html", check_dir=False)
+
 
 @app.middleware("http")
 async def public_access(request, call_next):

@@ -1,7 +1,8 @@
 # Site público no Vercel
 
-O deploy da raiz usa `serverless:app`, compila o frontend e serve os arquivos de
-`public/` pelo CDN. Site e `/api` ficam no mesmo domínio, sem Render.
+O deploy da raiz usa `serverless:app`, compila o frontend e registra `frontend/dist`
+com `app.frontend()` para publicar os arquivos pelo CDN. Site e `/api` ficam no
+mesmo domínio, sem Render. A promoção ao CDN é explícita porque a API tem middleware.
 
 Este é um modo público de consulta, com visitante sem privilégios de administrador.
 O banco é novo, temporário e exclusivo de cada instância: nenhuma conta ou carteira
