@@ -25,8 +25,9 @@ import {
 } from '../components/ui';
 import { buttonClass } from '../components/ui/buttonClass';
 import { readMarket } from '../lib/marketRead';
+import { CHART_ASSETS, CHART_ASSET_GROUPS } from '../content/chartAssets';
 import { chartPath, TIMEFRAMES, type Timeframe } from '../lib/timeframes';
-import { formatDateTime, formatLongDate, formatNumber, formatPrice, formatSigned, formatTime, isNum } from '../lib/format';
+import { formatDateTime, formatLongDate, formatNumber, formatPrice, formatSigned, formatTime, isNum, priceDigits } from '../lib/format';
 import { ptBR } from '../lib/text';
 import type { RadarRow } from '../hooks/useRadar';
 import type {
@@ -46,11 +47,6 @@ import type {
 import styles from './Dashboard.module.css';
 
 const HERO_SYMBOL = 'NQ=F';
-const HERO_ASSETS = [
-  { id: 'nasdaq', symbol: 'NQ=F', label: 'Nasdaq-100 futuro', option: 'NASDAQ', note: 'Contrato futuro Nasdaq-100 (NQ=F).' },
-  { id: 'xauusd', symbol: 'GC=F', label: 'Ouro futuro', option: 'XAUUSD · Ouro', note: 'Referência: ouro futuro COMEX (GC=F), em USD por onça. Não é a cotação spot XAUUSD da sua corretora.' },
-  { id: 'btcusd', symbol: 'BTC-USD', label: 'Bitcoin / dólar', option: 'BTCUSD · Bitcoin', note: 'Bitcoin em dólar (BTC-USD). A cotação pode diferir da sua corretora.' },
-] as const;
 const HERO_TFS = TIMEFRAMES.filter((t) => ['1D', '5D', '1M'].includes(t.id));
 type HeroTf = '1D' | '5D' | '1M';
 
@@ -80,8 +76,8 @@ export function Dashboard() {
 }
 
 function HeroChart() {
-  const [assetId, setAssetId] = useQueryTab(HERO_ASSETS.map((a) => a.id), 'nasdaq', 'ativo');
-  const asset = HERO_ASSETS.find((a) => a.id === assetId)!;
+  const [assetId, setAssetId] = useQueryTab(CHART_ASSETS.map((a) => a.id), 'nasdaq', 'ativo');
+  const asset = CHART_ASSETS.find((a) => a.id === assetId)!;
   const [tfId, setTfId] = useQueryTab<HeroTf>(['1D', '5D', '1M'], '5D', 'tf');
   const tf = HERO_TFS.find((t) => t.id === tfId) as Timeframe;
   const chart = useApi<ChartData>(chartPath(asset.symbol, tf), { pollMs: 60_000, isEmpty: (d) => d.close.length === 0 });
@@ -93,7 +89,11 @@ function HeroChart() {
       <label className={styles.assetPicker}>
         Ativo do gráfico
         <select value={assetId} onChange={(e) => setAssetId(e.target.value as typeof assetId)}>
-          {HERO_ASSETS.map((a) => <option key={a.id} value={a.id}>{a.option}</option>)}
+          {CHART_ASSET_GROUPS.map((group) => (
+            <optgroup key={group} label={group}>
+              {CHART_ASSETS.filter((a) => a.group === group).map((a) => <option key={a.id} value={a.id}>{a.option}</option>)}
+            </optgroup>
+          ))}
         </select>
       </label>
       <div className={styles.chartHeader}>
@@ -101,7 +101,7 @@ function HeroChart() {
           <Link to={`/ativo/${encodeURIComponent(asset.symbol)}`} className={styles.symbol}>
             {asset.label} <span>{asset.symbol}</span>
           </Link>
-          <span className={styles.bigPrice}>{isNum(last) ? formatNumber(last) : chart.status === 'loading' ? <Skeleton width={120} height={24} /> : '—'}</span>
+          <span className={styles.bigPrice}>{isNum(last) ? formatNumber(last, priceDigits(last)) : chart.status === 'loading' ? <Skeleton width={120} height={24} /> : '—'}</span>
           {isNum(last) && <ChangeText value={dayChange} className={styles.bigChange} />}
           {chart.lastUpdated && <DataAge at={lastTimestamp(chart.data)} staleAfterMin={30} refreshError={chart.data ? chart.error : null} prefix="último candle" />}
         </div>
