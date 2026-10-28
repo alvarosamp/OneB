@@ -122,7 +122,17 @@ class Settings(BaseSettings):
     llm_enrich_alerts: bool = False  # desligado por padrão pra controlar custo/volume
 
 
+def normalize_database_url(url: str) -> str:
+    """Neon, Render e Supabase entregam `postgres://` ou `postgresql://`; o SQLAlchemy
+    precisaria do driver psycopg2 (não instalado). Força o psycopg 3 do requirements."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
 settings = Settings()
+settings.database_url = normalize_database_url(settings.database_url)
 
 if not settings.secret_key:
     if settings.environment == "production":

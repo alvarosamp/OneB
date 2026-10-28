@@ -119,7 +119,8 @@ class MarketDataService:
 
     def _provider_chain(self, interval: str, symbol: str | None = None) -> list[MarketDataProvider]:
         normalized_symbol = (symbol or "").upper().strip()
-        yahoo_native_symbol = normalized_symbol.endswith(("=F", "=X")) or normalized_symbol.startswith("^")
+        # Futuros, câmbio, índices e ativos da B3 (.SA) só existem no Yahoo; o Tiingo responde 404.
+        yahoo_native_symbol = normalized_symbol.endswith(("=F", "=X", ".SA")) or normalized_symbol.startswith("^")
         if self.provider.name == "tiingo" and yahoo_native_symbol:
             return [self.fallback_provider]
         providers = [self.provider]

@@ -13,6 +13,7 @@ from app.routers import (
     api,
     asset_brief,
     assistant,
+    brasil,
     auth,
     copilot,
     decision_desk,
@@ -114,6 +115,7 @@ app.include_router(lives.router)
 app.include_router(trend.router)
 app.include_router(asset_brief.router)
 app.include_router(signals.router)
+app.include_router(brasil.router)
 
 
 @app.get("/health")

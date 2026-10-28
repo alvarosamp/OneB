@@ -6,6 +6,7 @@ import {
   CircleHelp,
   Eye,
   LayoutDashboard,
+  PiggyBank,
   Newspaper,
   Radar,
   Settings,
@@ -33,7 +34,18 @@ export const PRIMARY_NAV: NavGroup[] = [
     items: [{ to: '/ferramenta', label: 'Hoje', icon: LayoutDashboard, keywords: ['dashboard', 'início', 'resumo'] }],
   },
   {
-    label: 'Mercado',
+    label: 'Brasil',
+    items: [
+      {
+        to: '/brasil',
+        label: 'Investir',
+        icon: PiggyBank,
+        keywords: ['brasil', 'investimentos', 'simulador', 'tesouro', 'cdb', 'selic', 'cdi', 'ações', 'fii', 'b3', 'ibovespa', 'eleição', 'copom'],
+      },
+    ],
+  },
+  {
+    label: 'EUA',
     items: [
       { to: '/mercado', label: 'Mercado', icon: Newspaper, keywords: ['notícias', 'calendário', 'câmbio', 'juros', 'earnings'] },
       { to: '/analise', label: 'Análise', icon: BarChart3, keywords: ['regime', 'técnica', 'macro', 'resumo diário', 'análise matinal'] },

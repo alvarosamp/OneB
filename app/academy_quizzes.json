@@ -932,5 +932,261 @@
    "correct": 2,
    "why": "Acerto alto sai até do cara ou coroa com alvo curto; o que importa é o resultado médio, verificável."
   }
+ ],
+ "Todo mundo pode investir": [
+  {
+   "question": "Para começar no Tesouro Selic, o valor mínimo é cerca de…",
+   "options": [
+    "R$ 150",
+    "R$ 5.000",
+    "R$ 50.000"
+   ],
+   "correct": 0,
+   "why": "A fração mínima é 1% do título, cerca de R$ 150."
+  },
+  {
+   "question": "Com a Selic acima de 8,5% ao ano, a poupança rende…",
+   "options": [
+    "O mesmo que o CDI",
+    "0,5% ao mês + TR",
+    "Nada"
+   ],
+   "correct": 1,
+   "why": "É a regra da Lei 12.703/2012."
+  },
+  {
+   "question": "O que mais pesa no resultado de quem investe pouco por mês?",
+   "options": [
+    "Escolher a aplicação perfeita",
+    "Constância e tempo",
+    "Acertar o dia da compra"
+   ],
+   "correct": 1,
+   "why": "Juros compostos precisam de tempo e aportes regulares."
+  }
+ ],
+ "Reserva de emergência primeiro": [
+  {
+   "question": "Uma reserva de emergência costuma ser de…",
+   "options": [
+    "1 mês de salário",
+    "6 meses de gastos",
+    "2 anos de salário"
+   ],
+   "correct": 1,
+   "why": "A regra mais usada é 6 meses de gastos; mais para renda instável."
+  },
+  {
+   "question": "Qual destes é adequado para a reserva?",
+   "options": [
+    "Ações",
+    "LCA com carência de 9 meses",
+    "CDB de liquidez diária com 100% do CDI"
+   ],
+   "correct": 2,
+   "why": "Precisa de segurança e resgate no mesmo dia."
+  },
+  {
+   "question": "Por que não deixar a reserva em bolsa?",
+   "options": [
+    "Porque a bolsa é ilegal",
+    "Porque a emergência pode chegar justo numa queda",
+    "Porque bolsa não rende"
+   ],
+   "correct": 1,
+   "why": "Você seria obrigado a vender no prejuízo."
+  }
+ ],
+ "Selic, CDI e IPCA: as três taxas que importam": [
+  {
+   "question": "Quem define a Selic?",
+   "options": [
+    "O Copom, do Banco Central",
+    "A B3",
+    "O IBGE"
+   ],
+   "correct": 0,
+   "why": "O Copom se reúne 8 vezes por ano."
+  },
+  {
+   "question": "O IPCA mede…",
+   "options": [
+    "O juro dos bancos",
+    "A inflação oficial",
+    "O preço das ações"
+   ],
+   "correct": 1,
+   "why": "É o índice oficial de inflação, calculado pelo IBGE."
+  },
+  {
+   "question": "Com CDI de 13,65% e IPCA de 4,58%, o ganho real fica perto de…",
+   "options": [
+    "18%",
+    "8,7%",
+    "4,58%"
+   ],
+   "correct": 1,
+   "why": "1,1365 ÷ 1,0458 − 1 ≈ 8,7%."
+  }
+ ],
+ "Tesouro, CDB, LCI e LCA: como escolher": [
+  {
+   "question": "Para um objetivo daqui a 4 anos com valor definido, faz sentido…",
+   "options": [
+    "Tesouro Prefixado com vencimento perto da data",
+    "Ações de uma empresa só",
+    "Poupança"
+   ],
+   "correct": 0,
+   "why": "Levando até o vencimento, a taxa contratada é garantida."
+  },
+  {
+   "question": "LCI e LCA têm, em geral…",
+   "options": [
+    "Resgate imediato",
+    "Carência de 9 a 12 meses",
+    "IR de 22,5%"
+   ],
+   "correct": 1,
+   "why": "Regra do CMN desde 2024."
+  },
+  {
+   "question": "Se você vender um Tesouro IPCA+ antes do vencimento…",
+   "options": [
+    "Recebe sempre a taxa contratada",
+    "Recebe o preço do dia, que pode ser menor",
+    "Perde tudo"
+   ],
+   "correct": 1,
+   "why": "Títulos prefixados e IPCA+ oscilam até o vencimento."
+  }
+ ],
+ "Imposto de renda e FGC na prática": [
+  {
+   "question": "Um CDB resgatado depois de 2 anos paga de IR…",
+   "options": [
+    "22,5% do total",
+    "15% do lucro",
+    "Nada"
+   ],
+   "correct": 1,
+   "why": "Acima de 720 dias a alíquota é 15%, só sobre o lucro."
+  },
+  {
+   "question": "Qual destes é isento de IR para pessoa física?",
+   "options": [
+    "CDB",
+    "LCA",
+    "Tesouro Selic"
+   ],
+   "correct": 1,
+   "why": "LCI, LCA, CRI, CRA e poupança são isentos."
+  },
+  {
+   "question": "O FGC cobre até…",
+   "options": [
+    "R$ 250 mil por CPF e por instituição",
+    "Qualquer valor",
+    "Ações e FIIs"
+   ],
+   "correct": 0,
+   "why": "Com teto global de R$ 1 milhão a cada 4 anos; não cobre renda variável."
+  }
+ ],
+ "Ações, ETFs e FIIs": [
+  {
+   "question": "Um ETF do Ibovespa é…",
+   "options": [
+    "Uma ação de uma empresa só",
+    "Uma cesta com dezenas de ações",
+    "Um título do governo"
+   ],
+   "correct": 1,
+   "why": "Diversifica numa cota só."
+  },
+  {
+   "question": "Os rendimentos mensais de FIIs para pessoa física hoje…",
+   "options": [
+    "Pagam 15%",
+    "São isentos de IR",
+    "Pagam 22,5%"
+   ],
+   "correct": 1,
+   "why": "Regra atual; o lucro na venda das cotas paga 20%."
+  },
+  {
+   "question": "Prazo mínimo razoável para renda variável…",
+   "options": [
+    "1 mês",
+    "5 anos",
+    "1 semana"
+   ],
+   "correct": 1,
+   "why": "Quedas de 20% a 30% precisam de tempo para recuperar."
+  }
+ ],
+ "Eleição, Copom e eventos: o que mexe na bolsa": [
+  {
+   "question": "Nos últimos 10 anos, o pregão depois de cada turno de eleição moveu o Ibovespa cerca de…",
+   "options": [
+    "O mesmo que um dia comum",
+    "6 vezes um dia comum",
+    "100 vezes um dia comum"
+   ],
+   "correct": 1,
+   "why": "Média de 5,9% em módulo contra cerca de 1% num dia comum."
+  },
+  {
+   "question": "Depois de uma eleição, a direção do Ibovespa…",
+   "options": [
+    "É sempre de alta",
+    "Mudou de eleição para eleição",
+    "É sempre de queda"
+   ],
+   "correct": 1,
+   "why": "A medida mostra o tamanho do movimento, não a direção."
+  },
+  {
+   "question": "Por que o Copom move pouco a bolsa no dia seguinte?",
+   "options": [
+    "Porque o mercado costuma antecipar a decisão",
+    "Porque a Selic não importa",
+    "Porque a bolsa fecha"
+   ],
+   "correct": 0,
+   "why": "Em 79 reuniões, o movimento médio foi 1,2%, pouco acima do normal."
+  }
+ ],
+ "Diversificar e não vender na queda": [
+  {
+   "question": "Nos 5 anos até 09/2026, quem rendeu mais?",
+   "options": [
+    "Ibovespa",
+    "CDI",
+    "Poupança"
+   ],
+   "correct": 1,
+   "why": "CDI R$ 1.813 contra Ibovespa R$ 1.679 para cada R$ 1.000."
+  },
+  {
+   "question": "O erro que mais custa ao investidor em bolsa é…",
+   "options": [
+    "Aportar todo mês",
+    "Vender depois de uma queda",
+    "Diversificar"
+   ],
+   "correct": 1,
+   "why": "Transforma oscilação em perda definitiva."
+  },
+  {
+   "question": "A carteira deve ser revisada…",
+   "options": [
+    "Todo dia",
+    "Uma vez por ano, corrigindo com aportes novos",
+    "Nunca"
+   ],
+   "correct": 1,
+   "why": "Rebalancear com aportes evita vender no susto."
+  }
  ]
 }

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.auth import get_current_user
 from app.db import get_db
 from app.lms_content import LESSON_BODIES, MATERIAL_PRIMEIROS_PASSOS, MATERIAL_SINAIS, MODULE_PRIMEIROS_PASSOS, TRACK_SINAIS
+from app.lms_track_investir import MATERIAL_INVESTIR, TRACK_INVESTIR
 from app.lms_track_macro import MATERIAL_MACRO, TRACK_MACRO
 from app.models import Course, CourseModule, DecisionJournal, Lesson, LessonProgress, LessonUserState, TradeSetup, User, utcnow
 from app.schemas import (
@@ -458,6 +459,7 @@ _COURSES_SEED = [
     ),
     TRACK_SINAIS,
     TRACK_MACRO,
+    TRACK_INVESTIR,
 ]
 
 
@@ -600,6 +602,7 @@ _LESSON_MATERIAL: dict[str, dict] = {
 _LESSON_MATERIAL.update(MATERIAL_SINAIS)
 _LESSON_MATERIAL.update(MATERIAL_PRIMEIROS_PASSOS)
 _LESSON_MATERIAL.update(MATERIAL_MACRO)
+_LESSON_MATERIAL.update(MATERIAL_INVESTIR)
 
 
 def seed_default_courses(db: Session) -> None:

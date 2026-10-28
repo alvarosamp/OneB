@@ -406,6 +406,9 @@ LESSON_BODIES.update(PROCESSO_BODIES)
 from app.lms_track_macro import BODIES_MACRO  # noqa: E402
 
 LESSON_BODIES.update(BODIES_MACRO)
+from app.lms_track_investir import BODIES_INVESTIR  # noqa: E402
+
+LESSON_BODIES.update(BODIES_INVESTIR)
 
 
 LESSON_BODIES.update({

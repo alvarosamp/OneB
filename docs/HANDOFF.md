@@ -151,6 +151,7 @@ O OneB é um terminal de mercado com academia, em FastAPI + React/Vite, publicad
   - colunas `rating`, `feedback_comment` e `feedback_at` em `ai_answer_logs`, com a migração `d20261013a01`, que exige `alembic upgrade head`;
   - rotas `async` que buscavam cotações na rede travavam o servidor inteiro (mesa de decisão, assistente antigo, análise matinal): o trabalho síncrono agora roda em `asyncio.to_thread`;
   - calendário: janela de 45 dias (sempre cobre o próximo CPI, payroll e FOMC) e dedupe em UTC — antes, no SQLite, o mesmo evento parecia novo, o INSERT quebrava a constraint e o job inteiro era desfeito (teste `tests/test_calendar_refresh.py`);
+  - Confiabilidade da IA: `tests/evals/routing.json` (70 perguntas, 16 assuntos, gíria/erro/abreviação) + golden (46) — 116/116; `python scripts/run_ai_evals.py` grava `app/research_results/ai_reliability.json`, mostrado em 'Por que confiar' junto com a taxa de respostas conferidas e as avaliações de produção. Pergunta não entendida recebe 'Não entendi essa pergunta' (não mais o ledger); resposta automática com número sem fonte tem a frase removida antes de chegar ao cliente. Rodar o script a cada mudança na IA;
   - Indicador MT5 `mt5/OneB_Risco.mq5` (gerado por `scripts/build_mt5_indicator.py` a partir de volfc_v1, trade_plan_rates e hours_guide; compila com 0 erros no MetaEditor; instalação em `mt5/LEIAME.md`). Só desenha e calcula; não envia ordens (teste `tests/test_mt5_indicator.py` proíbe OrderSend/CTrade);
   - 'Avaliar um sinal' (Análise › Avaliar sinal, `app/signal_eval.py`, `app/routers/signals.py`, migração `g20261016a01`): lê o sinal em texto livre, mede a chance de cada alvo antes do stop nos últimos 60 dias (taxa-base NEUTRA = média de compra e venda, com spread, até 24 h), quanto precisa para empatar, lote e avisos; grava em `signal_records` e mostra o placar por fonte (conferido como entrada a mercado no momento em que foi colado, pelas distâncias do sinal). A IA também avalia sinal colado no chat (ferramenta `evaluate_signal`). O job do worker grava o resultado dos sinais abertos;
   - SÓ o job `record_plan_live` do worker (minuto 20 de cada hora, dados baixados sem cache) grava planos e previsões; as telas e a IA só leem (revisão de 15/10/2026: leitura gravando causava corrida no INSERT e podia gravar previsão com a última hora incompleta). Sem o worker ligado, nada é gravado;
@@ -193,3 +194,18 @@ O OneB é um terminal de mercado com academia, em FastAPI + React/Vite, publicad
    - WTI M5 (Dukascopy);
    - Gap Drive (precisa de tick);
    - estender `configs/events/macro_events_2019_2026.json` além de set/2026 se algum estudo precisar.
+
+## Seção Brasil · Investir (28/10/2026)
+
+O app agora tem duas áreas: **Brasil** (investir, foco em quem nunca investiu) e **EUA** (o terminal de trading que já existia). Menu em `frontend/src/content/navigation.ts`.
+
+- **Rota** `/brasil` (`frontend/src/pages/Brasil.tsx` e `pages/brasil/*`), abas: Começar, Simulador, Onde investir, Bolsa (B3), Eventos, Aulas.
+- **Backend** `app/brasil/` + `app/routers/brasil.py` (`/api/brasil/rates|products|simulate|market|history|events`):
+  - taxas: Banco Central SGS (432 Selic, 4389 CDI, 13522 IPCA 12m; 4391/433/195 no histórico), grátis e sem chave; valor de reserva com `stale=True` se o BCB cair;
+  - simulador: perfil → reserva de emergência primeiro → divisão por CLASSE (nunca ticker) com o motivo → projeção líquida de IR por aporte (tabela regressiva), custódia B3, isenções; renda variável com 2.000 cenários (semente fixa) e faixa de 80%; comparação com a poupança;
+  - **regra:** recomendação de ativo específico exige registro na CVM (Res. 19 e 20). O teste `test_simulator_never_names_a_ticker` garante que o simulador não cita ticker;
+  - eventos: Copom 2026 (calendário BCB), FOMC, eleições (TSE; 2026: 04/10 e 25/10; posse 05/01/2027), IPCA (≈ dia 10), vencimento do Ibovespa futuro. Impacto **descritivo** (não pré-registrado) no Ibovespa em 10 anos: dia comum ~1,0%; pós-Copom 1,2% (79 reuniões); pós-turno de eleição 5,9% (6 turnos; 2º turno de 2026: −13,9%). Copom 2027 ainda não cadastrado: incluir quando o BCB publicar;
+  - bolsa: ativos `.SA` vão direto ao Yahoo (o Tiingo dava 404). Salto diário > 50% é tratado como desdobramento sem ajuste (XPML11 em 01/2026) e a métrica começa depois dele.
+- **Academia:** trilha "Investir no Brasil" (`app/lms_track_investir.py`, 8 aulas, quizzes em `academy_quizzes.json`). Os números das aulas são de 28/10/2026; revisar se mudarem muito.
+- Testes: `tests/test_brasil.py` (16), `frontend/src/pages/brasil/Simulador.test.tsx`, `src/lib/money.test.ts`. Suíte: 454 backend, 129 frontend.
+- **Deploy grátis (opcional):** `render.yaml` (API no Render Free), `frontend/vercel.json` (site no Vercel, repassa `/api` ao Render) e banco no Neon. Passo a passo em `docs/DEPLOY_GRATIS.md`. Sem worker no plano grátis. `app/config.normalize_database_url` aceita `postgresql://` do Neon/Render.

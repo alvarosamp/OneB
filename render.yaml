@@ -1,0 +1,38 @@
+# Blueprint do Render: backend (FastAPI) no plano grátis.
+# Passo a passo em docs/DEPLOY_GRATIS.md. O frontend vai no Vercel (frontend/vercel.json),
+# que repassa /api/* para este serviço — assim o cookie de sessão fica no mesmo domínio.
+services:
+  - type: web
+    name: oneb-api
+    runtime: docker
+    plan: free
+    region: virginia  # mesma região do banco no Neon (AWS us-east-1)
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # O plano grátis não tem "pre-deploy": as migrações rodam antes de subir o servidor.
+    dockerCommand: sh -c "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      # Cole a "connection string" do Neon (postgresql://...?sslmode=require).
+      - key: DATABASE_URL
+        sync: false
+      # Endereço do site no Vercel, ex.: https://oneb.vercel.app
+      - key: FRONTEND_ORIGIN
+        sync: false
+      # Usuário e senha do primeiro admin (criado no primeiro boot).
+      - key: ADMIN_BOOTSTRAP_USERNAME
+        sync: false
+      - key: ADMIN_BOOTSTRAP_PASSWORD
+        sync: false
+      # Opcional: calendário econômico dos EUA (chave grátis em fred.stlouisfed.org).
+      - key: FRED_API_KEY
+        sync: false
+      - key: MARKET_DATA_PROVIDER
+        value: yfinance
+      - key: RUN_EMBEDDED_SCHEDULER
+        value: "true"

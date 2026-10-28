@@ -46,7 +46,7 @@ def _first_lesson(client, slug="fundamentos"):
 def test_tracks_follow_academia_order_with_new_track(client):
     slugs = [c["slug"] for c in client.get("/api/lms/courses").json()]
     assert slugs == ["fundamentos", "gestao-de-risco-e-psicologia", "analise-tecnica-avancada",
-                     "processo-diario-e-revisao", "como-avaliar-um-sinal", "leitura-de-regime-e-contexto"]
+                     "processo-diario-e-revisao", "como-avaliar-um-sinal", "leitura-de-regime-e-contexto", "investir-no-brasil"]
 
 
 def test_new_track_lessons_have_body_and_material(client):

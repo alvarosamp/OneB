@@ -30,6 +30,7 @@ const NaoEncontrado = lazyPage(() => import('./pages/NaoEncontrado'), 'NaoEncont
 const Dashboard = lazyPage(() => import('./pages/Dashboard'), 'Dashboard');
 const Mercado = lazyPage(() => import('./pages/Mercado'), 'Mercado');
 const Analise = lazyPage(() => import('./pages/Analise'), 'Analise');
+const Brasil = lazyPage(() => import('./pages/Brasil'), 'Brasil');
 const Radar = lazyPage(() => import('./pages/Radar'), 'Radar');
 const Watchlist = lazyPage(() => import('./pages/Watchlist'), 'Watchlist');
 const Alertas = lazyPage(() => import('./pages/Alertas'), 'Alertas');
@@ -99,6 +100,7 @@ function AppRoutes() {
           <Route path="/ferramenta" element={<Dashboard />} />
           <Route path="/mercado" element={<Mercado />} />
           <Route path="/analise" element={<Analise />} />
+          <Route path="/brasil" element={<Brasil />} />
           <Route path="/radar" element={<Radar />} />
           <Route path="/watchlist" element={<Watchlist />} />
           <Route path="/alertas" element={<Alertas />} />
