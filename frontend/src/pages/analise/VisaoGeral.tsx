@@ -183,16 +183,16 @@ function MorningReportBlock() {
               Baixar PDF
             </Button>
           )}
-          <Button size="sm" icon={<RotateCw {...ICON} />} loading={generate.status === 'running'} onClick={runGenerate}>
+          {import.meta.env.VITE_PUBLIC_MODE !== 'true' && <Button size="sm" icon={<RotateCw {...ICON} />} loading={generate.status === 'running'} onClick={runGenerate}>
             Gerar agora
-          </Button>
+          </Button>}
         </>
       }
     >
       {today.status === 'loading' ? (
         <SkeletonLines lines={5} />
       ) : !report ? (
-        <EmptyState title="Nenhuma análise matinal gerada ainda" description="Ela é gerada automaticamente antes da abertura em dias úteis. Use “Gerar agora” para criar a de hoje." />
+        <EmptyState title="Nenhuma análise matinal gerada ainda" description={import.meta.env.VITE_PUBLIC_MODE === 'true' ? 'A análise matinal agendada não roda nesta versão pública. O resumo técnico acima é atualizado sob demanda, a cada 5 minutos com a página aberta.' : 'Ela é gerada automaticamente antes da abertura em dias úteis. Use “Gerar agora” para criar a de hoje.'} />
       ) : (
         <div className={styles.morning}>
           {report.narrative && <p className={styles.narrative}>{ptBR(report.narrative)}</p>}
