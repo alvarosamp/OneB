@@ -344,10 +344,20 @@ class DailyMarketAssetOut(BaseModel):
     distance_to_support_pct: float | None
     score: int
     notes: list[str]
+    data_as_of: str | None = None
+    data_checked_at: datetime | None = None
+    cached_fallback: bool = False
 
 
 class DailyMarketSummaryOut(BaseModel):
     generated_at: datetime
+    data_checked_at: datetime | None = None
+    data_as_of: str | None = None
+    data_status: str = "unavailable"
+    monitored_symbols: list[str] = Field(default_factory=list)
+    analysed_count: int = 0
+    refresh_seconds: int = 300
+    coverage_notes: list[str] = Field(default_factory=list)
     headline: str
     market_tone: str
     key_takeaways: list[str]

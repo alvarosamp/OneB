@@ -38,13 +38,16 @@ function assetColumns(): Column<DailyMarketAsset>[] {
 }
 
 function DailySummary() {
-  const s = useApi<DailyMarketSummary>('/api/reports/daily-summary', { pollMs: 15 * 60_000 });
+  const s = useApi<DailyMarketSummary>('/api/reports/daily-summary', { pollMs: 5 * 60_000 });
   const cols = assetColumns();
   return (
     <AsyncContent state={s} loading={<SkeletonLines lines={8} />} empty={<EmptyState title="Resumo diário indisponível" description="Adicione ativos à watchlist para gerar o resumo." />} errorTitle="Não foi possível gerar o resumo diário">
       {(d) => (
         <>
-          <Section title="Resumo do dia" meta={<DataAge at={d.generated_at} prefix="gerado" />}>
+          <Section title="Resumo do dia" meta={<DataAge at={d.data_checked_at} prefix="fonte consultada" staleAfterMin={10} refreshError={s.error ?? (d.data_status === 'cached' || d.data_status === 'stale' ? 'A fonte não retornou preços atuais.' : null)} refreshing={s.refreshing} />} actions={<Button variant="ghost" icon={<RotateCw {...ICON} />} disabled={s.refreshing} onClick={s.retry}>Atualizar resumo</Button>}>
+            <p className={styles.meta}>Atualiza a cada 5 minutos enquanto esta página estiver aberta e ao voltar para ela. Leitura técnica de candles diários; não é cotação em tempo real.</p>
+            <p className={styles.meta}>Ativos analisados: {d.analysed_count ?? '—'} de {d.monitored_symbols?.length ?? '—'} ({d.monitored_symbols?.join(', ') || 'sem ativos'}). {d.data_as_of ? `Pregão mais antigo na base: ${d.data_as_of.slice(0, 10).split('-').reverse().join('/')}.` : 'Sem data de preços disponível.'}</p>
+            {d.coverage_notes?.length ? <ul className={styles.list} aria-label="Cobertura dos dados">{d.coverage_notes.map((note) => <li key={note}>{note}</li>)}</ul> : null}
             <div className={styles.headline}>
               <Badge tone={/defens|press|risco/i.test(d.market_tone) ? 'warning' : 'info'}>{ptBR(d.market_tone)}</Badge>
               <p className={styles.lead}>{ptBR(d.headline)}</p>
@@ -93,7 +96,7 @@ function DailySummary() {
                   ))}
                 </ul>
               ) : (
-                <p className="muted">Nenhum evento relevante.</p>
+                <p className="muted">Calendário não carregado. Consulte uma fonte de calendário antes de operar.</p>
               )}
             </Section>
             <Section title="Notícias de maior impacto">
@@ -111,7 +114,7 @@ function DailySummary() {
                   ))}
                 </ul>
               ) : (
-                <p className="muted">Nenhuma.</p>
+                <p className="muted">Sem notícias coletadas nas últimas 48 horas.</p>
               )}
             </Section>
           </div>

@@ -14,7 +14,7 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from sqlalchemy.orm import Session
 
-from app import indicators
+from app import indicators, response_cache
 from app.market_data import service as market_data_service
 from app.models import (
     AlertLog,
@@ -226,8 +226,26 @@ def _last(series):
     return float(clean.iloc[-1]) if not clean.empty else None
 
 
+SUMMARY_REFRESH_SECONDS = 5 * 60
+
+
+def _summary_history(symbol: str):
+    def load():
+        history = market_data_service.get_bars(symbol, period="3mo", interval="1d", refresh=True)
+        # A failed provider may return the disk fallback. Never date that data
+        # with the time of this request as though a fresh download succeeded.
+        checked_at = history.attrs.get("fetched_at") if history.attrs.get("cache_fallback") else datetime.now(timezone.utc)
+        if isinstance(checked_at, str):
+            checked_at = datetime.fromisoformat(checked_at)
+        if checked_at is not None and checked_at.tzinfo is None:
+            checked_at = checked_at.replace(tzinfo=timezone.utc)
+        return history, checked_at
+
+    return response_cache.cached(f"daily-summary:history:{symbol}", SUMMARY_REFRESH_SECONDS, load)
+
+
 def _daily_asset_row(item: WatchlistItem) -> dict | None:
-    history = market_data_service.get_bars(item.symbol, period="3mo", interval="1d")
+    history, checked_at = _summary_history(item.symbol)
     if history.empty or len(history) < 35:
         return None
 
@@ -317,6 +335,11 @@ def _daily_asset_row(item: WatchlistItem) -> dict | None:
         bias = "NEUTRO"
         trend = "Aguardar confirmacao"
 
+    latest_bar = history.index[-1].to_pydatetime()
+    if latest_bar.tzinfo is None:
+        latest_bar = latest_bar.replace(tzinfo=timezone.utc)
+    source_stale = bool(history.attrs.get("cache_fallback")) or datetime.now(timezone.utc) - latest_bar > timedelta(days=7)
+
     return {
         "symbol": item.symbol,
         "label": item.label,
@@ -332,6 +355,10 @@ def _daily_asset_row(item: WatchlistItem) -> dict | None:
         "distance_to_support_pct": round(distance_to_support_pct, 2),
         "score": score,
         "notes": notes[:5],
+        "data_as_of": history.index[-1].isoformat(),
+        "data_checked_at": checked_at,
+        "cached_fallback": bool(history.attrs.get("cache_fallback")),
+        "source_stale": source_stale,
     }
 
 
@@ -357,7 +384,7 @@ def build_daily_market_summary(db: Session) -> dict:
     elif high_vol > len(rows) // 2:
         tone = "Volatilidade elevada"
         headline = "Volatilidade domina a watchlist; priorize tamanho menor, stop claro e menos trades."
-    elif bearish >= bullish:
+    elif bearish > bullish:
         tone = "Defensivo"
         headline = "Pressao e sinais mistos pedem paciencia antes de novas entradas."
     else:
@@ -399,6 +426,7 @@ def build_daily_market_summary(db: Session) -> dict:
 
     news = (
         db.query(GlobalNewsItem)
+        .filter(GlobalNewsItem.published_at >= now - timedelta(hours=48))
         .order_by(GlobalNewsItem.impact_score.desc(), GlobalNewsItem.published_at.desc())
         .limit(6)
         .all()
@@ -422,8 +450,31 @@ def build_daily_market_summary(db: Session) -> dict:
         "Registre no diario a tese, gatilho, invalidacao e resultado esperado antes de qualquer ordem manual.",
     ]
 
+    checked = [row["data_checked_at"] for row in rows if row["data_checked_at"] is not None]
+    missing = sorted({item.symbol for item in items} - {row["symbol"] for row in rows})
+    fallback = any(row["cached_fallback"] for row in rows)
+    stale = any(row["source_stale"] for row in rows)
+    coverage_notes = []
+    if missing:
+        coverage_notes.append("Sem histórico suficiente: " + ", ".join(missing) + ".")
+    if fallback:
+        coverage_notes.append("A fonte falhou para parte dos preços; o resumo mantém dados salvos anteriormente.")
+    elif stale:
+        coverage_notes.append("Parte dos preços tem mais de 7 dias. Não trate essa base como uma leitura atual do mercado.")
+    if not macro_events:
+        coverage_notes.append("Calendário não carregado nesta instância; isso não significa ausência de eventos.")
+    if not top_news:
+        coverage_notes.append("Sem notícias coletadas nas últimas 48 horas; isso não significa ausência de notícias.")
+
     return {
         "generated_at": now,
+        "data_checked_at": min(checked) if checked else None,
+        "data_as_of": min(row["data_as_of"] for row in rows) if rows else None,
+        "data_status": "unavailable" if not rows else "cached" if fallback else "stale" if stale else "partial" if missing else "complete",
+        "monitored_symbols": [item.symbol for item in items],
+        "analysed_count": len(rows),
+        "refresh_seconds": SUMMARY_REFRESH_SECONDS,
+        "coverage_notes": coverage_notes,
         "headline": headline,
         "market_tone": tone,
         "key_takeaways": key_takeaways,

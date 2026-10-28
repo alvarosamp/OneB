@@ -97,8 +97,13 @@ export function useApi<T>(path: string | null, options: UseApiOptions<T> = {}): 
     }
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let inFlight = false;
 
     async function run() {
+      if (cancelled || inFlight) return;
+      if (timer) clearTimeout(timer);
+      timer = null;
+      inFlight = true;
       if (dataRef.current !== null) setRefreshing(true);
       else setLoading(true);
       try {
@@ -115,6 +120,7 @@ export function useApi<T>(path: string | null, options: UseApiOptions<T> = {}): 
         setError(messageFrom(err));
         setErrorStatus(err instanceof ApiError ? err.status : null);
       } finally {
+        inFlight = false;
         if (!cancelled) {
           setLoading(false);
           setRefreshing(false);
@@ -142,11 +148,15 @@ export function useApi<T>(path: string | null, options: UseApiOptions<T> = {}): 
     }
 
     void run();
-    if (pollMs) document.addEventListener('visibilitychange', onVisible);
+    if (pollMs) {
+      document.addEventListener('visibilitychange', onVisible);
+      window.addEventListener('online', onVisible);
+    }
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);
       if (pollMs) document.removeEventListener('visibilitychange', onVisible);
+      if (pollMs) window.removeEventListener('online', onVisible);
     };
   }, [path, pollMs, enabled, nonce]);
 

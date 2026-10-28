@@ -123,7 +123,7 @@ function HeroChart() {
 function DailyRead() {
   const regime = useApi<RegimeReport>('/api/regime/NASDAQ', { pollMs: 10 * 60_000 });
   const tech = useApi<TechnicalAnalysis>(`/api/technical/analysis/${encodeURIComponent(HERO_SYMBOL)}?period=5d&interval=15m`, { pollMs: 5 * 60_000 });
-  const summary = useApi<DailyMarketSummary>('/api/reports/daily-summary', { pollMs: 15 * 60_000 });
+  const summary = useApi<DailyMarketSummary>('/api/reports/daily-summary', { pollMs: 5 * 60_000 });
 
   const read = useMemo(() => readMarket(regime.data, tech.data), [regime.data, tech.data]);
   const loading = regime.status === 'loading' || tech.status === 'loading';
@@ -180,6 +180,7 @@ function DailyRead() {
               Ver análise completa
             </Link>
             <span className={styles.readNote}>Leitura dos dados coletados, não recomendação.</span>
+            {summary.data && <DataAge at={summary.data.data_checked_at} prefix="resumo: fonte consultada" staleAfterMin={10} refreshError={summary.error ?? (summary.data.data_status === 'cached' || summary.data.data_status === 'stale' ? 'O resumo usa preços anteriores.' : null)} refreshing={summary.refreshing} />}
           </>
         }
       />

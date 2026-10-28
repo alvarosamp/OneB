@@ -17,6 +17,7 @@ describe('useApi', () => {
   });
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('começa em loading e termina em ready com o dado', async () => {
@@ -75,5 +76,38 @@ describe('useApi', () => {
     const { result } = renderHook(() => useApi('/api/x', { enabled: false }));
     expect(getMock).not.toHaveBeenCalled();
     expect(result.current.status).toBe('empty');
+  });
+
+  it('atualiza o resumo a cada cinco minutos e ao voltar para a aba ou conexão', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let visibility = 'visible';
+    vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibility as DocumentVisibilityState);
+    getMock.mockResolvedValue({ headline: 'Resumo' });
+    renderHook(() => useApi('/api/reports/daily-summary', { pollMs: 300_000 }));
+    await act(async () => { await Promise.resolve(); });
+    expect(getMock).toHaveBeenCalledTimes(1);
+    await act(async () => { await vi.advanceTimersByTimeAsync(300_000); });
+    expect(getMock).toHaveBeenCalledTimes(2);
+    visibility = 'hidden';
+    await act(async () => { await vi.advanceTimersByTimeAsync(300_000); });
+    expect(getMock).toHaveBeenCalledTimes(2);
+    visibility = 'visible';
+    await act(async () => { document.dispatchEvent(new Event('visibilitychange')); });
+    expect(getMock).toHaveBeenCalledTimes(3);
+    await act(async () => { window.dispatchEvent(new Event('online')); });
+    expect(getMock).toHaveBeenCalledTimes(4);
+  });
+
+  it('não sobrepõe buscas quando a aba volta durante uma atualização lenta', async () => {
+    let resolve!: (data: unknown) => void;
+    getMock.mockReturnValue(new Promise((done) => { resolve = done; }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    renderHook(() => useApi('/api/reports/daily-summary', { pollMs: 300_000 }));
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+      window.dispatchEvent(new Event('online'));
+    });
+    expect(getMock).toHaveBeenCalledTimes(1);
+    await act(async () => { resolve({ headline: 'Resumo novo' }); });
   });
 });

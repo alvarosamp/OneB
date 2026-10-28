@@ -519,6 +519,13 @@ export interface DailyMarketAsset {
 
 export interface DailyMarketSummary {
   generated_at: string;
+  data_checked_at?: string | null;
+  data_as_of?: string | null;
+  data_status?: 'complete' | 'partial' | 'cached' | 'stale' | 'unavailable';
+  monitored_symbols?: string[];
+  analysed_count?: number;
+  refresh_seconds?: number;
+  coverage_notes?: string[];
   headline: string;
   market_tone: string;
   key_takeaways: string[];
