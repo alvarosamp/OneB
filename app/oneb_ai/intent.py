@@ -36,7 +36,8 @@ INTENTS = {
                  "bom dia", "briefing", "visao geral", "o que esta acontecendo", "o que tem pra"),
     "compare": ("qual mexe mais", "qual mexe menos", "compar", "versus", " vs ", "ou o nasdaq", "ou o ouro", "qual e melhor", "qual o melhor ativo",
                 "qual mais", "qual o mais", "mais barato", "mais caro"),
-    "accuracy": ("acerta", "acertado", "acertou", "confiavel", "confiar", "funciona a previsao", "taxa de acerto da", "placar"),
+    "accuracy": ("acerta", "acertado", "acertou", "confiavel", "confiar", "funciona a previsao", "previsao funciona", "previsao de voces funciona",
+                 "previsoes funcionam", "funciona mesmo", "taxa de acerto da", "placar"),
 }
 
 
@@ -216,8 +217,17 @@ def returns_question(question: str) -> bool:
     return any(w in q for w in RETURN_WORDS)
 
 
-PLAN_LIVE_WORDS = ("plano de hoje", "planos de hoje", "plano do dia", "placar do plano", "placar de hoje", "placar ao vivo",
+PLAN_LIVE_WORDS = ("plano das 10", "plano das dez", "plano bateu", "planos bateram", "plano de hoje", "planos de hoje", "plano do dia", "placar do plano", "placar de hoje", "placar ao vivo",
                    "bateu o alvo", "bateu alvo", "bateu o stop", "como foi o plano", "resultado do plano", "plano de ontem")
+
+
+LEDGER_WORDS = SETUP_WORDS + ("mudou", "mudanca", "ultimos", "minutos", "monitorad", "acompanhando", "ativo agora", "em aberto")
+
+
+def ledger_question(question: str) -> bool:
+    """Pergunta sobre setups, oportunidades e o que mudou: o ledger responde."""
+    q = _norm(question)
+    return any(w in q for w in LEDGER_WORDS)
 
 
 def plan_live_question(question: str) -> bool:

@@ -781,6 +781,21 @@ def data_health(db: Session = Depends(get_db)):
 PROOF_ASSETS = ("NAS100", "XAUUSD")
 
 
+def ai_reliability(db: Session, now: datetime, days: int = 30) -> dict:
+    """Confiabilidade da IA: o boletim dos testes (scripts/run_ai_evals.py) e o que aconteceu em produção nos últimos dias."""
+    from app.models import AIAnswerLog
+
+    tests = _result("ai_reliability.json")
+    live = {"days": days, "answers": 0, "verified": 0, "rated": 0, "useful": 0}
+    try:
+        rows = db.query(AIAnswerLog.grounding_ok, AIAnswerLog.rating).filter(AIAnswerLog.created_at >= now - timedelta(days=days)).all()
+        live.update(answers=len(rows), verified=sum(bool(g) for g, _ in rows), rated=sum(r is not None for _, r in rows),
+                    useful=sum(r == 1 for _, r in rows))
+    except Exception:  # noqa: BLE001 - estatística complementar
+        logger.exception("Estatística da IA indisponível")
+    return {"tests": {k: tests[k] for k in ("generated_at", "golden", "routing")} if tests else None, "live": live}
+
+
 def daily_diary(vol_boards: dict, plan_boards_: dict, days: int = 10) -> list[dict]:
     """Diário: por dia e ativo, o que o OneB disse (faixa prevista, plano das 10:30) e o que aconteceu.
 
@@ -879,6 +894,7 @@ def proof(db: Session = Depends(get_db)):
              "live": (sessfc_scoreboard(k, db, _m5(k)) or {}).get("summary") if a["passed"] else None}
             for k, a in (sres.get("assets") or {}).items()]}
     return {"generated_at": now.isoformat(), "forecast": forecast, "replay": replay, "plan_live": plan_live, "session_test": session_test,
+            "ai_reliability": ai_reliability(db, now),
             "diary": daily_diary(vol_boards, boards),
             "plan_live_start": "2026-10-15", "plan_live_retro_from": "2026-08-05", "replay_passed": rp.get("passed_rules", []), "forecast_pass": bool((vf.get("primary") or {}).get("passed")),
             "forecast_mean_reduction": (vf.get("primary") or {}).get("mean_reduction"), "live": live, "events": events,

@@ -292,3 +292,31 @@ def test_forecast_is_recorded_once_and_never_for_the_past():
     finally:
         db.close()
         engine.dispose()
+
+
+def test_ai_reliability_counts_verified_and_rated_answers():
+    from datetime import datetime, timezone
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+
+    from app.db import Base
+    from app.models import AIAnswerLog
+    from app.routers.asset_brief import ai_reliability
+
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    Base.metadata.create_all(engine)
+    db = sessionmaker(bind=engine)()
+    now = datetime(2026, 10, 16, 12, tzinfo=timezone.utc)
+    try:
+        for ok, rating in ((True, 1), (True, -1), (True, None), (False, None)):
+            db.add(AIAnswerLog(question="q", answer={}, tool_calls=[], tools_hash="x", model="template", grounding_ok=ok,
+                               violations=[], fallback_used=True, rating=rating, created_at=now))
+        db.commit()
+        r = ai_reliability(db, now)
+        assert r["live"] == {"days": 30, "answers": 4, "verified": 3, "rated": 2, "useful": 1}
+        assert r["tests"]["routing"]["passed"] == r["tests"]["routing"]["cases"]
+    finally:
+        db.close()
+        engine.dispose()

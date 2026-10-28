@@ -66,7 +66,7 @@ GLOSSARY: dict[str, dict] = {
         "lesson": "Fora da amostra e pré-registro",
     },
 }
-ASK_WORDS = ("o que e", "o que sao", "o que significa", "significa", "explica", "explique", "como funciona", "definicao", "me ensina", "o que quer dizer")
+ASK_WORDS = ("o que e", "oq e", "o q e", "oque e", "o que sao", "o que significa", "significa", "explica", "explique", "como funciona", "definicao", "me ensina", "o que quer dizer")
 
 
 def find_term(normalized_question: str) -> str | None:

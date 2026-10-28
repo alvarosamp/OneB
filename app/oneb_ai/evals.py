@@ -99,3 +99,23 @@ async def run(golden: dict, research_dir: Path, *, client=None) -> dict:
         "latency_p95_s": latencies[int(0.95 * (len(latencies) - 1))] if latencies else None,
         "rows": rows,
     }
+
+
+ROUTING_PATH = Path(__file__).resolve().parents[2] / "tests" / "evals" / "routing.json"
+
+
+async def run_routing(golden: dict, path: Path = ROUTING_PATH) -> dict:
+    """Mesma pergunta escrita de vários jeitos: a IA escolhe a resposta certa? Nunca o ledger genérico, nunca número sem fonte."""
+    spec = json.loads(path.read_text(encoding="utf-8"))
+    rows = []
+    for route, questions in spec["questions"].items():
+        for q in questions:
+            ctx = build_context(golden, {"fixture": "empty", "market": "semana_cpi"}, Path(tempfile.mkdtemp()))
+            result = await agent.ask(ctx, q)
+            ctx.db.close()
+            a = result["answer"]
+            text = _norm(a["headline"] + " " + " ".join(c["text"] for c in a["claims"] + a["counter_points"]))
+            violations = [v["code"] for v in result["grounding"]["violations"]]
+            ok = _norm(spec["routes"][route]) in text and "leitura automatica do ledger" not in _norm(a["headline"]) and not violations
+            rows.append({"route": route, "question": q, "passed": ok, "headline": a["headline"], "violations": violations})
+    return {"cases": len(rows), "passed": sum(r["passed"] for r in rows), "rows": rows}

@@ -70,4 +70,15 @@ describe('Por que confiar', () => {
     expect(screen.getByText('alvo / alvo')).toBeInTheDocument();
     expect(screen.getByText('stop / stop')).toBeInTheDocument();
   });
+
+  it('mostra a auditoria da IA com testes e números de produção', () => {
+    useApiMock.mockReturnValue(ready({ ...base, plan_live: [], ai_reliability: {
+      tests: { generated_at: '2026-10-16', golden: { cases: 46, passed: 46, ungrounded_number_cases: 0, order_language_cases: 0 }, routing: { cases: 70, passed: 70, routes: 16 } },
+      live: { days: 30, answers: 200, verified: 200, rated: 20, useful: 15 },
+    } }));
+    render(<Confianca />);
+    expect(screen.getByText('116 de 116 perguntas de teste certas')).toBeInTheDocument();
+    expect(screen.getByText('70 de 70')).toBeInTheDocument();
+    expect(screen.getByText(/200 respostas, 100% com todos os números conferidos; 75% avaliadas como úteis/)).toBeInTheDocument();
+  });
 });

@@ -1,0 +1,15 @@
+{
+ "generated_at": "2026-10-16T19:50:03.349528+00:00",
+ "golden": {
+  "cases": 46,
+  "passed": 46,
+  "ungrounded_number_cases": 0,
+  "order_language_cases": 0
+ },
+ "routing": {
+  "cases": 70,
+  "passed": 70,
+  "routes": 16
+ },
+ "failures": []
+}

@@ -19,6 +19,11 @@ interface Proof {
   plan_live?: { key: string; label: string; part: 'live' | 'retro'; direction: 'long' | 'short'; status: string; target_r: number; announced: number | null; hits: number; closed: number; consistent: boolean | null }[];
   plan_live_start?: string;
   plan_live_retro_from?: string;
+  ai_reliability?: {
+    tests: { generated_at: string; golden: { cases: number; passed: number; ungrounded_number_cases: number; order_language_cases: number };
+      routing: { cases: number; passed: number; routes: number } } | null;
+    live: { days: number; answers: number; verified: number; rated: number; useful: number };
+  };
   session_test?: {
     passed_assets: string[];
     assets: { key: string; label: string; error_reduction: number; coverage80: number; test_days: number; passed: boolean;
@@ -196,6 +201,8 @@ function ProofPage({ d }: { d: Proof }) {
         </Section>
       )}
 
+      {d.ai_reliability && <AiReliability r={d.ai_reliability} />}
+
       <Section title="O que o OneB não promete — e por quê">
         <ul className={styles.checklist}>
           {d.not_promised.map((n) => (
@@ -307,6 +314,43 @@ function DiaryTable({ rows }: { rows: string[][] }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function AiReliability({ r }: { r: NonNullable<Proof['ai_reliability']> }) {
+  const t = r.tests;
+  const total = t ? t.golden.cases + t.routing.cases : 0;
+  const passed = t ? t.golden.passed + t.routing.passed : 0;
+  const live = r.live;
+  return (
+    <Section
+      title="A IA também é auditada"
+      meta={t ? <Badge tone={passed === total ? 'positive' : 'negative'}>{`${passed} de ${total} perguntas de teste certas`}</Badge> : undefined}
+    >
+      <p className={styles.reading}>
+        A IA do OneB só fala o que as ferramentas mediram. Antes de cada resposta chegar até você, um verificador confere cada número contra a fonte e
+        bloqueia frases de ordem ("compre", "venda agora"). Se algo não bate, a resposta é refeita a partir dos dados, sem narrativa. Quando não entende a
+        pergunta, ela diz que não entendeu, em vez de responder outra coisa.
+      </p>
+      {t && (
+        <Table
+          head={['Teste', 'Resultado', 'O que verifica']}
+          rows={[
+            ['Perguntas com resposta esperada', `${t.golden.passed} de ${t.golden.cases}`, 'risco, plano, recusa de dar direção, estado dos setups, glossário'],
+            ['Mesma pergunta de vários jeitos', `${t.routing.passed} de ${t.routing.cases}`, `gíria, erro de digitação e abreviação em ${t.routing.routes} assuntos`],
+            ['Número sem fonte', `${t.golden.ungrounded_number_cases} casos`, 'todo número citado existe nos dados consultados'],
+            ['Linguagem de ordem', `${t.golden.order_language_cases} casos`, 'a IA nunca manda comprar ou vender'],
+          ]}
+        />
+      )}
+      <p className={styles.meta}>
+        {live.answers > 0
+          ? `Em produção, últimos ${live.days} dias: ${formatNumber(live.answers, 0)} respostas, ${pct(live.verified / live.answers)} com todos os números conferidos${
+              live.rated ? `; ${pct(live.useful / live.rated)} avaliadas como úteis por quem perguntou (${formatNumber(live.rated, 0)} avaliações)` : ''
+            }.`
+          : 'Em produção: ainda sem respostas registradas.'}
+      </p>
+    </Section>
   );
 }
 

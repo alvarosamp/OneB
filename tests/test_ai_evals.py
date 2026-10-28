@@ -33,3 +33,11 @@ def test_grader_flags_order_language_and_missing_state():
     graded = evals.grade(case, result)
     assert graded["passed"] is False
     assert graded["checks"]["no_order_language"] is False and graded["checks"]["state"] is False
+
+
+def test_routing_understands_the_same_question_written_many_ways(monkeypatch):
+    """70 perguntas reais de cliente (gíria, erro, abreviação): 100% na resposta certa, sem número sem fonte."""
+    monkeypatch.setattr(agent, "is_configured", lambda: False)
+    report = asyncio.run(evals.run_routing(evals.load_golden()))
+    failed = [(r["route"], r["question"], r["headline"]) for r in report["rows"] if not r["passed"]]
+    assert not failed, failed

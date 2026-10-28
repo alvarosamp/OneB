@@ -772,6 +772,8 @@ def template_answer(ctx: tool_mod.ToolContext, question: str, reason: str,
         except Exception:  # noqa: BLE001 - se o caminho de risco falhar, o ledger ainda responde
             logger.exception("Resposta automática de risco falhou")
     opps = tool_mod.execute(ctx, "get_opportunities", {})
+    if not intent_mod.ledger_question(question):
+        return help_template(opps, reason)
     diff = tool_mod.execute(ctx, "what_changed", {"since_minutes": 60})
     claims = []
     for o in opps.get("opportunities", [])[:5]:
@@ -788,6 +790,30 @@ def template_answer(ctx: tool_mod.ToolContext, question: str, reason: str,
         "conclusion": "Sem entrada validada pela IA. Consulte os estados acima; a decisão é sua.",
     }
     return answer, [opps, diff]
+
+
+HELP_TOPICS = (
+    "Quanto o Nasdaq, o ouro, o S&P 500 ou o euro devem mexer hoje ou amanhã (previsão aprovada em teste).",
+    "Melhor horário para operar e quando evitar (CPI, payroll, FOMC).",
+    "Plano de risco para a direção que você escolher: stop, alvos e a chance real de cada um.",
+    "Quanto operar: lote para o seu saldo e risco, e o saldo mínimo de cada ativo.",
+    "Avaliar um sinal que você recebeu: cole o sinal completo (ativo, compra ou venda, entrada, stop e alvos).",
+    "Quanto a IA acerta, o placar ao vivo e o que não foi comprovado.",
+)
+
+
+def help_template(opps: dict, reason: str) -> tuple[dict, list[dict]]:
+    """Pergunta fora do que a IA sabe responder: diz isso e mostra o que ela responde (nunca responde outra coisa)."""
+    ev = [opps["result_id"]]
+    answer = {
+        "headline": "Não entendi essa pergunta",
+        "state_summary": {"symbol": None, "setup": None, "state": None, "approval": None},
+        "claims": [{"text": t, "evidence_ids": ev} for t in HELP_TOPICS],
+        "counter_points": [], "what_changed": [],
+        "unknowns": [f"Resposta automática (sem narrativa de IA): {reason}"],
+        "conclusion": "Reformule citando o ativo (Nasdaq, ouro, S&P 500 ou euro) e o que você quer saber. A IA não responde o que não consegue medir.",
+    }
+    return answer, [opps]
 
 
 def _log(ctx: tool_mod.ToolContext, question: str, answer: dict, calls: list[dict], results: list[dict],
@@ -807,8 +833,27 @@ def _log(ctx: tool_mod.ToolContext, question: str, answer: dict, calls: list[dic
         return None
 
 
+def _drop_unverified(answer: dict, check: dict, results: list[dict] | None = None) -> dict:
+    """Última barreira: tira da resposta automática a frase com número sem fonte (nunca chega ao cliente)."""
+    bad = [v["text"] for v in check["violations"] if v["code"] in ("UNGROUNDED_NUMBER", "CLAIM_WITHOUT_EVIDENCE") and v.get("text")]
+    if not bad:
+        return answer
+    keep = lambda items: [c for c in items if not any(c.get("text", "").startswith(b[:120]) for b in bad)]  # noqa: E731
+    cleaned = {**answer, "claims": keep(answer.get("claims", [])), "counter_points": keep(answer.get("counter_points", []))}
+    removed = len(answer.get("claims", [])) + len(answer.get("counter_points", [])) - len(cleaned["claims"]) - len(cleaned["counter_points"])
+    if not cleaned["claims"]:
+        cleaned["claims"] = [{"text": "Não consegui conferir os números desta resposta agora; prefiro não mostrar um dado que não bate com a fonte.",
+                              "evidence_ids": [r["result_id"] for r in (results or [])[:1] if r.get("result_id")]}]
+    cleaned["unknowns"] = list(answer.get("unknowns", [])) + [f"{removed} frase(s) removida(s): número sem fonte no verificador."]
+    return cleaned
+
+
 def _finish(ctx, question, answer, calls, results, model, *, fallback: bool, check: dict | None = None) -> dict:
     check = check or verify(answer, results)
+    if fallback and not check["ok"]:
+        logger.warning("Resposta automática reprovada no verificador: %s", check["violations"][:3])
+        answer = _drop_unverified(answer, check, results)
+        check = verify(answer, results)
     answer_id = _log(ctx, question, answer, calls, results, model, check, fallback)
     names = [c["name"] for c in calls] or list(dict.fromkeys(r.get("tool") for r in results if r.get("tool")))
     return {"answer": answer, "grounding": check, "fallback_used": fallback, "model": model, "tool_calls": names,

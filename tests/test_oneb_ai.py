@@ -119,8 +119,11 @@ def test_refusal_and_api_errors_fall_back(ctx):
         raise RuntimeError("down")
 
     broken = SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=boom)))
-    out = asyncio.run(agent.ask(ctx, "?", client=broken))
+    out = asyncio.run(agent.ask(ctx, "Como estão os setups?", client=broken))
     assert out["fallback_used"] and out["answer"]["claims"][0]["text"].startswith("XAUUSD.s")
+    # pergunta que a IA não entende: diz que não entendeu, em vez de responder outra coisa
+    vague = asyncio.run(agent.ask(ctx, "?", client=broken))
+    assert vague["fallback_used"] and vague["answer"]["headline"] == "Não entendi essa pergunta" and vague["grounding"]["ok"]
 
 
 def test_verifier_rules():
@@ -219,3 +222,17 @@ def test_llm_path_runs_trade_plan_tool_and_verifier_accepts_plan_numbers(ctx):
     assert out["fallback_used"] is False and out["grounding"]["ok"], out["grounding"]
     assert out["tool_calls"] == ["get_trade_plan", "submit_answer"]
     assert "Stop em 3985.00" in out["answer"]["claims"][0]["text"]  # compra: stop abaixo, 4000 - 1,5 x 10
+
+
+def test_template_answer_with_unverified_number_drops_that_sentence():
+    from app.oneb_ai.agent import _drop_unverified
+    from app.oneb_ai.verifier import verify as _verify
+
+    results = [{"result_id": "res:1", "price": 100.0, "evidence_id": "ev:a"}]
+    answer = _answer("Preço de 100,00.", ["ev:a"])
+    answer["claims"].append({"text": "Alvo provável em 123,45.", "evidence_ids": ["ev:a"]})
+    check = _verify(answer, results)
+    assert not check["ok"]
+    cleaned = _drop_unverified(answer, check)
+    assert [c["text"] for c in cleaned["claims"]] == ["Preço de 100,00."] and _verify(cleaned, results)["ok"]
+    assert "removida" in cleaned["unknowns"][-1]

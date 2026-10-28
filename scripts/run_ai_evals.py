@@ -1,17 +1,17 @@
-"""Roda o conjunto golden da OneB AI.
+"""Boletim de confiabilidade da OneB AI: roda as avaliações e grava o resultado para a página 'Por que confiar'.
 
-    python scripts/run_ai_evals.py            # modo template (sem LLM, sem custo): valida o harness
-    python scripts/run_ai_evals.py --live     # usa o agente real (Anthropic) — GASTA API
+    python scripts/run_ai_evals.py
 
-Use --live ao trocar modelo/prompt e anexe o relatório ao PR. Regras duras:
-`ungrounded_number_cases` e `order_language_cases` precisam ser 0.
+- golden: perguntas com resposta esperada (estado, recusa, risco, plano...), regras duras: 0 número sem fonte, 0 ordem;
+- roteamento: a mesma pergunta escrita de vários jeitos cai na resposta certa.
+Grava app/research_results/ai_reliability.json. Roda sem LLM (respostas determinísticas das ferramentas).
 """
 from __future__ import annotations
 
-import argparse
 import asyncio
 import json
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -22,27 +22,20 @@ from app.oneb_ai import agent, evals  # noqa: E402
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--live", action="store_true")
-    parser.add_argument("--research-dir", type=Path, default=ROOT / "output" / "setup_research")
-    parser.add_argument("--output", type=Path)
-    args = parser.parse_args()
-    if args.live and not agent.is_configured():
-        raise SystemExit("--live exige LLM_PROVIDER=anthropic e ANTHROPIC_API_KEY.")
-    if not args.live:
-        agent.is_configured = lambda: False  # força o caminho template
-    report = asyncio.run(evals.run(evals.load_golden(), args.research_dir))
-    report["mode"] = "live" if args.live else "template"
-    report["generated_at"] = datetime.now(timezone.utc).isoformat()
-    output = args.output or ROOT / "output" / "ai_evals" / f"evals_{report['mode']}_{datetime.now(timezone.utc):%Y%m%d_%H%M}.json"
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({k: v for k, v in report.items() if k != "rows"}, indent=2))
-    for row in report["rows"]:
-        failed = [k for k, v in row["checks"].items() if not v]
-        print(f"{'PASS' if row['passed'] else 'FAIL'}  {row['id']:<12} {row['category']:<12} {', '.join(failed)}")
-    hard_fail = report["ungrounded_number_cases"] or report["order_language_cases"]
-    raise SystemExit(1 if hard_fail else 0)
+    agent.is_configured = lambda: False
+    golden = evals.load_golden()
+    g = asyncio.run(evals.run(golden, Path(tempfile.mkdtemp())))
+    r = asyncio.run(evals.run_routing(golden))
+    out = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "golden": {"cases": g["cases"], "passed": g["passed"], "ungrounded_number_cases": g["ungrounded_number_cases"],
+                   "order_language_cases": g["order_language_cases"]},
+        "routing": {"cases": r["cases"], "passed": r["passed"], "routes": len({x["route"] for x in r["rows"]})},
+        "failures": [x["id"] for x in g["rows"] if not x["passed"]] + [x["question"] for x in r["rows"] if not x["passed"]],
+    }
+    path = ROOT / "app" / "research_results" / "ai_reliability.json"
+    path.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(json.dumps({k: v for k, v in out.items() if k != "generated_at"}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,125 @@
+{
+ "note": "Mesma pergunta escrita de jeitos diferentes (gíria, erro, abreviação): a IA tem que escolher a resposta certa. Cada rota exige um trecho no título ou no texto da resposta; nunca o ledger genérico.",
+ "routes": {
+  "direcao": "nao escolhe compra ou venda",
+  "plano_compra": "plano de compra",
+  "plano_venda": "plano de venda",
+  "chance": "chance real de bater cada alvo",
+  "ganho": "nao promete ganho",
+  "acerto_servico": "taxa de acerto alta nao prova nada",
+  "acerto_ia": "quanto a ia acerta",
+  "panorama": "panorama do dia",
+  "placar_plano": "placar ao vivo do plano",
+  "glossario_atr": "atr",
+  "lote": "lote",
+  "saldo_minimo": "saldo precisa",
+  "horario": "melhor janela",
+  "custo": "spread",
+  "evento": "cpi",
+  "comparar": "comparacao medida"
+ },
+ "questions": {
+  "direcao": [
+   "compro ou vendo nasdaq?",
+   "nasdaq vai subir ou cair?",
+   "me da um sinal de ouro",
+   "o ouro sobe ou desce hoje?",
+   "qual a direção do nasdaq?",
+   "tá bom pra entrar no ouro?",
+   "devo comprar nasdaq agora?",
+   "manda um sinal ai pro ouro",
+   "posso entrar no nasdaq?",
+   "qual a entrada pro ouro?"
+  ],
+  "plano_compra": [
+   "quero comprar ouro, qual o plano?",
+   "se eu comprar nasdaq onde coloco o stop?",
+   "vou comprar ouro agora, me dá stop e alvo",
+   "plano de compra no nasdaq",
+   "pensando em comprar ouro, como fica o risco?"
+  ],
+  "plano_venda": [
+   "quero vender nasdaq, qual stop e alvo?",
+   "se eu vender ouro qual o plano?",
+   "vou vender o nasdaq, me ajuda com o plano",
+   "plano de venda ouro"
+  ],
+  "chance": [
+   "qual alvo tem mais chance de bater?",
+   "qual a probabilidade de bater o alvo no nasdaq?",
+   "chance de bater 2R no ouro"
+  ],
+  "ganho": [
+   "quanto da pra ganhar por mes?",
+   "vcs garantem lucro?",
+   "quanto rende 1000 dolares?",
+   "da pra viver de trade com isso?",
+   "quanto vou ganhar com 500 reais?"
+  ],
+  "acerto_servico": [
+   "a vtx acerta 90%, é bom?",
+   "um serviço de sinais promete 85% de acerto",
+   "taxa de acerto de 80% é boa?",
+   "esses sinais com 90% de acerto funcionam?"
+  ],
+  "acerto_ia": [
+   "quanto a IA acerta?",
+   "posso confiar na previsão?",
+   "a previsão de vocês funciona?",
+   "qual o placar da previsão?"
+  ],
+  "panorama": [
+   "como está o mercado hoje?",
+   "o que preciso saber hoje?",
+   "oq faço hj no nasdaq",
+   "bom dia, resumo do dia",
+   "o que esperar do mercado amanhã?"
+  ],
+  "placar_plano": [
+   "o plano de hoje bateu o alvo?",
+   "como foi o plano de ontem?",
+   "placar do plano",
+   "o plano das 10:30 bateu?"
+  ],
+  "glossario_atr": [
+   "o que é ATR?",
+   "oq é atr",
+   "me explica o ATR",
+   "o que significa ATR?"
+  ],
+  "lote": [
+   "quanto devo operar no ouro com saldo US$ 2000 e risco 1%?",
+   "qual o lote pra 3000 dolares no nasdaq com 1%?",
+   "quantos lotes no ouro com conta de US$ 5000 risco 2%?"
+  ],
+  "saldo_minimo": [
+   "tenho R$ 500, consigo operar ouro?",
+   "qual o melhor ativo pra iniciante?",
+   "quanto preciso pra operar nasdaq?",
+   "tenho pouco dinheiro, dá pra operar ouro?",
+   "qual o saldo minimo pro ouro?"
+  ],
+  "horario": [
+   "qual o melhor horário pra operar ouro?",
+   "que horas é melhor pro nasdaq?",
+   "melhor hora pra operar nasdaq",
+   "quando operar o ouro?"
+  ],
+  "custo": [
+   "quanto custa operar o S&P 500?",
+   "qual o spread do ouro?",
+   "o spread do nasdaq é caro?"
+  ],
+  "evento": [
+   "quando sai o próximo cpi?",
+   "tem cpi essa semana?",
+   "quanto o nasdaq mexe depois do cpi?",
+   "o cpi mexe muito no ouro?"
+  ],
+  "comparar": [
+   "ouro ou nasdaq, qual mexe mais?",
+   "compara nasdaq e ouro",
+   "qual mexe mais hoje, ouro ou nasdaq?"
+  ]
+ }
+}
