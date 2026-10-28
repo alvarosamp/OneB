@@ -34,6 +34,26 @@
   min-width: 0;
 }
 
+.assetPicker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.assetPicker select {
+  max-width: 100%;
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font: inherit;
+}
+
 .chartHeader {
   display: flex;
   align-items: flex-end;

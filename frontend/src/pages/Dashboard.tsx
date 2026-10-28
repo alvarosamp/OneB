@@ -46,6 +46,11 @@ import type {
 import styles from './Dashboard.module.css';
 
 const HERO_SYMBOL = 'NQ=F';
+const HERO_ASSETS = [
+  { id: 'nasdaq', symbol: 'NQ=F', label: 'Nasdaq-100 futuro', option: 'NASDAQ', note: 'Contrato futuro Nasdaq-100 (NQ=F).' },
+  { id: 'xauusd', symbol: 'GC=F', label: 'Ouro futuro', option: 'XAUUSD · Ouro', note: 'Referência: ouro futuro COMEX (GC=F), em USD por onça. Não é a cotação spot XAUUSD da sua corretora.' },
+  { id: 'btcusd', symbol: 'BTC-USD', label: 'Bitcoin / dólar', option: 'BTCUSD · Bitcoin', note: 'Bitcoin em dólar (BTC-USD). A cotação pode diferir da sua corretora.' },
+] as const;
 const HERO_TFS = TIMEFRAMES.filter((t) => ['1D', '5D', '1M'].includes(t.id));
 type HeroTf = '1D' | '5D' | '1M';
 
@@ -75,18 +80,26 @@ export function Dashboard() {
 }
 
 function HeroChart() {
+  const [assetId, setAssetId] = useQueryTab(HERO_ASSETS.map((a) => a.id), 'nasdaq', 'ativo');
+  const asset = HERO_ASSETS.find((a) => a.id === assetId)!;
   const [tfId, setTfId] = useQueryTab<HeroTf>(['1D', '5D', '1M'], '5D', 'tf');
   const tf = HERO_TFS.find((t) => t.id === tfId) as Timeframe;
-  const chart = useApi<ChartData>(chartPath(HERO_SYMBOL, tf), { pollMs: 60_000, isEmpty: (d) => d.close.length === 0 });
+  const chart = useApi<ChartData>(chartPath(asset.symbol, tf), { pollMs: 60_000, isEmpty: (d) => d.close.length === 0 });
   const last = chart.data ? lastClose(chart.data) : null;
   const dayChange = chart.data ? sessionChange(chart.data) : null;
 
   return (
-    <section className={styles.chartArea} aria-label="Gráfico da Nasdaq">
+    <section className={styles.chartArea} aria-label={`Gráfico de ${asset.label}`}>
+      <label className={styles.assetPicker}>
+        Ativo do gráfico
+        <select value={assetId} onChange={(e) => setAssetId(e.target.value as typeof assetId)}>
+          {HERO_ASSETS.map((a) => <option key={a.id} value={a.id}>{a.option}</option>)}
+        </select>
+      </label>
       <div className={styles.chartHeader}>
         <div className={styles.quote}>
-          <Link to={`/ativo/${encodeURIComponent(HERO_SYMBOL)}`} className={styles.symbol}>
-            Nasdaq-100 futuro <span>NQ=F</span>
+          <Link to={`/ativo/${encodeURIComponent(asset.symbol)}`} className={styles.symbol}>
+            {asset.label} <span>{asset.symbol}</span>
           </Link>
           <span className={styles.bigPrice}>{isNum(last) ? formatNumber(last) : chart.status === 'loading' ? <Skeleton width={120} height={24} /> : '—'}</span>
           {isNum(last) && <ChangeText value={dayChange} className={styles.bigChange} />}
@@ -97,11 +110,12 @@ function HeroChart() {
       <AsyncContent
         state={chart}
         loading={<Skeleton height={380} />}
-        empty={<EmptyState center title="Sem candles para a Nasdaq neste período" description={chart.error ?? 'O provedor de dados não retornou histórico. Tente outro período.'} />}
+        empty={<EmptyState center title={`Sem candles para ${asset.label} neste período`} description={chart.error ?? 'O provedor de dados não retornou histórico. Tente outro período.'} />}
         errorTitle="Não foi possível carregar o gráfico"
       >
-        {(data) => <ChartPanel data={data} timeframe={tf} panels={['volume']} height={340} label="Nasdaq-100 futuro" />}
+        {(data) => <ChartPanel key={asset.symbol} data={data} timeframe={tf} panels={['volume']} height={340} label={asset.label} />}
       </AsyncContent>
+      <p className={styles.readNote}>{asset.note} A leitura do dia abaixo acompanha a Nasdaq.</p>
     </section>
   );
 }
