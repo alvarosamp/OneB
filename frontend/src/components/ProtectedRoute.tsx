@@ -23,6 +23,9 @@ export function ProtectedRoute() {
     return <CenteredMessage role="status" title="Carregando…" />;
   }
   if (!user) {
+    if (import.meta.env.VITE_PUBLIC_MODE === 'true') {
+      return <CenteredMessage role="alert" title="A plataforma está indisponível no momento. Recarregue a página para tentar novamente." />;
+    }
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
   return <Outlet />;

@@ -62,7 +62,7 @@ export function Landing() {
             <p>A OneB conecta aprendizado, dados e gestão de risco para você construir decisões mais conscientes.</p>
             <div className="oneb-hero-actions">
               <a href="#ecossistema" className="oneb-primary">Conhecer a OneB</a>
-              <Link to="/login" className="oneb-secondary">Entrar na plataforma</Link>
+              <Link to={import.meta.env.VITE_PUBLIC_MODE === 'true' ? '/ferramenta' : '/login'} className="oneb-secondary">{import.meta.env.VITE_PUBLIC_MODE === 'true' ? 'Explorar sem login' : 'Entrar na plataforma'}</Link>
             </div>
           </div>
           <TerminalHeroVisual />
@@ -89,8 +89,13 @@ export function Landing() {
             <p>Comece aprendendo. Use os dados para praticar. Decida sempre com risco definido.</p>
           </div>
           <div className="oneb-final-actions">
-            <Link to="/cadastro" className="oneb-primary">Criar conta</Link>
-            <Link to="/login" className="oneb-secondary">Já tenho conta</Link>
+            {import.meta.env.VITE_PUBLIC_MODE === 'true' ? <>
+              <Link to="/brasil" className="oneb-primary">Investir no Brasil</Link>
+              <Link to="/academia" className="oneb-secondary">Explorar as aulas</Link>
+            </> : <>
+              <Link to="/cadastro" className="oneb-primary">Criar conta</Link>
+              <Link to="/login" className="oneb-secondary">Já tenho conta</Link>
+            </>}
           </div>
         </section>
       </main>

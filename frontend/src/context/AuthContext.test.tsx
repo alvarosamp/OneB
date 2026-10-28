@@ -26,8 +26,22 @@ const noSession = response(401, { detail: 'Sessão expirada — faça login nova
 
 describe('AuthContext', () => {
   beforeEach(() => {
+    vi.unstubAllEnvs();
     clearAccessToken();
     vi.restoreAllMocks();
+  });
+
+  it('opens public mode without a login, refresh cookie or access token', async () => {
+    vi.stubEnv('VITE_PUBLIC_MODE', 'true');
+    const visitor = { ...fakeUser, username: 'Visitante' };
+    const fetchMock = mockFetchSequence(response(200, visitor));
+    const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.user).toEqual(visitor);
+    expect(getAccessToken()).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toContain('/api/auth/me');
+    vi.unstubAllEnvs();
   });
 
   it('starts with no user when there is no valid refresh cookie', async () => {
