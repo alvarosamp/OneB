@@ -57,6 +57,7 @@ export function Navbar() {
         <NavLink to="/watchlist">Watchlist &amp; Regras</NavLink>
         <NavLink to="/analise-matinal">Analise Matinal</NavLink>
         <NavLink to="/mercado">Mercado</NavLink>
+        <NavLink to="/pesquisa">Pesquisa</NavLink>
         <NavLink to="/alertas">Alertas</NavLink>
         <NavLink to="/posicoes">Posições</NavLink>
         <NavLink to="/perfil">Perfil</NavLink>

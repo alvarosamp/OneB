@@ -24,6 +24,7 @@ def run_study(
         return {"error": "São necessários ao menos 2 ativos com histórico.", "symbols": list(closes.columns)}
 
     returns = correlation.log_returns(closes)
+    matrix = returns.corr(min_periods=60).round(3)
     pairs = correlation.pair_correlations(returns)
     drift = correlation.correlation_drift(returns)
 
@@ -40,6 +41,7 @@ def run_study(
     return {
         "symbols": list(closes.columns),
         "period": [str(closes.index[0].date()), str(closes.index[-1].date())],
+        "matrix": matrix.astype(object).where(matrix.notna(), None).values.tolist(),
         "pairs_tested": len(pairs),
         "pairs_significant": int(pairs["significant"].sum()) if len(pairs) else 0,
         "top_correlations": pairs.head(top).to_dict("records"),

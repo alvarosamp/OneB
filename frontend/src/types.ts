@@ -293,3 +293,59 @@ export interface TraderProfile {
   insights: string[];
   journal: TraderJournalEntry[];
 }
+
+export interface ResearchPair {
+  a: string;
+  b: string;
+  r: number;
+  n: number;
+  p: number | null;
+  p_adj: number | null;
+  significant: boolean;
+}
+
+export interface ResearchDrift {
+  a: string;
+  b: string;
+  r_full: number;
+  r_recent: number;
+  delta: number;
+}
+
+export interface ResearchEventRow {
+  horizon: number;
+  n: number;
+  mean_pct: number | null;
+  median_pct: number | null;
+  hit_rate: number | null;
+  baseline_mean_pct: number | null;
+  excess_pct: number | null;
+  t_stat: number | null;
+}
+
+export interface ResearchSymbol {
+  bars: number;
+  regime: {
+    trend: string | null;
+    trend_label: string | null;
+    trend_bars: number;
+    volatility: string | null;
+    volatility_label: string | null;
+    volatility_bars: number;
+  };
+  rsi_below_30: ResearchEventRow[];
+  golden_cross: ResearchEventRow[];
+}
+
+export interface ResearchStudy {
+  error?: string;
+  symbols: string[];
+  period?: [string, string];
+  matrix?: (number | null)[][];
+  pairs_tested?: number;
+  pairs_significant?: number;
+  top_correlations?: ResearchPair[];
+  biggest_drifts?: ResearchDrift[];
+  per_symbol?: Record<string, ResearchSymbol>;
+  caveats?: string[];
+}

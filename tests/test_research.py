@@ -160,6 +160,34 @@ def test_run_study_end_to_end_and_too_few_symbols(tmp_path):
     assert set(out["per_symbol"]) == {"A", "B", "C"}
     assert out["per_symbol"]["A"]["regime"]["trend"] in {"up", "down", "sideways"}
     assert out["caveats"]
+    assert len(out["matrix"]) == 3 and len(out["matrix"][0]) == 3
 
     few = service.run_study(["A"], directory=tmp_path / "x", fetcher=fetcher)
     assert "error" in few
+
+
+def test_study_endpoint_validates_and_runs(monkeypatch, tmp_path):
+    from fastapi.testclient import TestClient
+
+    from app.auth import get_current_user
+    from app.main import app
+    from app.routers import research as research_router
+
+    app.dependency_overrides[get_current_user] = lambda: "test-user"
+    captured = {}
+
+    def fake_run_study(symbols, refresh=False, **kw):
+        captured.update(symbols=symbols, refresh=refresh)
+        return {"symbols": symbols}
+
+    monkeypatch.setattr(research_router.service, "run_study", fake_run_study)
+    try:
+        c = TestClient(app)
+        ok = c.get("/api/research/study?symbols=nvda,AAPL,nvda,GC=F")
+        assert ok.status_code == 200
+        assert captured["symbols"] == ["NVDA", "AAPL", "GC=F"] and captured["refresh"] is False
+        assert c.get("/api/research/study?symbols=A;B").status_code == 422
+        many = ",".join(f"S{i}" for i in range(16))
+        assert c.get(f"/api/research/study?symbols={many}").status_code == 422
+    finally:
+        app.dependency_overrides.clear()

@@ -19,6 +19,7 @@ import { AtivoDetalhe } from './pages/AtivoDetalhe';
 import { ComoUsar } from './pages/ComoUsar';
 import { Copiloto } from './pages/Copiloto';
 import { Perfil } from './pages/Perfil';
+import { Pesquisa } from './pages/Pesquisa';
 
 function Layout({ children }: { children: ReactNode }) {
   return (
@@ -106,6 +107,14 @@ export default function App() {
                   element={
                     <Layout>
                       <Copiloto />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/pesquisa"
+                  element={
+                    <Layout>
+                      <Pesquisa />
                     </Layout>
                   }
                 />
