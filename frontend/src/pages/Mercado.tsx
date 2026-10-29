@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api/client';
+import { api, fetchBlob } from '../api/client';
+import { useToast } from '../context/ToastContext';
 import { usePolling } from '../hooks/usePolling';
 import type { EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem } from '../types';
 
@@ -13,10 +14,14 @@ function fmtDateTime(iso: string) {
 }
 
 export function Mercado() {
-  const { data: news, lastUpdated } = usePolling<NewsItem[]>('/api/news?limit=40', 60000);
+  const toast = useToast();
+  const [tick, setTick] = useState(0);
+  const [busy, setBusy] = useState<'refresh' | 'pdf' | 'csv' | 'json' | null>(null);
+  const { data: news, lastUpdated } = usePolling<NewsItem[]>('/api/news?limit=40', 60000, [tick]);
   const { data: globalNews, lastUpdated: globalLastUpdated } = usePolling<GlobalNewsItem[]>(
     '/api/global-news?limit=60',
     60000,
+    [tick],
   );
   const [econ, setEcon] = useState<EconomicEvent[]>([]);
   const [earnings, setEarnings] = useState<EarningsEvent[]>([]);
@@ -24,7 +29,38 @@ export function Mercado() {
   useEffect(() => {
     api.get<EconomicEvent[]>('/api/economic-events?days_ahead=14&limit=50').then(setEcon).catch(() => {});
     api.get<EarningsEvent[]>('/api/earnings-events?days_ahead=14&limit=50').then(setEarnings).catch(() => {});
-  }, []);
+  }, [tick]);
+
+  async function handleRefresh() {
+    setBusy('refresh');
+    try {
+      await api.post('/api/reports/refresh');
+      setTick((t) => t + 1);
+      toast('Dados atualizados.', 'success');
+    } catch {
+      toast('Erro ao atualizar os dados.', 'error');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleExport(kind: 'pdf' | 'csv' | 'json') {
+    setBusy(kind);
+    try {
+      const path = kind === 'pdf' ? '/api/reports/pdf' : `/api/reports/export.${kind}`;
+      const blob = await fetchBlob(path);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `monitor-nasdaq-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.${kind}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast('Erro ao exportar.', 'error');
+    } finally {
+      setBusy(null);
+    }
+  }
 
   return (
     <div className="container">
@@ -35,6 +71,20 @@ export function Mercado() {
           <p className="muted">
             Noticias globais, eventos economicos, earnings e manchetes por ativo em um so lugar.
           </p>
+        </div>
+        <div className="page-actions">
+          <button className="btn-secondary" disabled={busy !== null} onClick={handleRefresh}>
+            {busy === 'refresh' ? 'Atualizando...' : 'Atualizar agora'}
+          </button>
+          <button className="btn-secondary" disabled={busy !== null} onClick={() => handleExport('pdf')}>
+            PDF
+          </button>
+          <button className="btn-secondary" disabled={busy !== null} onClick={() => handleExport('csv')}>
+            CSV
+          </button>
+          <button className="btn-secondary" disabled={busy !== null} onClick={() => handleExport('json')}>
+            JSON
+          </button>
         </div>
       </div>
 

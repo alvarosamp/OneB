@@ -1,8 +1,17 @@
 from app.db import Base
 from app.models import AlertLog, WatchlistItem, PriceSnapshot
 from app.reports import build_pdf_report
+import pandas as pd
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch):
+    from app import analysis
+
+    monkeypatch.setattr(analysis.yfinance_client, "get_history", lambda *a, **kw: pd.DataFrame())
 
 
 def _make_session():

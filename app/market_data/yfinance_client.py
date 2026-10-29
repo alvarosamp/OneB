@@ -179,3 +179,18 @@ def get_nasdaq_quote() -> IndexQuote | None:
 def get_sp500_quote() -> IndexQuote | None:
     """S&P500 futures (ES=F) — proxy for the broad NYSE/American market."""
     return get_index_quote(SP500_FUTURES_SYMBOL, "S&P500 (futuro)")
+
+
+def get_quote(symbol: str):
+    """Cotação via yfinance (sem chave) — fallback quando o Finnhub não está configurado."""
+    from app.market_data.finnhub_client import Quote
+
+    history = get_history(symbol, period="5d", interval="1d")
+    close = history["close"].dropna() if not history.empty else history
+    if len(close) == 0:
+        return None
+    latest = float(close.iloc[-1])
+    previous = float(close.iloc[-2]) if len(close) >= 2 else latest
+    change_pct = ((latest - previous) / previous * 100) if previous else 0.0
+    volume = float(history["volume"].iloc[-1]) if "volume" in history and len(history) else 0.0
+    return Quote(symbol=symbol, price=latest, change_pct=change_pct, volume=volume)

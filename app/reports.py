@@ -5,6 +5,7 @@ it's usable both from the web route and from the Telegram /relatorio command.
 from __future__ import annotations
 
 import io
+from xml.sax.saxutils import escape
 from datetime import datetime, timedelta, timezone
 
 from reportlab.lib import colors
@@ -14,7 +15,17 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from sqlalchemy.orm import Session
 
-from app.models import AlertLog, EarningsEvent, EconomicEvent, MorningReport, NewsItem, PriceSnapshot, WatchlistItem
+from app import analysis
+from app.models import (
+    AlertLog,
+    EarningsEvent,
+    EconomicEvent,
+    GlobalNewsItem,
+    MorningReport,
+    NewsItem,
+    PriceSnapshot,
+    WatchlistItem,
+)
 
 
 def build_pdf_report(db: Session) -> bytes:
@@ -64,6 +75,28 @@ def build_pdf_report(db: Session) -> bytes:
     story.append(_styled_table(rows))
     story.append(Spacer(1, 0.5 * cm))
 
+    # Technical analysis (números concretos por ativo)
+    story.append(Paragraph("Análise técnica", styles["Heading2"]))
+    tech_rows = [["Símbolo", "Preço", "1d", "5d", "RSI", "MACD hist.", "S1", "Pivot", "R1"]]
+    tech_notes = []
+    for item in items:
+        t = analysis.technical_snapshot(item.symbol)
+        if t is None:
+            continue
+        fmt = lambda v, suffix="": "-" if v is None else f"{v}{suffix}"  # noqa: E731
+        tech_rows.append(
+            [t["symbol"], fmt(t["price"]), fmt(t["change_1d_pct"], "%"), fmt(t["change_5d_pct"], "%"),
+             fmt(t["rsi14"]), fmt(t["macd_histogram"]), fmt(t["s1"]), fmt(t["pivot"]), fmt(t["r1"])]
+        )
+        tech_notes.append(f"<b>{t['symbol']}</b>: " + escape("; ".join(t["notes"])))
+    if len(tech_rows) > 1:
+        story.append(_styled_table(tech_rows))
+        for note in tech_notes:
+            story.append(Paragraph(note, styles["Normal"]))
+    else:
+        story.append(Paragraph("Sem histórico disponível para análise.", styles["Normal"]))
+    story.append(Spacer(1, 0.5 * cm))
+
     # Recent alerts
     story.append(Paragraph("Alertas recentes", styles["Heading2"]))
     alerts = db.query(AlertLog).order_by(AlertLog.triggered_at.desc()).limit(15).all()
@@ -74,6 +107,28 @@ def build_pdf_report(db: Session) -> bytes:
         story.append(_styled_table(alert_rows, col_widths=[2.5 * cm, 2 * cm, 11 * cm]))
     else:
         story.append(Paragraph("Nenhum alerta disparado ainda.", styles["Normal"]))
+    story.append(Spacer(1, 0.5 * cm))
+
+    # Global news
+    story.append(Paragraph("Notícias do mercado (maior impacto)", styles["Heading2"]))
+    gnews = (
+        db.query(GlobalNewsItem)
+        .filter(GlobalNewsItem.published_at >= now - timedelta(hours=48))
+        .order_by(GlobalNewsItem.impact_score.desc(), GlobalNewsItem.published_at.desc())
+        .limit(15)
+        .all()
+    )
+    if gnews:
+        for n in gnews:
+            story.append(
+                Paragraph(
+                    f"[{n.impact_score}] ({n.published_at.strftime('%d/%m %H:%M')}) {escape(n.headline)} "
+                    f"<i>— {escape(n.source or n.category)}</i>",
+                    styles["Normal"],
+                )
+            )
+    else:
+        story.append(Paragraph("Nenhuma notícia global coletada.", styles["Normal"]))
     story.append(Spacer(1, 0.5 * cm))
 
     # News
@@ -90,7 +145,7 @@ def build_pdf_report(db: Session) -> bytes:
         for n in news:
             story.append(
                 Paragraph(
-                    f"<b>{n.symbol}</b> ({n.published_at.strftime('%d/%m %H:%M')}) — {n.headline}",
+                    f"<b>{n.symbol}</b> ({n.published_at.strftime('%d/%m %H:%M')}) — {escape(n.headline)}",
                     styles["Normal"],
                 )
             )

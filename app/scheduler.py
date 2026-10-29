@@ -9,7 +9,7 @@ from telegram.ext import Application
 from app.config import settings
 from app.db import SessionLocal
 from app.dedup import filter_new_by_key
-from app.market_data import finnhub_client, fmp_client, yfinance_client
+from app.market_data import finnhub_client, fmp_client, rss_news, yfinance_client
 from app.models import (
     AlertLog,
     AlertRule,
@@ -26,12 +26,25 @@ from app.telegram_bot import send_alert
 logger = logging.getLogger(__name__)
 
 
+def _company_news(symbol: str, from_date: date, to_date: date):
+    """Finnhub quando há chave; RSS público (Yahoo) como fallback sem chave ou se vier vazio."""
+    articles = finnhub_client.get_company_news(symbol, from_date, to_date) if settings.finnhub_api_key else []
+    return articles or rss_news.get_company_news(symbol)
+
+
+def _market_news(category: str, limit: int):
+    articles = finnhub_client.get_market_news(category, limit=limit) if settings.finnhub_api_key else []
+    return articles or rss_news.get_market_news(category, limit=limit)
+
+
 async def poll_quotes() -> None:
     db = SessionLocal()
     try:
         items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
         for item in items:
-            quote = finnhub_client.get_quote(item.symbol)
+            quote = finnhub_client.get_quote(item.symbol) if settings.finnhub_api_key else None
+            if quote is None:
+                quote = yfinance_client.get_quote(item.symbol)
             if quote is None:
                 continue
             db.add(
@@ -139,7 +152,7 @@ async def refresh_news() -> None:
         existing_urls = {u for (u,) in db.query(NewsItem.url).all()}
 
         for item in items:
-            articles = finnhub_client.get_company_news(item.symbol, week_ago, today)
+            articles = _company_news(item.symbol, week_ago, today)
             new_articles = filter_new_by_key(articles, existing_urls, key_fn=lambda a: a.url)
             for article in new_articles:
                 db.add(
@@ -168,7 +181,7 @@ async def refresh_global_news() -> None:
         existing_urls = {u for (u,) in db.query(GlobalNewsItem.url).all()}
 
         for category in categories:
-            articles = finnhub_client.get_market_news(category, limit=40)
+            articles = _market_news(category, limit=40)
             new_articles = filter_new_by_key(articles, existing_urls, key_fn=lambda a: a.url)
             for article in new_articles:
                 db.add(
@@ -222,7 +235,7 @@ async def refresh_calendars() -> None:
         existing_earnings_keys = {
             (sym, dt) for sym, dt in db.query(EarningsEvent.symbol, EarningsEvent.event_date).all()
         }
-        for item in items:
+        for item in items if settings.finnhub_api_key else []:
             earnings = finnhub_client.get_earnings_calendar(
                 today, today + timedelta(days=14), symbol=item.symbol
             )
@@ -360,9 +373,22 @@ async def morning_report_job(telegram_app: Application | None) -> None:
         db.close()
 
 
+async def refresh_all() -> None:
+    """Atualiza cotações, notícias e calendários agora (usado no startup e no botão "Atualizar")."""
+    await poll_quotes()
+    await refresh_news()
+    await refresh_global_news()
+    await refresh_calendars()
+
+
 def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(poll_quotes, "interval", seconds=settings.quote_poll_seconds, id="poll_quotes")
+    # next_run_time=agora: sem isso o 1º ciclo só rodava após o intervalo inteiro (ex: notícias
+    # por ativo esperavam 30 min), deixando o painel vazio logo após subir o servidor.
+    now = datetime.now(timezone.utc)
+    scheduler.add_job(
+        poll_quotes, "interval", seconds=settings.quote_poll_seconds, next_run_time=now, id="poll_quotes"
+    )
     scheduler.add_job(
         evaluate_rules,
         "interval",
@@ -387,12 +413,14 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
         args=[telegram_app],
         id="morning_report",
     )
-    scheduler.add_job(refresh_news, "interval", seconds=settings.news_refresh_seconds, id="refresh_news")
+    scheduler.add_job(
+        refresh_news, "interval", seconds=settings.news_refresh_seconds, next_run_time=now, id="refresh_news"
+    )
     scheduler.add_job(
         refresh_global_news,
         "interval",
         seconds=settings.global_news_refresh_seconds,
-        next_run_time=datetime.now(timezone.utc),
+        next_run_time=now,
         id="refresh_global_news",
     )
     scheduler.add_job(
@@ -402,4 +430,5 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
         minute=0,
         id="refresh_calendars",
     )
+    scheduler.add_job(refresh_calendars, "date", run_date=now, id="refresh_calendars_startup")
     return scheduler
