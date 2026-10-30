@@ -323,3 +323,38 @@ def news_cols():
     from app.research import news_archive
 
     return news_archive.COLUMNS
+
+
+def test_insiders_parse_zip_keeps_open_market_common_stock_only():
+    import io
+    import zipfile
+
+    from app.research import insiders
+
+    def tsv(df):
+        return df.to_csv(sep="\t", index=False)
+
+    sub = pd.DataFrame({
+        "ACCESSION_NUMBER": ["a1", "a2", "a3"], "FILING_DATE": ["02-MAR-2020", "03-MAR-2020", "04-MAR-2020"],
+        "DOCUMENT_TYPE": ["4", "4", "4/A"], "ISSUERNAME": ["X Corp"] * 3, "ISSUERTRADINGSYMBOL": ["xyz", "xyz", "xyz"]})
+    own = pd.DataFrame({"ACCESSION_NUMBER": ["a1", "a2", "a3"], "RPTOWNERNAME": ["Ana", "Bob", "Cy"],
+                        "RPTOWNER_RELATIONSHIP": ["Officer"] * 3, "RPTOWNER_TITLE": ["CEO"] * 3})
+    tr = pd.DataFrame({
+        "ACCESSION_NUMBER": ["a1", "a1", "a2", "a3"], "SECURITY_TITLE": ["Common Stock", "Option", "Common Stock", "Common Stock"],
+        "TRANS_DATE": ["28-FEB-2020"] * 4, "TRANS_CODE": ["P", "P", "A", "P"],
+        "TRANS_SHARES": ["100", "50", "10", "5"], "TRANS_PRICEPERSHARE": ["10", "1", "1", "1"]})
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("SUBMISSION.tsv", tsv(sub))
+        z.writestr("REPORTINGOWNER.tsv", tsv(own))
+        z.writestr("NONDERIV_TRANS.tsv", tsv(tr))
+    out = insiders.parse_zip(buf.getvalue())
+    assert len(out) == 1  # só a compra (P) de ação ordinária no Form 4 original
+    r = out.iloc[0]
+    assert r.symbol == "XYZ" and r.owner == "Ana" and r.filing_date == pd.Timestamp("2020-03-02") and r.shares == 100
+
+
+def test_insiders_quarters_range():
+    from app.research import insiders
+
+    assert insiders.quarters("2024q3", "2025q2") == ["2024q3", "2024q4", "2025q1", "2025q2"]

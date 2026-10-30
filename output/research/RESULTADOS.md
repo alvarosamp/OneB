@@ -62,3 +62,31 @@ Teste 2021+ (CAGR% / Sharpe / MaxDD%), com ETFs (sem viés de sobrevivência) e 
 Bootstrap em blocos (IC 90%) da diferença de Sharpe vs. comprar e segurar: TODOS os intervalos incluem 0
 (larguras de ~±0.4). Ou seja, nenhuma estratégia testada é estatisticamente melhor que a referência;
 o que muda de forma consistente é a queda máxima (vol-alvo e filtros reduzem -36% para -15% a -26%).
+
+## 7) Rodada 3 — dados novos (scripts/research_v3.py, app/research/external.py)
+Fontes: VIX/VIX3M/VVIX, DXY, juros 10a, HYG/LQD (yfinance); curva 10a-2a e NFCI (FRED, sem chave);
+19.782 revisões de analistas das 30 ações (yfinance, desde 2012). Erros-padrão Newey-West / agrupados por mês.
+
+A) Macro → retorno futuro do QQQ/SPY (21d): backwardation do VIX (VIX/VIX3M>1) +3.1% vs base (t≈2.3),
+VVIX alto +1.6% (t≈2.2), dólar forte -1.3% (t≈-2.1). Nenhum passa de |t|=2.9 (16 testes). NFCI>0 (t=5.6)
+é um único episódio (2020, ~30 dias): descartado. Checagem por episódio: 37 episódios independentes de
+backwardation; 21d após o 1º dia: +1.1% (base +1.6%), 23/37 positivos → o efeito some.
+
+B) Analistas (9.431 eventos): upgrade +0.8% em 20d (t=1.2), downgrade 0.0%, alvo sobe/cai ≈ 0.
+Nenhum grupo passa de |t|=1.7. Revisões de analistas não trazem informação além do preço.
+
+Não testado: compras de executivos (SEC Form 4; exige processar milhares de arquivos e identificação de contato no
+User-Agent), sentimento de notícias (sem histórico; coleta em andamento), opções (sem histórico gratuito).
+
+## 8) Rodada 4 — insiders (SEC Form 4) (scripts/fetch_insiders.py, scripts/research_insiders.py)
+Base: 46 trimestres do SEC (2014Q4–2026Q1), 1,19 mi de compras/vendas em mercado aberto; 61 mil compras >= US$50k.
+Entrada na abertura após a DATA DE DIVULGAÇÃO; retorno menos SPY; t agrupado por mês. Universo: 225 ativos com mais sinais
+(vivos no yfinance → viés de sobrevivência a favor do resultado; 35 dos 260 já saíram do mercado).
+| Grupo | n | +60d vs SPY | +120d vs SPY | t120 treino / teste |
+|---|---|---|---|---|
+| Compra >= $50k | 2160 | -0.68% | -0.82% | 0.89 / -3.71 |
+| 3+ insiders comprando | 290 | +1.65% | +0.63% | 1.21 / -1.08 |
+| CEO/CFO compra >= $100k | 859 | -1.06% | -2.56% | -0.24 / -3.15 |
+| 3+ insiders vendendo >= $1M | 2294 | +1.60% | +2.89% | 3.73 / 0.01 |
+Conclusão: compras de insiders não anteciparam alta (no teste 2021+ ficaram significativamente ABAIXO do SPY); vendas em grupo
+não anteciparam queda (acionistas vendem ganhadores), e o efeito de +2.9% some no período de teste. Sem edge utilizável.

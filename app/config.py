@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     finnhub_api_key: str = ""
     fmp_api_key: str = ""
 
+    # SEC EDGAR exige identificação real (nome + e-mail) no User-Agent; só p/ scripts de pesquisa
+    sec_user_agent: str = ""
+
     # Telegram
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
