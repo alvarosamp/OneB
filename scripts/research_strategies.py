@@ -10,7 +10,8 @@ import pandas as pd
 
 from app.research import lab, store, strategies
 
-UNIVERSE = [p.stem for p in sorted(Path("data/history").glob("*.csv")) if p.stem not in ("QQQ", "SPY", "GC_F", "BRL_X")]
+from app.research.universe import STOCKS
+UNIVERSE = STOCKS
 SPLIT = "2020-12-31"
 PERIODS = {"completo": (None, None), "treino 2014-2020": (None, SPLIT), "teste 2021-2026": ("2021-01-01", None)}
 

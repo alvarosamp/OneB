@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { CandlestickChart } from '../components/CandlestickChart';
+import { RiskPanelCard } from '../components/RiskPanelCard';
 import type { ChartData } from '../types';
 
 export function AtivoDetalhe() {
@@ -61,6 +62,8 @@ export function AtivoDetalhe() {
       </div>
 
       {data && <CandlestickChart data={data} symbol={symbol.toUpperCase()} />}
+
+      <RiskPanelCard symbol={symbol.toUpperCase()} />
     </div>
   );
 }

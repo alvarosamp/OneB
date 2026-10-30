@@ -44,3 +44,21 @@ Conclusao: indistinguivel de sorteio apos custos de giro; pior que simplesmente 
 - Risco: 5o percentil do dia do resultado -9.7%; pior -35%.
 - Dias de choque sem resultado (228): nenhum efeito significativo.
 - Historico de manchetes de anos NAO existe de graca; manchetes atuais passam a ser guardadas em data/news/.
+
+## 6) Rodada 2 — hipóteses pré-definidas (scripts/research_v2.py)
+Teste 2021+ (CAGR% / Sharpe / MaxDD%), com ETFs (sem viés de sobrevivência) e ações:
+| Estratégia | Treino | Teste |
+|---|---|---|
+| SPY segurar | 13.2 / 0.81 / -32 | 14.7 / 0.91 / -26 |
+| QQQ segurar | 21.6 / 1.04 / -28 | 15.9 / 0.77 / -37 |
+| QQQ > SMA200 senão caixa | 8.4 / 0.56 / -27 | 14.4 / 0.92 / -25 |
+| QQQ com vol-alvo 15% | 14.7 / 1.03 / -18 | 12.4 / 0.83 / -27 |
+| ETFs momentum dual top-3 | 3.8 / 0.34 / -24 | 13.0 / 0.79 / -13 |
+| Ações EW (30) | 30.3 / 1.38 / -29 | 18.4 / 0.92 / -36 |
+| Ações EW com vol-alvo 15% | 21.9 / 1.45 / -13 | 14.1 / 0.96 / -26 |
+| Ações top-10 momentum | 32.9 / 1.24 / -34 | 24.4 / 0.93 / -35 |
+| Momentum + filtro QQQ + vol-alvo | 18.1 / 1.25 / -14 | 13.6 / 0.94 / -15 |
+
+Bootstrap em blocos (IC 90%) da diferença de Sharpe vs. comprar e segurar: TODOS os intervalos incluem 0
+(larguras de ~±0.4). Ou seja, nenhuma estratégia testada é estatisticamente melhor que a referência;
+o que muda de forma consistente é a queda máxima (vol-alvo e filtros reduzem -36% para -15% a -26%).

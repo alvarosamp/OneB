@@ -349,3 +349,55 @@ export interface ResearchStudy {
   per_symbol?: Record<string, ResearchSymbol>;
   caveats?: string[];
 }
+
+export interface RiskPanel {
+  symbol: string;
+  as_of: string;
+  price: number;
+  regime: {
+    trend: string | null;
+    trend_label: string | null;
+    trend_bars: number;
+    volatility: string | null;
+    volatility_label: string | null;
+    volatility_bars: number;
+  };
+  volatility: { realized_20d_pct: number; atr_pct: number };
+  levels: {
+    dist_sma50_pct: number | null;
+    dist_sma200_pct: number | null;
+    drawdown_from_52w_high_pct: number;
+  };
+  sizing: {
+    target_vol_pct: number;
+    relative_exposure_pct: number;
+    stop_atr_mult: number;
+    stop_distance_pct: number;
+    trailing_stop_price: number;
+    stop_breached: boolean;
+    risk_pct: number;
+    position_pct_of_capital: number | null;
+  };
+  earnings: {
+    next_date: string | null;
+    days_until: number | null;
+    soon: boolean;
+    history: {
+      events: number;
+      avg_abs_move_pct: number;
+      typical_day_move_pct: number;
+      p05_pct: number;
+      p95_pct: number;
+      worst_pct: number;
+      up_share_pct: number;
+    } | null;
+  };
+  news: {
+    count_7d: number;
+    count_30d: number;
+    archive_days: number;
+    latest: { published_at: string; source: string; headline: string }[];
+  };
+  alerts: string[];
+  evidence: string;
+}

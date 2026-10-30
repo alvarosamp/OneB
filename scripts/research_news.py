@@ -13,7 +13,8 @@ import yfinance as yf
 
 from app.research import features, store
 
-UNIVERSE = [p.stem for p in sorted(Path("data/history").glob("*.csv")) if p.stem not in ("QQQ", "SPY", "GC_F", "BRL_X")]
+from app.research.universe import STOCKS
+UNIVERSE = STOCKS
 COST = 0.002  # ida e volta
 data = {s: store.load(s) for s in UNIVERSE}
 

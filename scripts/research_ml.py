@@ -19,7 +19,8 @@ from sklearn.preprocessing import StandardScaler
 
 from app.research import features, lab, store
 
-UNIVERSE = [p.stem for p in sorted(Path("data/history").glob("*.csv")) if p.stem not in ("QQQ", "SPY", "GC_F", "BRL_X")]
+from app.research.universe import STOCKS
+UNIVERSE = STOCKS
 H = features.HORIZON
 K = 5
 SPLIT = pd.Timestamp("2020-12-31")

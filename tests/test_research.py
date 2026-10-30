@@ -223,3 +223,103 @@ def test_news_archive_seeds_from_legacy_daily_files(tmp_path):
 
     out = news_archive.collect([], tmp_path, lambda s: [], lambda s: [])
     assert out["total"] == 1
+
+
+def _panel_history(n=300, vol=0.01, seed=5, drift=0.0005):
+    rng = np.random.default_rng(seed)
+    close = pd.Series(100 * np.exp(np.cumsum(rng.normal(drift, vol, n))), index=_idx(n))
+    return pd.DataFrame(
+        {"open": close, "high": close * 1.005, "low": close * 0.995, "close": close, "volume": 1000.0}
+    )
+
+
+def test_risk_panel_sizing_and_regime():
+    from app.research import risk_panel
+
+    h = _panel_history()
+    out = risk_panel.build("TEST", h, risk_pct=1.0, today=h.index[-1])
+    assert out["regime"]["trend"] in {"up", "down", "sideways"}
+    s = out["sizing"]
+    assert s["stop_breached"] == (out["price"] <= s["trailing_stop_price"])
+    assert any("stop móvel" in a for a in out["alerts"]) == s["stop_breached"]
+    # risco de 1% do capital / distância do stop => tamanho da posição
+    assert abs(s["position_pct_of_capital"] - min(100, 1.0 / s["stop_distance_pct"] * 100)) < 0.2
+    assert out["evidence"] and out["alerts"] is not None
+
+
+def test_risk_panel_high_vol_reduces_exposure_and_short_history():
+    from app.research import risk_panel
+
+    calm = risk_panel.build("A", _panel_history(vol=0.005), today=pd.Timestamp("2025-01-01"))
+    wild = risk_panel.build("B", _panel_history(vol=0.04), today=pd.Timestamp("2025-01-01"))
+    assert calm["sizing"]["relative_exposure_pct"] == 100
+    assert wild["sizing"]["relative_exposure_pct"] < 50
+    assert any("acima do alvo" in a for a in wild["alerts"])
+    assert "error" in risk_panel.build("C", _panel_history().head(30))
+
+
+def test_risk_panel_earnings_warning_and_history():
+    from app.research import risk_panel
+
+    h = _panel_history()
+    past = [h.index[i] + pd.Timedelta(hours=16) for i in (60, 120, 180, 240)]
+    jump = h.copy()
+    for i in (61, 121, 181, 241):  # reação no dia seguinte (resultado após o fechamento): +8%
+        jump.iloc[i:, jump.columns.get_indexer(["open", "high", "low", "close"])] *= 1.08
+    future = h.index[-1] + pd.Timedelta(days=3, hours=16)
+    table = pd.DataFrame(
+        {"Reported EPS": [1.0] * 4 + [np.nan]}, index=pd.DatetimeIndex(past + [future])
+    )
+    out = risk_panel.build("E", jump, earnings_table=table, today=h.index[-1])
+    e = out["earnings"]
+    assert e["soon"] and e["days_until"] == 3
+    assert e["history"]["events"] == 4 and e["history"]["avg_abs_move_pct"] > 7
+    assert any("Resultado trimestral" in a for a in out["alerts"])
+
+
+def test_risk_panel_news_block():
+    from app.research import risk_panel
+
+    h = _panel_history()
+    now = h.index[-1]
+    arch = pd.DataFrame(
+        {
+            "symbol": ["E", "E", "OUTRO"],
+            "published_at": [(now - pd.Timedelta(days=1)).isoformat() + "+00:00", (now - pd.Timedelta(days=20)).isoformat() + "+00:00", now.isoformat() + "+00:00"],
+            "source": ["s"] * 3,
+            "headline": ["recente", "antiga", "outra"],
+        }
+    )
+    n = risk_panel.build("E", h, archive=arch, today=now)["news"]
+    assert n["count_7d"] == 1 and n["count_30d"] == 2 and n["latest"][0]["headline"] == "recente"
+
+
+def test_panel_endpoint(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app.auth import get_current_user
+    from app.main import app
+    from app.routers import research as r
+
+    app.dependency_overrides[get_current_user] = lambda: "u"
+    h = _panel_history()
+    h.index = pd.bdate_range(end=pd.Timestamp.now().normalize(), periods=len(h))
+    monkeypatch.setattr(r.store, "load", lambda s, *a, **k: h if s == "OK" else h.iloc[0:0])
+    monkeypatch.setattr(r.store, "update", lambda s, *a, **k: h if s == "OK" else h.iloc[0:0])
+    monkeypatch.setattr(r.earnings, "earnings_table", lambda s: None)
+    monkeypatch.setattr(r.news_archive, "load", lambda *a, **k: pd.DataFrame(columns=news_cols()))
+    try:
+        c = TestClient(app)
+        ok = c.get("/api/research/panel/ok?risk_pct=2")
+        assert ok.status_code == 200 and ok.json()["sizing"]["risk_pct"] == 2.0
+        assert c.get("/api/research/panel/NADA").status_code == 404
+        assert c.get("/api/research/panel/A;B").status_code in (404, 422)
+        assert c.get("/api/research/panel/OK?risk_pct=0").status_code == 422
+    finally:
+        app.dependency_overrides.clear()
+
+
+def news_cols():
+    from app.research import news_archive
+
+    return news_archive.COLUMNS

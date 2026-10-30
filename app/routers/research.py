@@ -1,12 +1,14 @@
 import re
 
+import pandas as pd
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.db import get_db
 from app.models import WatchlistItem
-from app.research import service
+from app.research import earnings, news_archive, risk_panel, service, store
 
 router = APIRouter(prefix="/api/research", tags=["research"], dependencies=[Depends(get_current_user)])
 
@@ -36,3 +38,29 @@ def study(
         raise HTTPException(status_code=422, detail=f"Máximo de {MAX_SYMBOLS} ativos por estudo")
 
     return service.run_study(chosen, refresh=refresh)
+
+
+@router.get("/panel/{symbol}")
+def panel(symbol: str, risk_pct: float = Query(1.0, gt=0, le=10), refresh: bool = False):
+    """Painel de risco do ativo: regime, volatilidade, tamanho por risco, resultados e notícias."""
+    symbol = symbol.upper().strip()
+    if not _SYMBOL_RE.match(symbol):
+        raise HTTPException(status_code=422, detail=f"Símbolo inválido: {symbol}")
+
+    history = store.load(symbol)
+    stale = history.empty or (pd.Timestamp.now().normalize() - history.index[-1]).days > 3
+    if refresh or stale:
+        history = store.update(symbol)
+    if history.empty:
+        raise HTTPException(status_code=404, detail=f"Sem histórico de preços para {symbol}")
+
+    result = risk_panel.build(
+        symbol,
+        history,
+        earnings_table=earnings.earnings_table(symbol),
+        archive=news_archive.load(),
+        risk_pct=risk_pct,
+    )
+    if "error" in result:
+        raise HTTPException(status_code=422, detail=result["error"])
+    return result
