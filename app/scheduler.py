@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import date, datetime, timedelta, timezone
 
@@ -373,6 +374,23 @@ async def morning_report_job(telegram_app: Application | None) -> None:
         db.close()
 
 
+async def archive_news() -> None:
+    """Guarda manchetes em disco para formar histórico de pesquisa (watchlist + ativos estudados)."""
+    from app.research import news_archive
+
+    db = SessionLocal()
+    try:
+        watch = [w.symbol for w in db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()]
+    finally:
+        db.close()
+    symbols = list(dict.fromkeys(watch + news_archive.research_symbols()))
+    try:
+        stats = await asyncio.to_thread(news_archive.collect, symbols)
+        logger.info("Arquivo de manchetes: %s", stats)
+    except Exception:
+        logger.exception("Erro no job archive_news")
+
+
 async def refresh_all() -> None:
     """Atualiza cotações, notícias e calendários agora (usado no startup e no botão "Atualizar")."""
     await poll_quotes()
@@ -429,6 +447,9 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
         hour=settings.calendar_refresh_hour_utc,
         minute=0,
         id="refresh_calendars",
+    )
+    scheduler.add_job(
+        archive_news, "interval", seconds=settings.news_archive_seconds, next_run_time=now, id="archive_news"
     )
     scheduler.add_job(refresh_calendars, "date", run_date=now, id="refresh_calendars_startup")
     return scheduler

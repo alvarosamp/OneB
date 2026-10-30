@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     morning_report_hour_utc: int = 11  # ~07:00-08:00 ET, before market open
     news_refresh_seconds: int = 1800
     global_news_refresh_seconds: int = 900
+    news_archive_seconds: int = 21600  # arquivo de manchetes p/ pesquisa (6h)
     global_news_categories: str = "general,forex"
     calendar_refresh_hour_utc: int = 6
 

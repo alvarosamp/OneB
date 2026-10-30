@@ -191,3 +191,35 @@ def test_study_endpoint_validates_and_runs(monkeypatch, tmp_path):
         assert c.get(f"/api/research/study?symbols={many}").status_code == 422
     finally:
         app.dependency_overrides.clear()
+
+
+def test_news_archive_collect_dedupes_and_survives_failure(tmp_path):
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+
+    from app.research import news_archive
+
+    def art(h):
+        return SimpleNamespace(published_at=datetime(2026, 1, 1, tzinfo=timezone.utc), source="X", headline=h, url="u")
+
+    def company(sym):
+        if sym == "BAD":
+            raise RuntimeError("rede")
+        return [art(f"{sym} sobe"), art(f"{sym} cai")]
+
+    market = lambda _: [art("Fed mantém juros")]
+    first = news_archive.collect(["AAPL", "BAD"], tmp_path, company, market)
+    assert first["new"] == 3 and first["total"] == 3  # MARKET + AAPL x2; BAD ignorado
+    again = news_archive.collect(["AAPL", "BAD"], tmp_path, company, market)
+    assert again["new"] == 0 and again["total"] == 3
+    assert set(news_archive.load(tmp_path).symbol) == {"MARKET", "AAPL"}
+
+
+def test_news_archive_seeds_from_legacy_daily_files(tmp_path):
+    pd.DataFrame(
+        {"symbol": ["AAPL"], "published_at": ["2026-01-01"], "source": ["Y"], "headline": ["velha"]}
+    ).to_csv(tmp_path / "2026-10-29.csv", index=False)
+    from app.research import news_archive
+
+    out = news_archive.collect([], tmp_path, lambda s: [], lambda s: [])
+    assert out["total"] == 1

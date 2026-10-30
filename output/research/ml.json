@@ -1,0 +1,57 @@
+{
+ "modelos": {
+  "Regress\u00e3o log\u00edstica": {
+   "auc": 0.51,
+   "ic": 0.0132,
+   "bruto_cagr": 33.0,
+   "bruto_sharpe": 1.08,
+   "cagr": 26.4,
+   "sharpe": 0.91,
+   "dd": -45.3,
+   "hit": 57.0,
+   "giro_pct": 51.0
+  },
+  "Gradient boosting": {
+   "auc": 0.5145,
+   "ic": 0.0176,
+   "bruto_cagr": 33.2,
+   "bruto_sharpe": 1.15,
+   "cagr": 25.9,
+   "sharpe": 0.95,
+   "dd": -32.9,
+   "hit": 57.5,
+   "giro_pct": 56.0
+  },
+  "Rede neural (MLP 32-16)": {
+   "auc": 0.5072,
+   "ic": 0.0105,
+   "bruto_cagr": 34.6,
+   "bruto_sharpe": 1.21,
+   "cagr": 25.9,
+   "sharpe": 0.97,
+   "dd": -37.3,
+   "hit": 57.3,
+   "giro_pct": 66.0
+  }
+ },
+ "aleatorio": {
+  "cagr": 14.24,
+  "sharpe": 0.67,
+  "dd": -40.86,
+  "hit": 55.66,
+  "giro_pct": 83.37
+ },
+ "momentum": {
+  "cagr": 43.6,
+  "sharpe": 1.22,
+  "dd": -32.6,
+  "hit": 57.5,
+  "giro_pct": 14.0
+ },
+ "igual_peso": {
+  "cagr": 25.7,
+  "sharpe": 1.22,
+  "dd": -33.7,
+  "hit": 59.0
+ }
+}
