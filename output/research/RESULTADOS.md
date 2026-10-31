@@ -90,3 +90,17 @@ Entrada na abertura após a DATA DE DIVULGAÇÃO; retorno menos SPY; t agrupado 
 | 3+ insiders vendendo >= $1M | 2294 | +1.60% | +2.89% | 3.73 / 0.01 |
 Conclusão: compras de insiders não anteciparam alta (no teste 2021+ ficaram significativamente ABAIXO do SPY); vendas em grupo
 não anteciparam queda (acionistas vendem ganhadores), e o efeito de +2.9% some no período de teste. Sem edge utilizável.
+
+## 9. Sentimento das manchetes (piloto) e filtro de relevância
+
+**Pipeline pronto** (`app/research/sentiment.py`, `scripts/research_sentiment.py`): filtra manchetes que citam a empresa (cerca de metade do feed por ticker é ruído), pontua por léxico financeiro (offline) e, com chave de LLM configurada, também por LLM (-1/0/1 por manchete, em lote, com cache em `data/news/sentiment.csv`). Entrada na abertura do primeiro pregão após a publicação; resultado é o excesso sobre a média das 30 ações, com erro-padrão agrupado por dia.
+
+**Resultado hoje: inconclusivo.** O arquivo cobre 19–30/out/2026 (421 manchetes relevantes, só 6 dias com retorno futuro). Em 1 dia: positivas +0,04% (t=-0,6), neutras +0,57%, negativas +0,41% (t=1,2); correlação sentimento x excesso -0,05 (n=143). Sem poder estatístico, não é evidência nem a favor nem contra.
+
+**Para concluir:** deixar o agendador coletando (a cada 6 h) por pelo menos 3 a 6 meses, configurar `ANTHROPIC_API_KEY` e rodar `python scripts/research_sentiment.py`. O critério é o mesmo das outras rodadas: |t| > ~2,8 e o efeito se manter no período de teste.
+
+**Painel de risco:** as manchetes exibidas agora são filtradas pela mesma regra de relevância.
+
+## 10. Dados pagos: como testar sem se enganar
+
+Nenhum foi contratado (exige conta e pagamento seus). Se for testar algum serviço, a ordem que mais vale a pena é: (1) notícias históricas com data e hora, que destravam o teste da seção 9 em dias, não meses; (2) fluxo de opções/posicionamento; (3) fundamentos com histórico point-in-time. Antes de pagar, exija do fornecedor: cobertura de empresas que saíram do mercado, carimbo de tempo de quando a informação ficou pública, e teste gratuito. Reaproveite o protocolo: entrada no pregão seguinte, custos de 10 bps por lado, treino até 2020 e teste de 2021 em diante.

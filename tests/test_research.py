@@ -358,3 +358,50 @@ def test_insiders_quarters_range():
     from app.research import insiders
 
     assert insiders.quarters("2024q3", "2025q2") == ["2024q3", "2024q4", "2025q1", "2025q2"]
+
+
+def test_sentiment_relevance_and_lexicon():
+    from app.research import sentiment
+
+    assert sentiment.is_relevant("NVDA", "Nvidia beats estimates")
+    assert sentiment.is_relevant("AMD", "Why AMD stock jumped")
+    assert not sentiment.is_relevant("NVDA", "Bitcoin falls below $60,000")
+    assert sentiment.lexicon_score("Apple beats estimates, shares surge") == 1.0
+    assert sentiment.lexicon_score("Tesla recall and lawsuit hit shares") == -1.0
+    assert sentiment.lexicon_score("Apple holds event Tuesday") == 0.0
+
+
+def test_sentiment_parse_llm_scores_is_strict():
+    from app.research import sentiment
+
+    assert sentiment.parse_llm_scores("Claro: [1, 0, -1]", 3) == [1, 0, -1]
+    assert sentiment.parse_llm_scores("[1, 0]", 3) is None
+    assert sentiment.parse_llm_scores("sem json", 1) is None
+    assert sentiment.parse_llm_scores("[5, -9]", 2) == [1, -1]
+
+
+def test_sentiment_score_archive_caches_without_llm(tmp_path):
+    from app.research import sentiment
+
+    arch = pd.DataFrame({"symbol": ["AAPL", "AAPL", "MARKET"], "headline": ["Apple beats", "Bitcoin falls", "Fed"]})
+    path = tmp_path / "s.csv"
+    c = sentiment.score_archive(arch, path=path, use_llm=False)
+    assert list(c["headline"]) == ["Apple beats"] and c["llm"].isna().all()
+    assert len(sentiment.score_archive(arch, path=path, use_llm=False)) == 1
+
+
+def test_risk_panel_news_filters_unrelated_headlines():
+    from app.research import risk_panel
+
+    h = _panel_history()
+    now = h.index[-1]
+    arch = pd.DataFrame(
+        {
+            "symbol": ["NVDA", "NVDA"],
+            "published_at": [now.isoformat() + "+00:00"] * 2,
+            "source": ["s"] * 2,
+            "headline": ["Nvidia unveils chip", "Bitcoin slides"],
+        }
+    )
+    n = risk_panel.build("NVDA", h, archive=arch, today=now)["news"]
+    assert [x["headline"] for x in n["latest"]] == ["Nvidia unveils chip"]

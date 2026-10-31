@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from app.research import earnings as earn
-from app.research import regimes
+from app.research import regimes, sentiment
 from app.research.strategies import atr
 
 TARGET_VOL = 0.15  # exposição reduzida acima de 15% a.a. (vol-alvo testado na pesquisa)
@@ -50,6 +50,8 @@ def _news_block(symbol: str, archive: pd.DataFrame | None, today: pd.Timestamp) 
     if archive is None or archive.empty:
         return block
     a = archive[archive["symbol"] == symbol].copy()
+    # o feed por ticker traz ruído (cripto na NVDA etc.): só manchetes que citam a empresa
+    a = a[[sentiment.is_relevant(symbol, h) for h in a["headline"]]] if symbol in sentiment.ALIASES else a
     if a.empty:
         return block
     a["published_at"] = pd.to_datetime(a["published_at"], utc=True, errors="coerce").dt.tz_localize(None)
