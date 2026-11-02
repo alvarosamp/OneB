@@ -77,7 +77,13 @@ export interface Simulation {
     ipca_12m: number;
     poupanca: number;
     ipca_real_rate: number;
+    ipca_real_source: string;
     prefixado_rate: number;
+    prefixado_source: string;
+    rates_mode: 'focus' | 'constante';
+    path: { year: number; from: string; selic: number; cdi: number; ipca: number }[];
+    focus_as_of: string | null;
+    tesouro_as_of: string | null;
     variable: Record<string, { premium_over_cdi: number; volatility_pct: number }>;
     rates_as_of: string | null;
     rates_stale: boolean;
@@ -136,4 +142,17 @@ export interface ImpactGroup {
 export interface EventsData {
   upcoming: BrEvent[];
   impact: { available: boolean; since?: string; normal_abs_pct?: number; copom?: ImpactGroup; fomc?: ImpactGroup; eleicao?: ImpactGroup; note?: string };
+}
+
+export interface TesouroTitle {
+  name: string;
+  maturity: string;
+  buy_rate: number;
+  unit_price: number;
+  min_investment: number;
+}
+
+export interface Outlook {
+  focus: { as_of: string; source: string; years: { year: number; selic: number; ipca: number }[] } | null;
+  tesouro: { as_of: string; source: string; titles: TesouroTitle[] } | null;
 }

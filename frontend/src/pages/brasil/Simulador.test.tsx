@@ -25,7 +25,9 @@ const sim: Simulation = {
       { month: 120, invested: 37000, p10: 60000, p50: 70000, p90: 85000, poupanca: 52000 },
     ],
   },
-  assumptions: { selic: 13.75, cdi: 13.65, ipca_12m: 4.58, poupanca: 6.17, ipca_real_rate: 6.5, prefixado_rate: 12.65,
+  assumptions: { selic: 13.75, cdi: 13.65, ipca_12m: 4.58, poupanca: 6.17, ipca_real_rate: 7.56, ipca_real_source: 'Tesouro IPCA+ 2040 hoje',
+    prefixado_rate: 15.3, prefixado_source: 'Tesouro Prefixado 2031 hoje', rates_mode: 'focus', focus_as_of: '2026-10-23', tesouro_as_of: '2026-10-30',
+    path: [{ year: 1, from: '2026-11', selic: 12.64, cdi: 12.54, ipca: 4.81 }, { year: 2, from: '2027-11', selic: 11.02, cdi: 10.92, ipca: 4.09 }],
     variable: { acoes_br: { premium_over_cdi: 2, volatility_pct: 24 } }, rates_as_of: '2026-10-27', rates_stale: false, scenarios: 2000 },
   warnings: ['Em prazos longos, supor CDI constante é uma simplificação.'],
   disclaimer: 'Simulação educacional (Resoluções CVM 19 e 20).',
@@ -40,12 +42,15 @@ describe('Simulador', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Simular' }));
     const [path, body] = postMock.mock.calls[0];
     expect(path).toBe('/api/brasil/simulate');
-    expect(body).toMatchObject({ initial: 1000, monthly: 300, months: 120, goal: 'aposentadoria', has_reserve: false, monthly_expenses: 2500 });
+    expect(body).toMatchObject({ initial: 1000, monthly: 300, months: 120, goal: 'aposentadoria', has_reserve: false, monthly_expenses: 2500,
+      ipca_real_rate: null, prefixado_rate: null, equity_premium: 2 });
     expect(await screen.findByText('Seu perfil: Moderado')).toBeInTheDocument();
     expect(screen.getByText('Protege da inflação.')).toBeInTheDocument();
     expect(screen.getByText(/R\$ 105\/mês a partir do mês 48/)).toBeInTheDocument();
     expect(screen.getByText(/R\$ 60\.000 a R\$ 85\.000/)).toBeInTheDocument();
     expect(screen.getByText(/CVM 19 e 20/)).toBeInTheDocument();
+    expect(screen.getByText(/Tesouro IPCA\+ 2040 hoje/)).toBeInTheDocument();
+    expect(screen.getByText(/Boletim Focus de 23\/10\/2026/)).toBeInTheDocument();
   });
 
   it('não envia sem dinheiro', async () => {

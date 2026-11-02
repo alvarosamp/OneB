@@ -34,6 +34,13 @@ const YES_NO = [
 
 const brl = (x: number | null | undefined) => formatCurrency(x, 'BRL', 0);
 
+/** Campo opcional: vazio ou inválido = deixa o servidor usar o dado do dia. */
+function optionalNumber(text: string): number | null {
+  if (!text.trim()) return null;
+  const n = parseMoney(text);
+  return Number.isNaN(n) ? null : n;
+}
+
 const GROUP_COLOR: Record<string, string> = {
   tesouro_selic: 'var(--series-1)',
   cdb_liquidez: 'var(--series-1)',
@@ -55,7 +62,8 @@ export function Simulador() {
   const [expenses, setExpenses] = useState('2500');
   const [reaction, setReaction] = useState<Reaction>('esperar');
   const [experience, setExperience] = useState<Experience>('nenhuma');
-  const [realRate, setRealRate] = useState('6,5');
+  const [realRate, setRealRate] = useState('');
+  const [prefixRate, setPrefixRate] = useState('');
   const [premium, setPremium] = useState('2');
   const [result, setResult] = useState<Simulation | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,8 +90,9 @@ export function Simulador() {
         monthly_expenses: hasReserve === 'nao' && exp > 0 ? exp : null,
         drop_reaction: reaction,
         experience,
-        ipca_real_rate: parseMoney(realRate) || 6.5,
-        equity_premium: Number.isNaN(parseMoney(premium)) ? null : parseMoney(premium),
+        ipca_real_rate: optionalNumber(realRate),
+        prefixado_rate: optionalNumber(prefixRate),
+        equity_premium: optionalNumber(premium),
       };
       setResult(await api.post<Simulation>('/api/brasil/simulate', body));
     } catch (err) {
@@ -131,7 +140,20 @@ export function Simulador() {
           <details>
             <summary className={styles.meta}>Premissas avançadas (opcional)</summary>
             <div className={styles.form} style={{ marginTop: 'var(--sp-3)' }}>
-              <Input label="Tesouro IPCA+: taxa acima da inflação (% a.a.)" inputMode="decimal" value={realRate} onChange={(e) => setRealRate(e.target.value)} />
+              <Input
+                label="Tesouro IPCA+: taxa acima da inflação (% a.a.)"
+                hint="Vazio = taxa do Tesouro de hoje para o seu prazo."
+                inputMode="decimal"
+                value={realRate}
+                onChange={(e) => setRealRate(e.target.value)}
+              />
+              <Input
+                label="Tesouro Prefixado: taxa (% a.a.)"
+                hint="Vazio = taxa do Tesouro de hoje para o seu prazo."
+                inputMode="decimal"
+                value={prefixRate}
+                onChange={(e) => setPrefixRate(e.target.value)}
+              />
               <Input
                 label="Ações: retorno esperado acima do CDI (p.p. a.a.)"
                 hint="Use 0 ou negativo para um cenário pessimista."
@@ -214,17 +236,25 @@ function Result({ r }: { r: Simulation }) {
 
       <Section title="Premissas usadas">
         <dl className={styles.dl}>
-          <dt>Selic / CDI / IPCA</dt>
+          <dt>Selic / CDI / IPCA hoje</dt>
           <dd>
-            {formatNumber(r.assumptions.selic)}% / {formatNumber(r.assumptions.cdi)}% / {formatNumber(r.assumptions.ipca_12m)}% ao ano, constantes no prazo
+            {formatNumber(r.assumptions.selic)}% / {formatNumber(r.assumptions.cdi)}% / {formatNumber(r.assumptions.ipca_12m)}% ao ano
             {r.assumptions.rates_stale ? ' (Banco Central fora do ar: valores de reserva)' : ''}
           </dd>
-          <dt>Poupança</dt>
-          <dd>{formatNumber(r.assumptions.poupanca)}% ao ano</dd>
+          <dt>Daqui para a frente</dt>
+          <dd>
+            {r.assumptions.rates_mode === 'focus'
+              ? `Seguem a projeção do mercado (Boletim Focus de ${r.assumptions.focus_as_of?.split('-').reverse().join('/')}); depois do último ano projetado, ficam constantes.`
+              : 'Constantes no prazo todo (a projeção do mercado não respondeu agora).'}
+          </dd>
           <dt>Tesouro IPCA+</dt>
-          <dd>IPCA + {formatNumber(r.assumptions.ipca_real_rate, 1)}% ao ano</dd>
+          <dd>
+            IPCA + {formatNumber(r.assumptions.ipca_real_rate, 2)}% ao ano ({r.assumptions.ipca_real_source})
+          </dd>
           <dt>Tesouro Prefixado</dt>
-          <dd>{formatNumber(r.assumptions.prefixado_rate)}% ao ano</dd>
+          <dd>
+            {formatNumber(r.assumptions.prefixado_rate, 2)}% ao ano ({r.assumptions.prefixado_source})
+          </dd>
           <dt>Renda variável</dt>
           <dd>
             CDI + prêmio (ações {formatNumber(r.assumptions.variable.acoes_br?.premium_over_cdi, 1)} p.p., exterior{' '}
@@ -235,6 +265,33 @@ function Result({ r }: { r: Simulation }) {
           <dt>Impostos</dt>
           <dd>IR regressivo por aporte, isenções de LCI/LCA e poupança, 15% em ETFs, 20% no lucro de FIIs, taxa B3 de 0,20% no Tesouro</dd>
         </dl>
+        {r.assumptions.path.length > 1 && (
+          <div className={styles.tableWrap} style={{ marginTop: 'var(--sp-4)' }}>
+            <table className={styles.table}>
+              <caption className="sr-only">Selic, CDI e inflação usadas em cada ano da simulação</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Ano da simulação</th>
+                  <th scope="col">Selic média</th>
+                  <th scope="col">CDI médio</th>
+                  <th scope="col">Inflação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {r.assumptions.path.map((y) => (
+                  <tr key={y.year}>
+                    <th scope="row">
+                      {y.year}º · desde {y.from.split('-').reverse().join('/')}
+                    </th>
+                    <td>{formatNumber(y.selic)}%</td>
+                    <td>{formatNumber(y.cdi)}%</td>
+                    <td>{formatNumber(y.ipca)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         <p className={[styles.callout, styles.info].join(' ')}>
           <Info {...ICON} aria-hidden /> {r.disclaimer}
         </p>

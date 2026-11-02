@@ -937,12 +937,12 @@
   {
    "question": "Para começar no Tesouro Selic, o valor mínimo é cerca de…",
    "options": [
-    "R$ 150",
+    "R$ 200",
     "R$ 5.000",
     "R$ 50.000"
    ],
    "correct": 0,
-   "why": "A fração mínima é 1% do título, cerca de R$ 150."
+   "why": "A fração mínima é 1% do título, cerca de R$ 200 em 10/2026."
   },
   {
    "question": "Com a Selic acima de 8,5% ao ano, a poupança rende…",

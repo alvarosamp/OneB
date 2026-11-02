@@ -1,9 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { AsyncContent, EmptyState, Section, SkeletonLines, Stat, buttonClass } from '../../components/ui';
-import { formatCurrency, formatDate, formatNumber } from '../../lib/format';
-import type { History, Rates } from './types';
+import { formatCurrency, formatNumber } from '../../lib/format';
+import type { History, Outlook, Rates } from './types';
 import styles from './Brasil.module.css';
+
+// Datas do BCB vêm como AAAA-MM-DD sem fuso: fatiar o texto evita o new Date() em UTC, que
+// no horário de Brasília volta um dia (02/11 virava 01/11).
+const dayMonth = (iso?: string) => (iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '—');
+const monthYear = (iso?: string) => (iso ? iso.slice(5, 7) + '/' + iso.slice(0, 4) : '—');
 
 const pct = (x: number | null | undefined, d = 2) => (x == null ? '—' : `${formatNumber(x, d)}%`);
 
@@ -18,6 +23,7 @@ const PATH = [
 export function Comecar() {
   const rates = useApi<Rates>('/api/brasil/rates');
   const history = useApi<History>('/api/brasil/history', { isEmpty: (d) => d.table.length === 0 });
+  const outlook = useApi<Outlook>('/api/brasil/outlook', { isEmpty: (d) => !d.focus && !d.tesouro });
   return (
     <div className={styles.page}>
       <p className={styles.lead}>
@@ -30,13 +36,24 @@ export function Comecar() {
         <AsyncContent state={rates} loading={<SkeletonLines lines={2} />} empty={<EmptyState title="Sem dados agora" />} errorTitle="Taxas indisponíveis">
           {(r) => (
             <div className={styles.stats}>
-              <Stat label="Selic (meta)" value={pct(r.selic)} sub={`definida pelo Copom · ${formatDate(r.series.selic?.as_of)}`} />
+              <Stat label="Selic (meta)" value={pct(r.selic)} sub={`definida pelo Copom · ${dayMonth(r.series.selic?.as_of)}`} />
               <Stat label="CDI" value={pct(r.cdi)} sub="referência dos CDBs" />
-              <Stat label="Inflação (IPCA 12 meses)" value={pct(r.ipca_12m)} sub={`até ${formatDate(r.series.ipca_12m?.as_of)}`} />
+              <Stat label="Inflação (IPCA 12 meses)" value={pct(r.ipca_12m)} sub={`até ${monthYear(r.series.ipca_12m?.as_of)}`} />
               <Stat label="Poupança" value={pct(r.poupanca)} sub="ao ano, sem TR" />
               <Stat label="Ganho real do CDI" value={pct(r.real_cdi)} sub="acima da inflação, antes do IR" />
             </div>
           )}
+        </AsyncContent>
+      </Section>
+
+      <Section title="O que o mercado espera" meta={outlook.data?.focus ? `Boletim Focus do Banco Central · ${outlook.data.focus.as_of.split('-').reverse().join('/')}` : undefined}>
+        <AsyncContent
+          state={outlook}
+          loading={<SkeletonLines lines={3} />}
+          empty={<EmptyState title="Projeção indisponível agora" />}
+          errorTitle="Projeção indisponível"
+        >
+          {(o) => (o.focus ? <FocusTable focus={o.focus} /> : <p className={styles.meta}>O Banco Central não respondeu agora. Tente mais tarde.</p>)}
         </AsyncContent>
       </Section>
 
@@ -67,6 +84,42 @@ export function Comecar() {
         </AsyncContent>
       </Section>
     </div>
+  );
+}
+
+function FocusTable({ focus }: { focus: NonNullable<Outlook['focus']> }) {
+  const last = focus.years[focus.years.length - 1];
+  return (
+    <>
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <caption className="sr-only">Mediana das projeções do mercado para a Selic e a inflação</caption>
+          <thead>
+            <tr>
+              <th scope="col">Ano</th>
+              <th scope="col">Selic no fim do ano</th>
+              <th scope="col">Inflação no ano (IPCA)</th>
+              <th scope="col">Juro acima da inflação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {focus.years.map((y) => (
+              <tr key={y.year}>
+                <th scope="row">{y.year}</th>
+                <td>{pct(y.selic)}</td>
+                <td>{pct(y.ipca)}</td>
+                <td>{pct(((1 + y.selic / 100) / (1 + y.ipca / 100) - 1) * 100)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className={styles.meta}>
+        O mercado espera a Selic caindo até {pct(last?.selic, 0)}. Quando isso acontece, a renda fixa pós-fixada (Tesouro Selic, CDB) passa a render menos, e
+        quem travou taxa em Tesouro IPCA+ ou Prefixado mantém o que contratou. O simulador já usa essa projeção. É a mediana das apostas do mercado, não uma
+        garantia.
+      </p>
+    </>
   );
 }
 

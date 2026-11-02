@@ -39,7 +39,7 @@ TRACK_INVESTIR = (
 
 MATERIAL_INVESTIR: dict[str, dict] = {
     "Todo mundo pode investir": {
-        "summary": "Investir não exige muito dinheiro: o Tesouro Selic começa com cerca de R$ 150 e muitos CDBs com R$ 1. O que faz diferença é a constância e o tempo, por causa dos juros compostos.",
+        "summary": "Investir não exige muito dinheiro: o Tesouro Selic começa com cerca de R$ 200 e muitos CDBs com R$ 1. O que faz diferença é a constância e o tempo, por causa dos juros compostos.",
         "checklist": ["Sei o que são juros compostos.", "Sei que posso começar com pouco.", "Comparei a poupança com o CDI.", "Defini um valor mensal que cabe no meu orçamento."],
         "exercise": "No Simulador da seção Brasil, coloque R$ 0 de valor inicial e R$ 100 por mês por 10 anos. Anote quanto daria na poupança e na divisão sugerida, e a diferença.",
         "required": True,
@@ -90,7 +90,7 @@ MATERIAL_INVESTIR: dict[str, dict] = {
 
 BODIES_INVESTIR: dict[str, str] = {
     "Todo mundo pode investir": """\
-Investir é deixar o dinheiro trabalhar por você. Não é coisa de rico: dá para começar com R$ 1 em muitos CDBs e com cerca de R$ 150 no Tesouro Selic.
+Investir é deixar o dinheiro trabalhar por você. Não é coisa de rico: dá para começar com R$ 1 em muitos CDBs e com cerca de R$ 200 no Tesouro Selic.
 
 ## Juros compostos
 
@@ -161,7 +161,13 @@ O que importa é quanto o dinheiro cresce **acima da inflação**:
 
 Esse ganho real é alto para padrões mundiais. Ele não dura para sempre: quando a Selic cai, a renda fixa pós-fixada passa a render menos. Por isso vale travar parte do dinheiro em IPCA+ ou prefixado para objetivos longos.
 
-As taxas atualizadas ficam na aba **Começar** da seção Brasil, direto do Banco Central.
+## E daqui para a frente?
+
+Toda semana o Banco Central pergunta a economistas onde acham que a Selic e a inflação vão estar (é o **Boletim Focus**). Em outubro de 2026, a mediana esperava a Selic em **11,75% no fim de 2027** e **10% a partir de 2028**, com a inflação perto de 3,5%.
+
+Se isso se confirmar, o Tesouro Selic e os CDBs vão render menos daqui a alguns anos. Já quem compra hoje um **Tesouro IPCA+** (cerca de IPCA + 7,3% a 7,9% em 30/10/2026) ou um **Prefixado** trava a taxa até o vencimento.
+
+As taxas atualizadas ficam na aba **Começar** da seção Brasil, direto do Banco Central, e as do Tesouro em **Onde investir**. O simulador já usa as duas.
 """,
     "Tesouro, CDB, LCI e LCA: como escolher": """\
 Na renda fixa, a pergunta certa não é "qual rende mais", e sim "para quê é esse dinheiro".

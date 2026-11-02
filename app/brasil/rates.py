@@ -39,10 +39,17 @@ def _parse_date(text: str) -> str:
 
 
 def _fetch_last(code: int) -> tuple[float, str]:
-    res = httpx.get(f"{SGS_URL.format(code=code)}/ultimos/1", params={"formato": "json"}, timeout=10.0)
-    res.raise_for_status()
-    row = res.json()[-1]
-    return float(row["valor"]), _parse_date(row["data"])
+    # O SGS às vezes demora mais de 10 s numa série e responde na hora seguinte: tenta 2 vezes.
+    for attempt in (1, 2):
+        try:
+            res = httpx.get(f"{SGS_URL.format(code=code)}/ultimos/1", params={"formato": "json"}, timeout=10.0)
+            res.raise_for_status()
+            row = res.json()[-1]
+            return float(row["valor"]), _parse_date(row["data"])
+        except Exception:
+            if attempt == 2:
+                raise
+    raise AssertionError("inalcançável")
 
 
 def fetch_daily_with_day(code: int, start: date, end: date) -> list[tuple[str, float]]:
@@ -97,4 +104,4 @@ def _load(fetch=_fetch_last) -> dict:
 
 
 def current() -> dict:
-    return response_cache.cached("brasil:rates", TTL_SECONDS, _load)
+    return response_cache.cached("brasil:rates", TTL_SECONDS, _load, degraded=lambda d: d["stale"])

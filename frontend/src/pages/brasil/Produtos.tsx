@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { AsyncContent, EmptyState, Badge, ChipGroup, Section, SkeletonLines, type BadgeTone } from '../../components/ui';
 import type { Product } from './types';
+import { TesouroHoje } from './TesouroHoje';
 import styles from './Brasil.module.css';
 
 type Filter = 'todos' | Product['group'];
@@ -68,6 +69,7 @@ export function Produtos() {
           )}
         </AsyncContent>
       </Section>
+      <TesouroHoje />
     </div>
   );
 }

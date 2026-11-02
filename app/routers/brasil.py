@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, model_validator
 
 from app.auth import get_current_user
-from app.brasil import events, market, products, rates
+from app.brasil import events, market, outlook, products, rates
 from app.brasil.simulator import DISCLAIMER, SimInput, simulate
 
 router = APIRouter(prefix="/api/brasil", tags=["brasil"], dependencies=[Depends(get_current_user)])
@@ -23,7 +23,7 @@ class SimulationIn(BaseModel):
     monthly_expenses: float | None = Field(None, ge=0, le=10_000_000)
     drop_reaction: Literal["vender", "esperar", "comprar"] = "esperar"
     experience: Literal["nenhuma", "pouca", "boa"] = "nenhuma"
-    ipca_real_rate: float = Field(6.5, ge=0, le=15)
+    ipca_real_rate: float | None = Field(None, ge=0, le=15)
     prefixado_rate: float | None = Field(None, ge=0, le=40)
     equity_premium: float | None = Field(None, ge=-10, le=15)
 
@@ -46,9 +46,18 @@ def get_products():
 
 @router.post("/simulate")
 async def post_simulate(body: SimulationIn):
-    current = await asyncio.to_thread(rates.current)
-    inp = SimInput(**body.model_dump(), rates=current)
+    current, focus, tesouro = await asyncio.gather(
+        asyncio.to_thread(rates.current), asyncio.to_thread(outlook.focus), asyncio.to_thread(outlook.tesouro)
+    )
+    inp = SimInput(**body.model_dump(), rates=current, focus=focus, tesouro=tesouro)
     return await asyncio.to_thread(simulate, inp)
+
+
+@router.get("/outlook")
+async def get_outlook():
+    """Projeção do mercado (Focus) e taxas do Tesouro Direto hoje. Cada parte pode vir None."""
+    focus, tesouro = await asyncio.gather(asyncio.to_thread(outlook.focus), asyncio.to_thread(outlook.tesouro))
+    return {"focus": focus, "tesouro": tesouro}
 
 
 @router.get("/market")

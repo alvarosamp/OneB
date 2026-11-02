@@ -16,9 +16,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from datetime import date
 
 import numpy as np
 
+from app.brasil.outlook import pick_title
 from app.brasil.products import BY_KEY, ir_rate
 from app.brasil.rates import poupanca_annual
 
@@ -74,10 +76,18 @@ class SimInput:
     monthly_expenses: float | None = None
     drop_reaction: str = "esperar"  # vender | esperar | comprar
     experience: str = "nenhuma"  # nenhuma | pouca | boa
-    ipca_real_rate: float = 6.5
-    prefixado_rate: float | None = None
+    ipca_real_rate: float | None = None  # None = taxa do Tesouro IPCA+ de hoje
+    prefixado_rate: float | None = None  # None = taxa do Tesouro Prefixado de hoje
     equity_premium: float | None = None
     rates: dict = field(default_factory=dict)
+    focus: dict | None = None  # app.brasil.outlook.focus(): Selic e IPCA esperados por ano
+    tesouro: dict | None = None  # app.brasil.outlook.tesouro(): taxas dos títulos hoje
+    start: date = field(default_factory=date.today)
+
+
+# Sem o Tesouro disponível: premissas abaixo das taxas de 10/2026.
+FALLBACK_IPCA_REAL = 6.5
+FALLBACK_PREFIX_DISCOUNT = 1.0  # prefixado = CDI de hoje − 1 p.p.
 
 
 def brl(x: float) -> str:
@@ -118,32 +128,88 @@ def _months_text(m: int) -> str:
     return f"{years:.0f} {'ano' if round(years) == 1 else 'anos'}" if m % 12 == 0 else f"{years:.1f} anos".replace(".", ",")
 
 
-def _annual_rate(key: str, inp: SimInput) -> float:
-    """Taxa nominal anual (%) de produtos de renda fixa."""
+def _add_months(d: date, months: int) -> date:
+    y, m = divmod(d.month - 1 + months, 12)
+    return date(d.year + y, m + 1, 1)
+
+
+def market_context(inp: SimInput) -> dict:
+    """Taxas anuais (%) mês a mês no prazo do simulador e os títulos do Tesouro usados.
+
+    Com o Focus: Selic e IPCA saem do valor de hoje e vão, em linha reta, até a mediana
+    esperada para dezembro de cada ano; depois do último ano do Focus, ficam constantes.
+    O CDI acompanha a Selic com a diferença de hoje. Sem o Focus: tudo constante.
+    """
+    n = max(inp.months, 1)
     r = inp.rates
+    t = np.arange(n) + 0.5  # meio de cada mês
+    years = (inp.focus or {}).get("years") or []
+    if years:
+        xs, selic_pts, ipca_pts = [0.0], [r["selic"]], [r["ipca_12m"]]
+        for row in sorted(years, key=lambda y: y["year"]):
+            to_dec = (row["year"] - inp.start.year) * 12 + (12 - inp.start.month)
+            if to_dec <= 0:
+                continue
+            xs.append(float(to_dec))
+            selic_pts.append(row["selic"])
+            ipca_pts.append(row["ipca"])
+        selic = np.interp(t, xs, selic_pts)
+        ipca = np.interp(t, xs, ipca_pts)
+        mode = "focus"
+    else:
+        selic = np.full(n, float(r["selic"]))
+        ipca = np.full(n, float(r["ipca_12m"]))
+        mode = "constante"
+    cdi = selic - (r["selic"] - r["cdi"])
+
+    target = _add_months(inp.start, inp.months)
+    ipca_title = pick_title(inp.tesouro, "Tesouro IPCA+", target)
+    prefix_title = pick_title(inp.tesouro, "Tesouro Prefixado", target)
+    if inp.ipca_real_rate is not None:
+        ipca_real, ipca_src, ipca_title = inp.ipca_real_rate, "informada por você", None
+    elif ipca_title:
+        ipca_real, ipca_src = ipca_title["buy_rate"], f"Tesouro IPCA+ {ipca_title['maturity'][:4]} hoje"
+    else:
+        ipca_real, ipca_src = FALLBACK_IPCA_REAL, "premissa: Tesouro indisponível agora"
+    if inp.prefixado_rate is not None:
+        prefix, prefix_src, prefix_title = inp.prefixado_rate, "informada por você", None
+    elif prefix_title:
+        prefix, prefix_src = prefix_title["buy_rate"], f"Tesouro Prefixado {prefix_title['maturity'][:4]} hoje"
+    else:
+        prefix, prefix_src = round(r["cdi"] - FALLBACK_PREFIX_DISCOUNT, 2), "premissa: Tesouro indisponível agora"
+    return {
+        "mode": mode, "selic": selic, "cdi": cdi, "ipca": ipca,
+        "ipca_real": ipca_real, "ipca_real_source": ipca_src, "ipca_title": ipca_title,
+        "prefixado": prefix, "prefixado_source": prefix_src, "prefixado_title": prefix_title,
+        "last_focus_year": max((y["year"] for y in years), default=None),
+    }
+
+
+def _rate_path(key: str, ctx: dict) -> np.ndarray:
+    """Taxa nominal anual (%) de um produto de renda fixa, mês a mês."""
     p = BY_KEY[key]
     model = p["yield_model"]
     if model == "poupanca":
-        return poupanca_annual(r["selic"])
+        return np.array([poupanca_annual(s) for s in ctx["selic"]])
     if model == "selic":
-        return r["selic"] - 0.05  # Tesouro Selic rende levemente abaixo da Selic meta (Selic over)
+        return ctx["selic"] - 0.05  # Tesouro Selic rende levemente abaixo da Selic meta (Selic over)
     if model == "cdi":
-        return r["cdi"] * p.get("cdi_pct", 1.0)
+        return ctx["cdi"] * p.get("cdi_pct", 1.0)
     if model == "prefixado":
-        return inp.prefixado_rate if inp.prefixado_rate is not None else round(r["cdi"] - 1.0, 2)
+        return np.full(len(ctx["selic"]), float(ctx["prefixado"]))
     if model == "ipca_plus":
-        return ((1 + r["ipca_12m"] / 100) * (1 + inp.ipca_real_rate / 100) - 1) * 100
+        return ((1 + ctx["ipca"] / 100) * (1 + ctx["ipca_real"] / 100) - 1) * 100
     raise ValueError(key)
 
 
-def _fixed_income_path(key: str, contrib: np.ndarray, inp: SimInput) -> tuple[np.ndarray, np.ndarray]:
+def _fixed_income_path(key: str, contrib: np.ndarray, ctx: dict) -> tuple[np.ndarray, np.ndarray]:
     """Valor bruto e líquido (se resgatado) ao fim de cada mês 0..n.
 
     Cada aporte é um lote com a sua própria idade para a tabela regressiva do IR.
     """
     n = len(contrib) - 1
     p = BY_KEY[key]
-    rm = (1 + _annual_rate(key, inp) / 100) ** (1 / 12) - 1
+    rm = (1 + _rate_path(key, ctx) / 100) ** (1 / 12) - 1
     custody = p.get("custody")
     lots = np.zeros(n + 1)
     basis = np.zeros(n + 1)
@@ -151,7 +217,7 @@ def _fixed_income_path(key: str, contrib: np.ndarray, inp: SimInput) -> tuple[np
     net = np.zeros(n + 1)
     for t in range(n + 1):
         if t > 0:
-            lots[:t] *= 1 + rm
+            lots[:t] *= 1 + rm[t - 1]
             if custody:
                 total = lots[:t].sum()
                 fee = custody["rate"] / 12 * max(0.0, total - custody["exempt_up_to"])
@@ -171,35 +237,38 @@ def _fixed_income_path(key: str, contrib: np.ndarray, inp: SimInput) -> tuple[np
     return gross, net
 
 
-def _variable_paths(contribs: dict[str, np.ndarray], inp: SimInput, seed: int = 7) -> tuple[np.ndarray, dict]:
-    """Patrimônio líquido de IR por cenário (PATHS × n+1) somando as classes de renda variável."""
+def _variable_paths(contribs: dict[str, np.ndarray], inp: SimInput, ctx: dict, seed: int = 7) -> tuple[np.ndarray, dict]:
+    """Patrimônio líquido de IR por cenário (PATHS × n+1) somando as classes de renda variável.
+
+    Retorno esperado de cada mês = CDI daquele mês + prêmio da classe."""
     keys = [k for k in VARIABLE_ORDER if k in contribs]
     n = len(next(iter(contribs.values()))) - 1
     if not keys:
         return np.zeros((PATHS, n + 1)), {}
-    cdi = inp.rates["cdi"]
-    ipca = inp.rates["ipca_12m"]
+    cdi, ipca = ctx["cdi"][:n], ctx["ipca"][:n]
     idx = [VARIABLE_ORDER.index(k) for k in keys]
     params = {}
-    mus, sigmas = [], []
-    for k in keys:
+    mus = np.zeros((n, len(keys)))
+    sigmas = []
+    for j, k in enumerate(keys):
         prem, vol = VARIABLE_DEFAULTS[k]
         if k == "acoes_br" and inp.equity_premium is not None:
             prem = inp.equity_premium
         expected = cdi + prem
-        params[k] = {"expected_annual_pct": round(expected, 2), "volatility_pct": round(vol * 100, 1)}
+        params[k] = {"expected_annual_pct": round(float(expected.mean()), 2) if n else 0.0, "volatility_pct": round(vol * 100, 1)}
         sm = vol / math.sqrt(12)
-        mus.append(math.log(1 + expected / 100) / 12 - sm * sm / 2)
+        mus[:, j] = np.log(1 + expected / 100) / 12 - sm * sm / 2
         sigmas.append(sm)
     corr = CORRELATION[np.ix_(idx, idx)]
     cov = np.outer(sigmas, sigmas) * corr
     rng = np.random.default_rng(seed)
-    shocks = rng.multivariate_normal(np.array(mus), cov, size=(PATHS, n)) if n else np.zeros((PATHS, 0, len(keys)))
+    noise = rng.multivariate_normal(np.zeros(len(keys)), cov, size=(PATHS, n)) if n else np.zeros((PATHS, 0, len(keys)))
+    shocks = noise + mus[None, :, :]
     total_net = np.zeros((PATHS, n + 1))
-    # FII: parte do retorno vem como rendimento mensal isento (reinvestido, entra no custo);
-    # o resto é valorização da cota, tributada em 20% na venda.
-    fii_yield_m = max(0.0, (1 + (cdi + VARIABLE_DEFAULTS["fii"][0]) / 100) / (1 + ipca / 100) - 1)
-    fii_yield_m = (1 + fii_yield_m) ** (1 / 12) - 1
+    # FII: a parte acima da inflação vem como rendimento mensal isento (reinvestido, entra
+    # no custo); o resto é valorização da cota, tributada em 20% na venda.
+    fii_real = np.clip((1 + (cdi + VARIABLE_DEFAULTS["fii"][0]) / 100) / (1 + ipca / 100) - 1, 0, None)
+    fii_yield_m = (1 + fii_real) ** (1 / 12) - 1
     for j, k in enumerate(keys):
         c = contribs[k]
         value = np.zeros(PATHS)
@@ -209,7 +278,7 @@ def _variable_paths(contribs: dict[str, np.ndarray], inp: SimInput, seed: int = 
             if t > 0:
                 growth = np.exp(shocks[:, t - 1, j])
                 if k == "fii":
-                    div = value * fii_yield_m
+                    div = value * fii_yield_m[t - 1]
                     value = value * growth  # retorno total do cenário
                     # o rendimento já está dentro do retorno total; reinvestido, vira custo
                     basis = basis + div
@@ -221,7 +290,11 @@ def _variable_paths(contribs: dict[str, np.ndarray], inp: SimInput, seed: int = 
     return total_net, params
 
 
-def _reasons(key: str, inp: SimInput, prof: str) -> str:
+def _pct(x: float) -> str:
+    return f"{x:.2f}".rstrip("0").rstrip(".").replace(".", ",")
+
+
+def _reasons(key: str, inp: SimInput, ctx: dict) -> str:
     m = inp.months
     if key == "tesouro_selic":
         return "Resgate em qualquer dia útil e risco do governo federal: é a base de segurança. Se surgir uma emergência, você não precisa vender nada no prejuízo."
@@ -231,10 +304,11 @@ def _reasons(key: str, inp: SimInput, prof: str) -> str:
         equiv = 90 / (1 - ir_rate(m * 30))
         return f"Isenta de IR: com {_months_text(m)}, 90% do CDI isento equivale a cerca de {equiv:.0f}% do CDI de um CDB. Só use dinheiro que pode ficar parado na carência."
     if key == "tesouro_prefixado":
-        return "Trava a taxa de hoje até uma data. Escolha um vencimento perto da data do seu objetivo e leve até o fim: assim a oscilação do caminho não importa."
+        return (f"Trava a taxa de hoje até uma data: {_pct(ctx['prefixado'])}% ao ano ({ctx['prefixado_source']}). "
+                "Escolha um vencimento perto da data do seu objetivo e leve até o fim: assim a oscilação do caminho não importa.")
     if key == "tesouro_ipca":
-        real = f"{inp.ipca_real_rate:g}".replace(".", ",")
-        return f"Garante ganho acima da inflação por muitos anos (premissa: IPCA + {real}% ao ano). Protege o poder de compra até a data do seu objetivo."
+        return (f"Garante ganho acima da inflação por muitos anos: IPCA + {_pct(ctx['ipca_real'])}% ao ano ({ctx['ipca_real_source']}). "
+                "Protege o poder de compra até a data do seu objetivo, se você levar até o vencimento.")
     if key == "fii":
         return "Renda mensal isenta de IR e exposição a imóveis com pouco dinheiro. Prefira um ETF de FIIs ou fundos grandes e diversificados."
     if key == "acoes_br":
@@ -243,6 +317,18 @@ def _reasons(key: str, inp: SimInput, prof: str) -> str:
     if key == "exterior":
         return "Diversifica fora da economia brasileira e do real. Se o Brasil for mal, essa parte tende a segurar o resultado."
     return ""
+
+
+def _yearly_path(ctx: dict, start: date) -> list[dict]:
+    """Média de cada ano do prazo (até 6 anos), para mostrar na tela."""
+    out = []
+    n = len(ctx["selic"])
+    for i in range(0, min(n, 72), 12):
+        sl = slice(i, min(i + 12, n))
+        out.append({"year": i // 12 + 1, "from": _add_months(start, i).isoformat()[:7],
+                    "selic": round(float(ctx["selic"][sl].mean()), 2), "cdi": round(float(ctx["cdi"][sl].mean()), 2),
+                    "ipca": round(float(ctx["ipca"][sl].mean()), 2)})
+    return out
 
 
 def simulate(inp: SimInput) -> dict:
@@ -310,16 +396,17 @@ def simulate(inp: SimInput) -> dict:
     })
 
     # Projeção
+    ctx = market_context(inp)
     fixed_keys = [k for k in contribs if k not in VARIABLE_ORDER]
     var_contribs = {k: v for k, v in contribs.items() if k in VARIABLE_ORDER}
     fixed_net = np.zeros(n + 1)
     by_product = []
     for k in fixed_keys:
-        g, net = _fixed_income_path(k, contribs[k], inp)
+        g, net = _fixed_income_path(k, contribs[k], ctx)
         fixed_net += net
         by_product.append({"key": k, "invested": round(float(contribs[k].sum()), 2), "gross": round(float(g[-1]), 2), "net": round(float(net[-1]), 2),
-                           "annual_rate_pct": round(_annual_rate(k, inp), 2)})
-    var_net, var_params = _variable_paths(var_contribs, inp) if var_contribs else (np.zeros((PATHS, n + 1)), {})
+                           "annual_rate_pct": round(float(_rate_path(k, ctx).mean()), 2)})
+    var_net, var_params = _variable_paths(var_contribs, inp, ctx) if var_contribs else (np.zeros((PATHS, n + 1)), {})
     for k in var_contribs:
         by_product.append({"key": k, "invested": round(float(var_contribs[k].sum()), 2), "expected_annual_pct": var_params[k]["expected_annual_pct"],
                            "volatility_pct": var_params[k]["volatility_pct"]})
@@ -329,10 +416,9 @@ def simulate(inp: SimInput) -> dict:
     flows = np.zeros(n + 1)
     flows[0] = inp.initial
     flows[1:] = inp.monthly
-    _, poup = _fixed_income_path("poupanca", flows, inp)
+    _, poup = _fixed_income_path("poupanca", flows, ctx)
     invested = np.cumsum(flows)
-    ipca_m = (1 + inp.rates["ipca_12m"] / 100) ** (1 / 12) - 1
-    deflator = (1 + ipca_m) ** np.arange(n + 1)
+    deflator = np.concatenate([[1.0], np.cumprod((1 + ctx["ipca"][:n] / 100) ** (1 / 12))])
 
     points = sorted({*range(0, n + 1, 12 if n > 24 else 1), n})
     timeline = [{"month": t, "invested": round(float(invested[t]), 2), "p10": round(float(p10[t]), 2), "p50": round(float(p50[t]), 2),
@@ -350,14 +436,21 @@ def simulate(inp: SimInput) -> dict:
             "key": k, "label": prod["label"], "pct": p, "group": prod["group"], "risk": prod["risk"],
             "initial_amount": round(initial_left * p / 100, 2), "monthly_amount": round(inp.monthly * p / 100, 2),
             "monthly_from": fill + 1 if fill else 1,
-            "liquidity": prod["liquidity"], "guarantee": prod["guarantee"], "tax": prod["tax"], "reason": _reasons(k, inp, prof["key"]),
+            "liquidity": prod["liquidity"], "guarantee": prod["guarantee"], "tax": prod["tax"], "reason": _reasons(k, inp, ctx),
         })
     if var_contribs and loss_prob > 0.05:
         warnings.append(f"Em {loss_prob * 100:.0f}% dos cenários o resultado final fica abaixo do total aportado. É o preço da parte em renda variável.")
-    if "tesouro_selic" in alloc_pct and 0 < initial_left * alloc_pct["tesouro_selic"] / 100 < 150 and inp.monthly * alloc_pct["tesouro_selic"] / 100 < 150:
-        warnings.append("Valores abaixo de cerca de R$ 150 podem não comprar a fração mínima do Tesouro Selic; use o CDB de liquidez diária até juntar.")
-    if n >= 120:
-        warnings.append("Em prazos longos, supor CDI e IPCA constantes é uma simplificação forte. Use a projeção como ordem de grandeza.")
+    selic_min = min((t["min_investment"] for t in (inp.tesouro or {}).get("titles", []) if t["name"] == "Tesouro Selic"), default=200.0)
+    if "tesouro_selic" in alloc_pct and 0 < initial_left * alloc_pct["tesouro_selic"] / 100 < selic_min and inp.monthly * alloc_pct["tesouro_selic"] / 100 < selic_min:
+        warnings.append(f"A compra mínima do Tesouro Selic hoje é de cerca de {brl(selic_min)}. Até juntar esse valor, use o CDB de liquidez diária.")
+    end_date = _add_months(inp.start, n)
+    if ctx["mode"] == "constante" and n >= 120:
+        warnings.append("A projeção do mercado (Focus) está indisponível agora: supomos o CDI e o IPCA de hoje constantes, uma simplificação forte em prazos longos.")
+    elif ctx["mode"] == "focus" and ctx["last_focus_year"] and end_date.year > ctx["last_focus_year"]:
+        warnings.append(f"Depois de {ctx['last_focus_year']}, último ano projetado pelo mercado, mantivemos a Selic em {_pct(ctx['selic'][-1])}% e o IPCA em "
+                        f"{_pct(ctx['ipca'][-1])}% ao ano. Use a projeção como ordem de grandeza.")
+    if ctx["ipca_title"] and "tesouro_ipca" in alloc_pct and end_date > date.fromisoformat(ctx["ipca_title"]["maturity"]):
+        warnings.append("Seu prazo passa do vencimento mais longo do Tesouro IPCA+ à venda; supomos reinvestir na mesma taxa.")
 
     years = n / 12
     return {
@@ -384,8 +477,14 @@ def simulate(inp: SimInput) -> dict:
         "assumptions": {
             "selic": inp.rates["selic"], "cdi": inp.rates["cdi"], "ipca_12m": inp.rates["ipca_12m"],
             "poupanca": round(poupanca_annual(inp.rates["selic"]), 2),
-            "ipca_real_rate": inp.ipca_real_rate,
-            "prefixado_rate": inp.prefixado_rate if inp.prefixado_rate is not None else round(inp.rates["cdi"] - 1.0, 2),
+            "ipca_real_rate": ctx["ipca_real"],
+            "ipca_real_source": ctx["ipca_real_source"],
+            "prefixado_rate": ctx["prefixado"],
+            "prefixado_source": ctx["prefixado_source"],
+            "rates_mode": ctx["mode"],
+            "path": _yearly_path(ctx, inp.start),
+            "focus_as_of": (inp.focus or {}).get("as_of"),
+            "tesouro_as_of": (inp.tesouro or {}).get("as_of"),
             "variable": {k: {"premium_over_cdi": (inp.equity_premium if k == "acoes_br" and inp.equity_premium is not None else VARIABLE_DEFAULTS[k][0]),
                              "volatility_pct": VARIABLE_DEFAULTS[k][1] * 100} for k in VARIABLE_ORDER},
             "rates_as_of": inp.rates.get("series", {}).get("cdi", {}).get("as_of"),

@@ -14,12 +14,23 @@ _lock = threading.Lock()
 _store: dict[str, tuple[float, Any]] = {}
 
 
-def cached(key: str, ttl_seconds: float, compute: Callable[[], Any]) -> Any:
+def cached(
+    key: str,
+    ttl_seconds: float,
+    compute: Callable[[], Any],
+    *,
+    degraded: Callable[[Any], bool] | None = None,
+    degraded_ttl_seconds: float = 600,
+) -> Any:
+    """`degraded(valor)` verdadeiro (ex.: fonte fora do ar, valor de reserva) faz o
+    resultado valer só `degraded_ttl_seconds`: uma falha passageira não fica horas na tela."""
     now = time.monotonic()
     with _lock:
         hit = _store.get(key)
-        if hit and now - hit[0] < ttl_seconds:
-            return hit[1]
+        if hit:
+            ttl = degraded_ttl_seconds if degraded is not None and degraded(hit[1]) else ttl_seconds
+            if now - hit[0] < ttl:
+                return hit[1]
     value = compute()  # fora do lock: um cálculo lento não bloqueia outras chaves
     with _lock:
         _store[key] = (time.monotonic(), value)
