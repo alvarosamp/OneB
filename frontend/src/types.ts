@@ -401,3 +401,19 @@ export interface RiskPanel {
   alerts: string[];
   evidence: string;
 }
+
+export interface SignalLog {
+  started: string | null;
+  entries: number;
+  result: {
+    symbols: { symbol: string; days: number; days_in_position: number; strategy_pct: number; buy_hold_pct: number }[];
+    aggregate: {
+      days: number;
+      strategy_pct: number;
+      buy_hold_pct: number;
+      worst_day_strategy_pct: number;
+      worst_day_buy_hold_pct: number;
+    } | null;
+  };
+  recent: { date: string; symbol: string; state: number; close: number; trend: string }[];
+}

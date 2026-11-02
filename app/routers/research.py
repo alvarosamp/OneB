@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.db import get_db
 from app.models import WatchlistItem
-from app.research import earnings, news_archive, risk_panel, service, store
+from app.research import earnings, news_archive, risk_panel, service, signal_log, store
 
 router = APIRouter(prefix="/api/research", tags=["research"], dependencies=[Depends(get_current_user)])
 
@@ -64,3 +64,19 @@ def panel(symbol: str, risk_pct: float = Query(1.0, gt=0, le=10), refresh: bool 
     if "error" in result:
         raise HTTPException(status_code=422, detail=result["error"])
     return result
+
+
+@router.get("/signals")
+def signals(limit: int = Query(30, ge=1, le=200)):
+    """Registro de sinais em tempo real (paper trading) e o resultado dele contra comprar e segurar."""
+    log = signal_log.load()
+    if log.empty:
+        return {"started": None, "entries": 0, "result": {"symbols": [], "aggregate": None}, "recent": []}
+    histories = {s: store.load(s) for s in log["symbol"].unique()}
+    recent = log.sort_values(["date", "symbol"], ascending=False).head(limit)
+    return {
+        "started": str(log["date"].min()),
+        "entries": int(len(log)),
+        "result": signal_log.evaluate(log, histories),
+        "recent": recent[["date", "symbol", "state", "close", "trend"]].to_dict("records"),
+    }

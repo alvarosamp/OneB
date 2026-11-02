@@ -405,3 +405,46 @@ def test_risk_panel_news_filters_unrelated_headlines():
     )
     n = risk_panel.build("NVDA", h, archive=arch, today=now)["news"]
     assert [x["headline"] for x in n["latest"]] == ["Nvidia unveils chip"]
+
+
+def _trend_hist(n=300, drift=0.002):
+    idx = pd.bdate_range("2025-01-01", periods=n)
+    px = 100 * np.cumprod(1 + np.full(n, drift))
+    return pd.DataFrame({"open": px, "high": px * 1.01, "low": px * 0.99, "close": px, "volume": 1e6}, index=idx)
+
+
+def test_signal_log_is_append_only_and_dedupes(tmp_path):
+    from app.research import signal_log
+
+    path = tmp_path / "log.csv"
+    h = {"UP": _trend_hist(), "SHORT": _trend_hist(50)}
+    assert signal_log.record(h, path)["new"] == 1  # histórico curto é ignorado
+    assert signal_log.record(h, path)["new"] == 0  # mesma data não duplica
+    log = signal_log.load(path)
+    assert log.iloc[0]["state"] == 1 and log.iloc[0]["trend"] == "up"
+    h2 = {"UP": _trend_hist(301)}
+    assert signal_log.record(h2, path)["new"] == 1
+    assert len(signal_log.load(path)) == 2
+
+
+def test_signal_log_evaluate_uses_next_open_and_costs():
+    from app.research import signal_log
+
+    h = _trend_hist(300, 0.01)
+    d = h.index[-5:-2]  # três sinais, cada um com abertura de entrada e de saída disponíveis
+    log = pd.DataFrame({"date": [x.date().isoformat() for x in d], "symbol": "UP", "state": [1, 1, 0]})
+    res = signal_log.evaluate(log, {"UP": h})["aggregate"]
+    one = 1.01 - 1
+    # entra no 1º dia (custo), segue posicionado no 2º e fica fora no 3º (custo de saída)
+    expected = ((1 + one - 0.001) * (1 + one) * (1 - 0.001) - 1) * 100
+    assert abs(res["strategy_pct"] - round(expected, 2)) < 0.02
+    assert res["buy_hold_pct"] > res["strategy_pct"]
+
+
+def test_signals_endpoint_empty(monkeypatch, tmp_path):
+    from app.research import signal_log
+    from app.routers import research as research_router
+
+    monkeypatch.setattr(signal_log, "DEFAULT_PATH", tmp_path / "none.csv")
+    monkeypatch.setattr(signal_log, "load", lambda path=tmp_path / "none.csv": pd.DataFrame(columns=signal_log.COLUMNS))
+    assert research_router.signals(limit=5)["entries"] == 0

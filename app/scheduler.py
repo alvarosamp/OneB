@@ -391,6 +391,21 @@ async def archive_news() -> None:
         logger.exception("Erro no job archive_news")
 
 
+async def log_signals() -> None:
+    """Registra o estado de tendência do dia (paper trading, só acrescenta) para os ativos da pesquisa."""
+    from app.research import signal_log, store
+    from app.research.universe import STOCKS
+
+    def work() -> dict:
+        histories = {s: store.update(s) for s in STOCKS}
+        return signal_log.record(histories)
+
+    try:
+        logger.info("Registro de sinais: %s", await asyncio.to_thread(work))
+    except Exception:
+        logger.exception("Erro no job log_signals")
+
+
 async def refresh_all() -> None:
     """Atualiza cotações, notícias e calendários agora (usado no startup e no botão "Atualizar")."""
     await poll_quotes()
@@ -451,5 +466,7 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
     scheduler.add_job(
         archive_news, "interval", seconds=settings.news_archive_seconds, next_run_time=now, id="archive_news"
     )
+    # ~1h depois do fechamento americano, quando a barra diária já está completa
+    scheduler.add_job(log_signals, "cron", hour=settings.daily_summary_hour_utc + 1, minute=30, id="log_signals")
     scheduler.add_job(refresh_calendars, "date", run_date=now, id="refresh_calendars_startup")
     return scheduler
