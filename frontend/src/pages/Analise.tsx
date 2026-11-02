@@ -9,8 +9,12 @@ import { Horarios } from './analise/Horarios';
 import { Confianca } from './analise/Confianca';
 import { Conta } from './analise/Conta';
 import { Sinal } from './analise/Sinal';
+import { Risco } from './analise/Risco';
+import { Pesquisa } from './Pesquisa';
 
-type AnaliseTab = 'visao-geral' | 'ativo' | 'conta' | 'sinal' | 'horarios' | 'confianca' | 'tendencia' | 'regime' | 'tecnica' | 'macro';
+type AnaliseTab =
+  | 'visao-geral' | 'ativo' | 'conta' | 'sinal' | 'horarios' | 'confianca' | 'tendencia' | 'regime' | 'tecnica' | 'macro'
+  | 'risco' | 'pesquisa';
 
 /** Análise: Visão geral, Ativo (risco e custo medidos), Quanto operar (lote pela conta), Horários (mapa de calor), Tendência, Regime, Técnica e Macro. */
 export function Analise() {
@@ -29,6 +33,8 @@ export function Analise() {
         { value: 'regime', label: 'Regime', render: () => <Regime /> },
         { value: 'tecnica', label: 'Técnica', render: () => <Tecnica /> },
         { value: 'macro', label: 'Macro', render: () => <Macro /> },
+        { value: 'risco', label: 'Risco e sinais', render: () => <Risco /> },
+        { value: 'pesquisa', label: 'Pesquisa', render: () => <Pesquisa /> },
       ]}
     />
   );

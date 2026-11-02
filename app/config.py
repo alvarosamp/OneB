@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # via Yahoo (ver app/market_data/fred_client.py e app/market_data/macro_data.py).
     fred_api_key: str = ""
 
+    # SEC EDGAR exige identificação real (nome + e-mail) no User-Agent; só p/ scripts de pesquisa
+    sec_user_agent: str = ""
+
     # Telegram
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
@@ -78,6 +81,7 @@ class Settings(BaseSettings):
     global_news_refresh_seconds: int = 900
     macro_refresh_seconds: int = 900
     macro_intelligence_hour_utc: int = 23
+    news_archive_seconds: int = 21600  # arquivo de manchetes p/ pesquisa (6h)
     global_news_categories: str = "general,forex"
     calendar_refresh_hour_utc: int = 6
     radar_bot_hour_utc: int = 13

@@ -10,7 +10,7 @@ from telegram.ext import Application
 from app.config import settings
 from app.db import SessionLocal
 from app.dedup import filter_new_by_key
-from app.market_data import finnhub_client, fred_client
+from app.market_data import finnhub_client, fred_client, rss_news, yfinance_client
 from app.market_data import service as market_data_service
 from app.models import (
     AlertLog,
@@ -28,12 +28,25 @@ from app.telegram_bot import resolve_acting_user_id, send_alert
 logger = logging.getLogger(__name__)
 
 
+def _company_news(symbol: str, from_date: date, to_date: date):
+    """Finnhub quando há chave; RSS público (Yahoo) como fallback sem chave ou se vier vazio."""
+    articles = finnhub_client.get_company_news(symbol, from_date, to_date) if settings.finnhub_api_key else []
+    return articles or rss_news.get_company_news(symbol)
+
+
+def _market_news(category: str, limit: int):
+    articles = finnhub_client.get_market_news(category, limit=limit) if settings.finnhub_api_key else []
+    return articles or rss_news.get_market_news(category, limit=limit)
+
+
 async def poll_quotes() -> None:
     db = SessionLocal()
     try:
         items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
         for item in items:
-            quote = finnhub_client.get_quote(item.symbol)
+            quote = finnhub_client.get_quote(item.symbol) if settings.finnhub_api_key else None
+            if quote is None:
+                quote = yfinance_client.get_quote(item.symbol)
             if quote is None:
                 continue
             db.add(
@@ -141,7 +154,7 @@ async def refresh_news() -> None:
         existing_urls = {u for (u,) in db.query(NewsItem.url).all()}
 
         for item in items:
-            articles = finnhub_client.get_company_news(item.symbol, week_ago, today)
+            articles = _company_news(item.symbol, week_ago, today)
             new_articles = filter_new_by_key(articles, existing_urls, key_fn=lambda a: a.url)
             for article in new_articles:
                 db.add(
@@ -170,7 +183,7 @@ async def refresh_global_news() -> None:
         existing_urls = {u for (u,) in db.query(GlobalNewsItem.url).all()}
 
         for category in categories:
-            articles = finnhub_client.get_market_news(category, limit=40)
+            articles = _market_news(category, limit=40)
             new_articles = filter_new_by_key(articles, existing_urls, key_fn=lambda a: a.url)
             for article in new_articles:
                 db.add(
@@ -289,7 +302,7 @@ async def refresh_calendars() -> None:
         existing_earnings_keys = {
             (sym, dt) for sym, dt in db.query(EarningsEvent.symbol, EarningsEvent.event_date).all()
         }
-        for item in items:
+        for item in items if settings.finnhub_api_key else []:
             earnings = finnhub_client.get_earnings_calendar(
                 today, today + timedelta(days=14), symbol=item.symbol
             )
@@ -547,6 +560,46 @@ async def recalibrate_decision_strategy() -> None:
         logger.exception("Falha na recalibração walk-forward de venda — mantendo a calibração anterior.")
 
 
+async def archive_news() -> None:
+    """Guarda manchetes em disco para formar histórico de pesquisa (watchlist + ativos estudados)."""
+    from app.research import news_archive
+
+    db = SessionLocal()
+    try:
+        watch = [w.symbol for w in db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()]
+    finally:
+        db.close()
+    symbols = list(dict.fromkeys(watch + news_archive.research_symbols()))
+    try:
+        stats = await asyncio.to_thread(news_archive.collect, symbols)
+        logger.info("Arquivo de manchetes: %s", stats)
+    except Exception:
+        logger.exception("Erro no job archive_news")
+
+
+async def log_signals() -> None:
+    """Registra o estado de tendência do dia (paper trading, só acrescenta) para os ativos da pesquisa."""
+    from app.research import signal_log, store
+    from app.research.universe import STOCKS
+
+    def work() -> dict:
+        histories = {s: store.update(s) for s in STOCKS}
+        return signal_log.record(histories)
+
+    try:
+        logger.info("Registro de sinais: %s", await asyncio.to_thread(work))
+    except Exception:
+        logger.exception("Erro no job log_signals")
+
+
+async def refresh_all() -> None:
+    """Atualiza cotações, notícias e calendários agora (usado no startup e no botão "Atualizar")."""
+    await poll_quotes()
+    await refresh_news()
+    await refresh_global_news()
+    await refresh_calendars()
+
+
 def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
     # job_defaults valem para TODOS os jobs registrados abaixo:
     #   max_instances=1  -> um job lento (ex.: coleta de cotacoes travada numa API)
@@ -562,7 +615,12 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler(
         job_defaults={"max_instances": 1, "coalesce": True, "misfire_grace_time": 60}
     )
-    scheduler.add_job(poll_quotes, "interval", seconds=settings.quote_poll_seconds, id="poll_quotes")
+    # next_run_time=agora: sem isso o 1º ciclo só rodava após o intervalo inteiro (ex: notícias
+    # por ativo esperavam 30 min), deixando o painel vazio logo após subir o servidor.
+    now = datetime.now(timezone.utc)
+    scheduler.add_job(
+        poll_quotes, "interval", seconds=settings.quote_poll_seconds, next_run_time=now, id="poll_quotes"
+    )
     scheduler.add_job(
         evaluate_rules,
         "interval",
@@ -604,12 +662,14 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
         args=[telegram_app],
         id="morning_report",
     )
-    scheduler.add_job(refresh_news, "interval", seconds=settings.news_refresh_seconds, id="refresh_news")
+    scheduler.add_job(
+        refresh_news, "interval", seconds=settings.news_refresh_seconds, next_run_time=now, id="refresh_news"
+    )
     scheduler.add_job(
         refresh_global_news,
         "interval",
         seconds=settings.global_news_refresh_seconds,
-        next_run_time=datetime.now(timezone.utc),
+        next_run_time=now,
         id="refresh_global_news",
     )
     scheduler.add_job(
@@ -659,4 +719,10 @@ def build_scheduler(telegram_app: Application | None) -> AsyncIOScheduler:
         minute=30,
         id="record_decision_desk_snapshot",
     )
+    scheduler.add_job(
+        archive_news, "interval", seconds=settings.news_archive_seconds, next_run_time=now, id="archive_news"
+    )
+    # ~1h depois do fechamento americano, quando a barra diária já está completa
+    scheduler.add_job(log_signals, "cron", hour=settings.daily_summary_hour_utc + 1, minute=30, id="log_signals")
+    scheduler.add_job(refresh_calendars, "date", run_date=now, id="refresh_calendars_startup")
     return scheduler

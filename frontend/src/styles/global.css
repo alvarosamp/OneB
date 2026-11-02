@@ -29,3 +29,10 @@
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.page-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}

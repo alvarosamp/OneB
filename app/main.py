@@ -27,6 +27,7 @@ from app.routers import (
     profile,
     regime,
     reports,
+    research,
     saas,
     share,
     signals,
@@ -109,6 +110,7 @@ app.include_router(profile.router)
 app.include_router(regime.router)
 app.include_router(reports.router)
 app.include_router(morning_report.router)
+app.include_router(research.router)
 app.include_router(api.router)
 app.include_router(lms.router)
 app.include_router(lives.router)

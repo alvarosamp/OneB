@@ -6,6 +6,7 @@ import { useQueryTab } from '../hooks/useQueryTab';
 import { useToast } from '../context/ToastContext';
 import { ChartPanel, type PriceLevel } from '../components/terminal/ChartPanel';
 import { AnalysisPanel, type Fact } from '../components/terminal/AnalysisPanel';
+import { RiskPanelCard } from '../components/RiskPanelCard';
 import { DataAge } from '../components/terminal/DataAge';
 import { AsyncContent, Button, ChangeText, EmptyState, ICON, Skeleton, SkeletonLines, Tabs } from '../components/ui';
 import { buttonClass } from '../components/ui/buttonClass';
@@ -78,6 +79,7 @@ export function AtivoDetalhe() {
         </section>
         <aside className={styles.side}>
           <AssetRead symbol={symbol} tf={tf} tech={tech} regime={regime} chart={chart.data} />
+          <RiskPanelCard symbol={symbol} />
         </aside>
       </div>
     </div>

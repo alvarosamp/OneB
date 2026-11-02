@@ -1,0 +1,4 @@
+# Dependencias so da pesquisa (ML/earnings). O app em si nao precisa delas.
+-r requirements.txt
+scikit-learn>=1.5
+lxml>=5.0

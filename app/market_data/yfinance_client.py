@@ -197,3 +197,16 @@ def get_sp500_quote() -> IndexQuote | None:
 # etc.) now lives in app.market_data.macro_data — it routes each instrument
 # to its most reliable source (FRED for yields/dollar index, yfinance for
 # everything else) instead of only ever using Yahoo proxies.
+def get_quote(symbol: str):
+    """Cotação via yfinance (sem chave) — fallback quando o Finnhub não está configurado."""
+    from app.market_data.finnhub_client import Quote
+
+    history = get_history(symbol, period="5d", interval="1d")
+    close = history["close"].dropna() if not history.empty else history
+    if len(close) == 0:
+        return None
+    latest = float(close.iloc[-1])
+    previous = float(close.iloc[-2]) if len(close) >= 2 else latest
+    change_pct = ((latest - previous) / previous * 100) if previous else 0.0
+    volume = float(history["volume"].iloc[-1]) if "volume" in history and len(history) else 0.0
+    return Quote(symbol=symbol, price=latest, change_pct=change_pct, volume=volume)
