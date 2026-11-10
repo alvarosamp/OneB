@@ -75,6 +75,8 @@ cd frontend && npm install
 ## 6. Pendências de git
 
 - `master` local: 8 commits à frente e 21 atrás de `origin/master`. Não foi feito merge nem rebase. Revise o que há no remoto antes de integrar.
+- Verificado em 2026-11-09: `origin/master` tem 21 commits que não estão aqui (439 arquivos: rebrand OneB, `Landing.tsx`, validações de ML/regime em `docs/ml` e `docs/trading`, preparação de deploy). Há sobreposição provável: **`frontend/src/pages/Analise.tsx` existe nos dois lados** (é outra página, com o mesmo nome), além de `App.tsx`, `Navbar.tsx` e `app/main.py`. Integrar exige decisão: renomear a minha para `AnaliseRisco.tsx` e fazer merge de `origin/master` aqui, numa branch própria, nunca direto no `master`.
+- A "rodada 5" (ouro e Nasdaq com MT5, `output/research/ouro_nasdaq/`) foi enviada à `origin/plano-melhorias` por outra conversa e já foi incorporada por merge (`139ec95`).
 - Esta branch (`plano-melhorias`) contém os 8 commits locais mais este documento.
 
 ## 7. Orçamento de dados pagos (preços de nov/2026, divergem entre fontes; confirmar nas páginas oficiais)
