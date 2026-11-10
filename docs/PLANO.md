@@ -53,7 +53,7 @@ cd frontend && npm install
 3. Resolver a divergência de `master` com o remoto (ver seção 6).
 
 **P1 — produto**
-4. Página pública no estilo "landing" (sem login) com análise por ticker e o placar do registro de sinais. Sem contadores ou feeds inflados.
+4. ~~Página pública~~ feita em `/publico` (placar do registro de sinais, sem login; `GET /api/public/track-record`). Falta: análise por ticker na versão pública e acabamento visual.
 5. Abrir `/analise` no navegador e ajustar o visual (só foi validada por testes e tipos).
 6. Mostrar o intervalo de incerteza e o período medido ao lado do placar.
 7. Backup/exportação do registro de sinais.
@@ -65,6 +65,12 @@ cd frontend && npm install
 
 **P3 — regulação**
 11. Antes de cobrar de clientes: confirmar com um advogado a regra da CVM (analista/consultor) e os termos de uso. Não verificado.
+
+## 5b. Andamento (2026-11-09)
+
+- Registro de sinais com 2 fechamentos (60 linhas); sentimento (léxico) com 12 dias de sinal: ainda inconclusivo (o t vem de poucos dias agrupados). Sem `ANTHROPIC_API_KEY` o teste com LLM não rodou.
+- Verificação visual no navegador segue bloqueada: o preview do backend não consegue ler `.venv/pyvenv.cfg` (sandbox). Rode `uvicorn` e `npm run dev` à mão.
+- `npx tsc --noEmit` não checa nada neste projeto (tsconfig com referências); use `npx tsc -b`. Erro antigo conhecido em `AnaliseMatinal.tsx` ('today' sem uso).
 
 ## 6. Pendências de git
 

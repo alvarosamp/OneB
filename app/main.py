@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import init_db
-from app.routers import api, assistant, auth, copilot, morning_report, positions, profile, reports, research, watchlist
+from app.routers import api, assistant, auth, copilot, morning_report, positions, profile, public, reports, research, watchlist
 from app.scheduler import build_scheduler
 from app.telegram_bot import build_application
 
@@ -64,6 +64,7 @@ app.include_router(profile.router)
 app.include_router(reports.router)
 app.include_router(morning_report.router)
 app.include_router(research.router)
+app.include_router(public.router)
 app.include_router(api.router)
 
 

@@ -448,3 +448,14 @@ def test_signals_endpoint_empty(monkeypatch, tmp_path):
     monkeypatch.setattr(signal_log, "DEFAULT_PATH", tmp_path / "none.csv")
     monkeypatch.setattr(signal_log, "load", lambda path=tmp_path / "none.csv": pd.DataFrame(columns=signal_log.COLUMNS))
     assert research_router.signals(limit=5)["entries"] == 0
+
+
+def test_public_track_record_needs_no_login(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+    from app.research import signal_log
+
+    monkeypatch.setattr(signal_log, "load", lambda path=None: pd.DataFrame(columns=signal_log.COLUMNS))
+    r = TestClient(app).get("/api/public/track-record")
+    assert r.status_code == 200 and r.json()["entries"] == 0

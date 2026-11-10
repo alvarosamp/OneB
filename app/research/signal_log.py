@@ -95,3 +95,20 @@ def evaluate(log: pd.DataFrame, histories: dict[str, pd.DataFrame]) -> dict:
             "worst_day_buy_hold_pct": round(float(b.min()) * 100, 2),
         }
     return out
+
+
+def summary(limit: int = 30, path: Path | None = None) -> dict:
+    """Resumo do registro para as telas: início, nº de linhas, placar e últimas linhas."""
+    from app.research import store
+
+    log = load(path or DEFAULT_PATH)
+    if log.empty:
+        return {"started": None, "entries": 0, "result": {"symbols": [], "aggregate": None}, "recent": []}
+    histories = {s: store.load(s) for s in log["symbol"].unique()}
+    recent = log.sort_values(["date", "symbol"], ascending=False).head(limit)
+    return {
+        "started": str(log["date"].min()),
+        "entries": int(len(log)),
+        "result": evaluate(log, histories),
+        "recent": recent[["date", "symbol", "state", "close", "trend"]].to_dict("records"),
+    }

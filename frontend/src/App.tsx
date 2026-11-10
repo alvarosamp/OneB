@@ -21,6 +21,7 @@ import { Copiloto } from './pages/Copiloto';
 import { Perfil } from './pages/Perfil';
 import { Pesquisa } from './pages/Pesquisa';
 import { Analise } from './pages/Analise';
+import { Publico } from './pages/Publico';
 
 function Layout({ children }: { children: ReactNode }) {
   return (
@@ -45,6 +46,7 @@ export default function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Cadastro />} />
+              <Route path="/publico" element={<Publico />} />
 
               <Route element={<ProtectedRoute />}>
                 <Route

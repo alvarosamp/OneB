@@ -71,7 +71,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 export const api = {
-  get: <T>(path: string) => request<T>(path),
+  get: <T>(path: string, options?: Pick<RequestOptions, 'skipAuth'>) => request<T>(path, options),
   post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>(path, { ...options, method: 'POST', body }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
