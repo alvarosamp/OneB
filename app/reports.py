@@ -16,6 +16,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from sqlalchemy.orm import Session
 
 from app import analysis
+from app.scope import active_watchlist
 from app.models import (
     AlertLog,
     EarningsEvent,
@@ -28,7 +29,7 @@ from app.models import (
 )
 
 
-def build_pdf_report(db: Session) -> bytes:
+def build_pdf_report(db: Session, user_id: int | None = None) -> bytes:
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -50,7 +51,7 @@ def build_pdf_report(db: Session) -> bytes:
 
     # Watchlist
     story.append(Paragraph("Watchlist", styles["Heading2"]))
-    items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+    items = active_watchlist(db, user_id)
     rows = [["Símbolo", "Preço", "Variação", "Atualizado"]]
     for item in items:
         snap = (
@@ -99,7 +100,10 @@ def build_pdf_report(db: Session) -> bytes:
 
     # Recent alerts
     story.append(Paragraph("Alertas recentes", styles["Heading2"]))
-    alerts = db.query(AlertLog).order_by(AlertLog.triggered_at.desc()).limit(15).all()
+    alert_query = db.query(AlertLog)
+    if user_id is not None:
+        alert_query = alert_query.filter(AlertLog.user_id == user_id)
+    alerts = alert_query.order_by(AlertLog.triggered_at.desc()).limit(15).all()
     if alerts:
         alert_rows = [["Data", "Símbolo", "Mensagem"]]
         for a in alerts:

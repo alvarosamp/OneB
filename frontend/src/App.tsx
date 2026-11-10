@@ -22,11 +22,19 @@ import { Perfil } from './pages/Perfil';
 import { Pesquisa } from './pages/Pesquisa';
 import { Analise } from './pages/Analise';
 import { Publico } from './pages/Publico';
+import { Landing } from './pages/Landing';
+import { Planos } from './pages/Planos';
+import { Conta } from './pages/Conta';
+import { Privacidade, Termos } from './pages/Legal';
+import { ProGate } from './components/ProGate';
+import { PlanBanner } from './components/PlanBanner';
+import { useAuth } from './context/AuthContext';
 
 function Layout({ children }: { children: ReactNode }) {
   return (
     <>
       <Navbar />
+      <PlanBanner />
       <main>{children}</main>
       <footer className="disclaimer">
         Ferramenta apenas de monitoramento e sugestão. Não executa ordens e não constitui
@@ -34,6 +42,20 @@ function Layout({ children }: { children: ReactNode }) {
         decidir.
       </footer>
     </>
+  );
+}
+
+/** Visitante vê a página de venda; quem está logado cai direto no painel. */
+function Home() {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return <p className="muted" style={{ padding: '1.5rem' }}>Carregando...</p>;
+  }
+  if (!user) return <Landing />;
+  return (
+    <Layout>
+      <Dashboard />
+    </Layout>
   );
 }
 
@@ -47,16 +69,11 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Cadastro />} />
               <Route path="/publico" element={<Publico />} />
+              <Route path="/termos" element={<Termos />} />
+              <Route path="/privacidade" element={<Privacidade />} />
+              <Route path="/" element={<Home />} />
 
               <Route element={<ProtectedRoute />}>
-                <Route
-                  path="/"
-                  element={
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  }
-                />
                 <Route
                   path="/watchlist"
                   element={
@@ -77,7 +94,9 @@ export default function App() {
                   path="/analise-matinal"
                   element={
                     <Layout>
-                      <AnaliseMatinal />
+                      <ProGate feature="Análise matinal">
+                        <AnaliseMatinal />
+                      </ProGate>
                     </Layout>
                   }
                 />
@@ -101,7 +120,9 @@ export default function App() {
                   path="/assistente"
                   element={
                     <Layout>
-                      <Assistente />
+                      <ProGate feature="Assistente IA">
+                        <Assistente />
+                      </ProGate>
                     </Layout>
                   }
                 />
@@ -109,7 +130,9 @@ export default function App() {
                   path="/copiloto"
                   element={
                     <Layout>
-                      <Copiloto />
+                      <ProGate feature="Copiloto">
+                        <Copiloto />
+                      </ProGate>
                     </Layout>
                   }
                 />
@@ -117,7 +140,9 @@ export default function App() {
                   path="/analise"
                   element={
                     <Layout>
-                      <Analise />
+                      <ProGate feature="Painel de risco">
+                        <Analise />
+                      </ProGate>
                     </Layout>
                   }
                 />
@@ -125,7 +150,25 @@ export default function App() {
                   path="/pesquisa"
                   element={
                     <Layout>
-                      <Pesquisa />
+                      <ProGate feature="Pesquisa">
+                        <Pesquisa />
+                      </ProGate>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/planos"
+                  element={
+                    <Layout>
+                      <Planos />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/conta"
+                  element={
+                    <Layout>
+                      <Conta />
                     </Layout>
                   }
                 />

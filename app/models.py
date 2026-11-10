@@ -20,12 +20,30 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
+    email: Mapped[str | None] = mapped_column(String(254), unique=True, index=True, nullable=True)
+    accepted_terms_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Plano e cobrança (ver app/billing.py). "free" | "pro"; o plano efetivo também considera
+    # o período de teste e o status da assinatura no Stripe.
+    plan: Mapped[str] = mapped_column(String(16), default="free")
+    trial_ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    stripe_customer_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    subscription_status: Mapped[str] = mapped_column(String(24), default="")
+    current_period_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Telegram por usuário: o chat é vinculado com um código de uso único (/vincular CODIGO).
+    telegram_chat_id: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    telegram_link_code: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+
 
 class WatchlistItem(Base):
     __tablename__ = "watchlist_items"
+    __table_args__ = (UniqueConstraint("user_id", "symbol", name="uq_watchlist_user_symbol"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    symbol: Mapped[str] = mapped_column(String(16), unique=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True, nullable=True)
+    symbol: Mapped[str] = mapped_column(String(16), index=True)
     label: Mapped[str] = mapped_column(String(64), default="")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -99,6 +117,7 @@ class AlertLog(Base):
     __tablename__ = "alert_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True, nullable=True)
     symbol: Mapped[str] = mapped_column(String(16), index=True)
     rule_type: Mapped[str] = mapped_column(String(32))
     message: Mapped[str] = mapped_column(Text)
@@ -175,6 +194,7 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True, nullable=True)
     symbol: Mapped[str] = mapped_column(String(16), index=True)
     side: Mapped[TransactionSide] = mapped_column(Enum(TransactionSide))
     quantity: Mapped[float] = mapped_column(Float)

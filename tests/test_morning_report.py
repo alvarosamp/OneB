@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from app import morning_report
 from app.db import Base
 from app.market_data.yfinance_client import IndexQuote
-from app.models import GlobalNewsItem, PriceSnapshot, WatchlistItem
+from app.models import GlobalNewsItem, PriceSnapshot, User, WatchlistItem
 
 
 def _make_session():
@@ -31,9 +31,12 @@ def _daily_history(n=30, base=100.0):
     )
 
 
-def test_build_report_data_includes_indices_and_watchlist(monkeypatch):
+def test_build_report_data_is_market_only_and_watchlist_is_per_user(monkeypatch):
     db = _make_session()
-    item = WatchlistItem(symbol="AAPL", label="Apple")
+    owner = User(username="dono", password_hash="x")
+    db.add(owner)
+    db.commit()
+    item = WatchlistItem(user_id=owner.id, symbol="AAPL", label="Apple")
     db.add(item)
     db.commit()
     db.add(PriceSnapshot(watchlist_item_id=item.id, price=150.0, change_pct=1.2, volume=1000))
@@ -68,9 +71,11 @@ def test_build_report_data_includes_indices_and_watchlist(monkeypatch):
     assert len(data["indices"]) == 1
     assert data["indices"][0]["symbol"] == "NQ=F"
     assert data["indices"][0]["levels"]["pivots"]["pivot"] == 100.0
-    assert data["watchlist"] == [
-        {"symbol": "AAPL", "price": 150.0, "change_pct": 1.2, "levels": data["watchlist"][0]["levels"]}
-    ]
+    # o relatório guardado é de mercado; a watchlist entra por usuário na leitura
+    assert data["watchlist"] == []
+    mine = morning_report.watchlist_section(db, owner.id)
+    assert [(w["symbol"], w["price"], w["change_pct"]) for w in mine] == [("AAPL", 150.0, 1.2)]
+    assert morning_report.watchlist_section(db, owner.id + 1) == []
     assert data["overnight_news"][0]["headline"] == "Fed segura juros"
 
 

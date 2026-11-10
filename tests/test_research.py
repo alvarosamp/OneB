@@ -173,7 +173,9 @@ def test_study_endpoint_validates_and_runs(monkeypatch, tmp_path):
     from app.main import app
     from app.routers import research as research_router
 
-    app.dependency_overrides[get_current_user] = lambda: "test-user"
+    from app.models import User
+
+    app.dependency_overrides[get_current_user] = lambda: User(id=1, username="u", plan="pro")
     captured = {}
 
     def fake_run_study(symbols, refresh=False, **kw):
@@ -301,7 +303,9 @@ def test_panel_endpoint(monkeypatch):
     from app.main import app
     from app.routers import research as r
 
-    app.dependency_overrides[get_current_user] = lambda: "u"
+    from app.models import User
+
+    app.dependency_overrides[get_current_user] = lambda: User(id=1, username="u", plan="pro")
     h = _panel_history()
     h.index = pd.bdate_range(end=pd.Timestamp.now().normalize(), periods=len(h))
     monkeypatch.setattr(r.store, "load", lambda s, *a, **k: h if s == "OK" else h.iloc[0:0])

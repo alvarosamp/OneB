@@ -36,7 +36,7 @@ export function Login() {
           {error && <p className="form-error">{error}</p>}
           <form className="auth-form" onSubmit={handleSubmit}>
             <label className="field-label">
-              Usuário
+              Usuário ou e-mail
               <input
                 type="text"
                 autoComplete="username"
@@ -61,7 +61,7 @@ export function Login() {
             </button>
           </form>
           <p className="auth-footer-link">
-            Primeiro acesso? <Link to="/cadastro">Criar conta</Link>
+            Novo por aqui? <Link to="/cadastro">Criar conta</Link>
           </p>
         </div>
         <p className="disclaimer auth-disclaimer">

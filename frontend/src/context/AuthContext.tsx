@@ -7,11 +7,20 @@ interface LoginResponse {
   user: User;
 }
 
+export interface CadastroData {
+  username: string;
+  email: string;
+  password: string;
+  acceptTerms: boolean;
+}
+
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  cadastro: (username: string, password: string) => Promise<void>;
+  cadastro: (data: CadastroData) => Promise<void>;
+  /** Recarrega o usuário (plano, Telegram) depois de pagar ou vincular. */
+  refreshUser: () => Promise<void>;
   logout: () => void;
 }
 
@@ -50,14 +59,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user);
   }, []);
 
-  const cadastro = useCallback(async (username: string, password: string) => {
-    const data = await api.post<LoginResponse>('/api/auth/cadastro', { username, password }, { skipAuth: true });
+  const cadastro = useCallback(async ({ username, email, password, acceptTerms }: CadastroData) => {
+    const data = await api.post<LoginResponse>(
+      '/api/auth/cadastro',
+      { username, email, password, accept_terms: acceptTerms },
+      { skipAuth: true },
+    );
     persistToken(data.access_token);
     setUser(data.user);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    setUser(await api.get<User>('/api/auth/me'));
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, cadastro, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, cadastro, refreshUser, logout }}>{children}</AuthContext.Provider>
   );
 }
 

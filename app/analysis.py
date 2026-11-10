@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app import indicators
 from app.market_data import yfinance_client
+from app.scope import active_watchlist
 from app.models import EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem, PriceSnapshot, WatchlistItem
 
 
@@ -97,10 +98,10 @@ def technical_snapshot(symbol: str, history: pd.DataFrame | None = None) -> dict
     }
 
 
-def build_export(db: Session, news_limit: int = 50) -> dict:
+def build_export(db: Session, news_limit: int = 50, user_id: int | None = None) -> dict:
     """Pacote completo: análise técnica por ativo + notícias + calendários."""
     now = datetime.now(timezone.utc)
-    items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+    items = active_watchlist(db, user_id)
 
     analysis = []
     for item in items:

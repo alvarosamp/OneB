@@ -11,6 +11,7 @@ from app.config import settings
 from app.db import SessionLocal
 from app.dedup import filter_new_by_key
 from app.market_data import finnhub_client, fmp_client, rss_news, yfinance_client
+from app import billing
 from app.models import (
     AlertLog,
     AlertRule,
@@ -19,8 +20,10 @@ from app.models import (
     GlobalNewsItem,
     NewsItem,
     PriceSnapshot,
-    WatchlistItem,
+    User,
 )
+from app.scope import active_watchlist
+from app.scope import latest_snapshot as latest_snapshot_fn
 from app.rules_engine import MarketState, RuleContext, cooldown_expired, evaluate_conditions
 from app.telegram_bot import send_alert
 
@@ -41,11 +44,15 @@ def _market_news(category: str, limit: int):
 async def poll_quotes() -> None:
     db = SessionLocal()
     try:
-        items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+        items = active_watchlist(db)
+        quotes: dict[str, object] = {}  # uma busca por símbolo por ciclo, mesmo com vários donos
         for item in items:
-            quote = finnhub_client.get_quote(item.symbol) if settings.finnhub_api_key else None
-            if quote is None:
-                quote = yfinance_client.get_quote(item.symbol)
+            if item.symbol not in quotes:
+                quote = finnhub_client.get_quote(item.symbol) if settings.finnhub_api_key else None
+                if quote is None:
+                    quote = yfinance_client.get_quote(item.symbol)
+                quotes[item.symbol] = quote
+            quote = quotes[item.symbol]
             if quote is None:
                 continue
             db.add(
@@ -64,10 +71,21 @@ async def poll_quotes() -> None:
         db.close()
 
 
+def _telegram_target(db, user_id: int | None) -> str | None:
+    """Chat do usuário para entrega, só se ele ainda tiver acesso Pro."""
+    if user_id is None:
+        return None
+    user = db.get(User, user_id)
+    if user is None or not user.telegram_chat_id or billing.effective_plan(user) != "pro":
+        return None
+    return user.telegram_chat_id
+
+
 async def evaluate_rules(telegram_app: Application | None) -> None:
     db = SessionLocal()
     try:
-        items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+        items = active_watchlist(db)
+        histories: dict[str, object] = {}
         for item in items:
             rules = db.query(AlertRule).filter(
                 AlertRule.watchlist_item_id == item.id, AlertRule.active.is_(True)
@@ -75,16 +93,13 @@ async def evaluate_rules(telegram_app: Application | None) -> None:
             if not rules:
                 continue
 
-            latest_snapshot = (
-                db.query(PriceSnapshot)
-                .filter(PriceSnapshot.watchlist_item_id == item.id)
-                .order_by(PriceSnapshot.taken_at.desc())
-                .first()
-            )
+            latest_snapshot = latest_snapshot_fn(db, item.id)
             if latest_snapshot is None:
                 continue
 
-            history = yfinance_client.get_history(item.symbol)
+            if item.symbol not in histories:
+                histories[item.symbol] = yfinance_client.get_history(item.symbol)
+            history = histories[item.symbol]
             if history.empty:
                 continue
 
@@ -130,11 +145,15 @@ async def evaluate_rules(telegram_app: Application | None) -> None:
                     if enriched:
                         message = enriched
 
-                log = AlertLog(symbol=item.symbol, rule_type=rule_type_label, message=message)
+                log = AlertLog(
+                    user_id=item.user_id, symbol=item.symbol, rule_type=rule_type_label, message=message
+                )
                 db.add(log)
                 db.commit()
 
-                delivered = await send_alert(telegram_app, f"🔔 {message}")
+                delivered = await send_alert(
+                    telegram_app, f"🔔 {message}", chat_id=_telegram_target(db, item.user_id)
+                )
                 log.delivered_telegram = delivered
                 db.commit()
     except Exception:
@@ -147,13 +166,13 @@ async def evaluate_rules(telegram_app: Application | None) -> None:
 async def refresh_news() -> None:
     db = SessionLocal()
     try:
-        items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+        symbols = list(dict.fromkeys(i.symbol for i in active_watchlist(db)))
         today = date.today()
         week_ago = today - timedelta(days=7)
         existing_urls = {u for (u,) in db.query(NewsItem.url).all()}
 
-        for item in items:
-            articles = _company_news(item.symbol, week_ago, today)
+        for symbol in symbols:
+            articles = _company_news(symbol, week_ago, today)
             new_articles = filter_new_by_key(articles, existing_urls, key_fn=lambda a: a.url)
             for article in new_articles:
                 db.add(
@@ -232,13 +251,13 @@ async def refresh_calendars() -> None:
                 )
             )
 
-        items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+        symbols = list(dict.fromkeys(i.symbol for i in active_watchlist(db)))
         existing_earnings_keys = {
             (sym, dt) for sym, dt in db.query(EarningsEvent.symbol, EarningsEvent.event_date).all()
         }
-        for item in items if settings.finnhub_api_key else []:
+        for symbol in symbols if settings.finnhub_api_key else []:
             earnings = finnhub_client.get_earnings_calendar(
-                today, today + timedelta(days=14), symbol=item.symbol
+                today, today + timedelta(days=14), symbol=symbol
             )
             new_earnings = filter_new_by_key(
                 earnings, existing_earnings_keys, key_fn=lambda e: (e.symbol, e.event_date)
@@ -263,109 +282,135 @@ async def refresh_calendars() -> None:
 
 
 async def daily_summary(telegram_app: Application | None) -> None:
+    """Resumo do fim do dia, montado por usuário Pro com Telegram vinculado."""
+    if telegram_app is None:
+        return
     db = SessionLocal()
     try:
-        items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
-        if not items:
-            return
-
-        now = datetime.now(timezone.utc)
-        prices = []
-        lines = ["📊 Resumo do dia:"]
-        for item in items:
-            snap = (
-                db.query(PriceSnapshot)
-                .filter(PriceSnapshot.watchlist_item_id == item.id)
-                .order_by(PriceSnapshot.taken_at.desc())
-                .first()
-            )
-            if snap:
-                arrow = "🔺" if snap.change_pct >= 0 else "🔻"
-                lines.append(f"{item.symbol}: {snap.price:.2f} {arrow} {snap.change_pct:+.2f}%")
-                prices.append({"symbol": item.symbol, "price": snap.price, "change_pct": snap.change_pct})
-
-        since = now - timedelta(hours=24)
-        news = (
-            db.query(NewsItem)
-            .filter(NewsItem.published_at >= since)
-            .order_by(NewsItem.published_at.desc())
-            .limit(5)
-            .all()
+        users = (
+            db.query(User).filter(User.telegram_chat_id.isnot(None)).order_by(User.id).all()
         )
-        if news:
-            lines.append("\n📰 Notícias das últimas 24h:")
-            lines.extend(f"• {n.symbol}: {n.headline}" for n in news)
-        news_data = [{"symbol": n.symbol, "headline": n.headline} for n in news]
-
-        global_news = (
-            db.query(GlobalNewsItem)
-            .filter(GlobalNewsItem.published_at >= since)
-            .order_by(GlobalNewsItem.impact_score.desc(), GlobalNewsItem.published_at.desc())
-            .limit(5)
-            .all()
-        )
-        if global_news:
-            lines.append("\nNoticias globais de maior impacto:")
-            lines.extend(f"- {n.headline} ({n.source or n.category}, impacto {n.impact_score})" for n in global_news)
-        global_news_data = [
-            {"headline": n.headline, "source": n.source, "impact_score": n.impact_score} for n in global_news
-        ]
-
-        econ_today = (
-            db.query(EconomicEvent)
-            .filter(
-                EconomicEvent.event_date >= now.replace(hour=0, minute=0, second=0, microsecond=0),
-                EconomicEvent.event_date < now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1),
-                EconomicEvent.impact == "high",
-            )
-            .all()
-        )
-        if econ_today:
-            lines.append("\n🌎 Eventos econômicos de alto impacto hoje:")
-            lines.extend(f"• {e.event_name} ({e.country})" for e in econ_today)
-        econ_data = [{"event_name": e.event_name, "country": e.country} for e in econ_today]
-
-        upcoming_earnings = (
-            db.query(EarningsEvent)
-            .filter(EarningsEvent.event_date >= now, EarningsEvent.event_date <= now + timedelta(days=7))
-            .order_by(EarningsEvent.event_date)
-            .all()
-        )
-        if upcoming_earnings:
-            lines.append("\n📅 Earnings da watchlist nos próximos 7 dias:")
-            lines.extend(f"• {e.symbol}: {e.event_date.strftime('%d/%m')}" for e in upcoming_earnings)
-        earnings_data = [{"symbol": e.symbol, "date": e.event_date.strftime("%d/%m")} for e in upcoming_earnings]
-
-        message = "\n".join(lines)
-
-        if settings.llm_daily_narrative_enabled:
-            from app.llm_client import generate_daily_narrative
-
-            narrative = await generate_daily_narrative(
-                {
-                    "precos": prices,
-                    "noticias_24h": news_data,
-                    "noticias_globais_24h": global_news_data,
-                    "eventos_economicos_alto_impacto_hoje": econ_data,
-                    "earnings_proximos_7_dias": earnings_data,
-                }
-            )
-            if narrative:
-                message = f"📊 Resumo do dia:\n{narrative}"
-
-        await send_alert(telegram_app, message)
+        for user in users:
+            if billing.effective_plan(user) != "pro":
+                continue
+            try:
+                message = await _daily_summary_message(db, user)
+                if message:
+                    await send_alert(telegram_app, message, chat_id=user.telegram_chat_id)
+            except Exception:
+                logger.exception("Erro no resumo diário do usuário %s", user.id)
     finally:
         db.close()
 
 
+async def _daily_summary_message(db, user: User) -> str | None:
+    items = active_watchlist(db, user.id)
+    if not items:
+        return None
+    symbols = [i.symbol for i in items]
+
+    now = datetime.now(timezone.utc)
+    prices = []
+    lines = ["📊 Resumo do dia:"]
+    for item in items:
+        snap = latest_snapshot_fn(db, item.id)
+        if snap:
+            arrow = "🔺" if snap.change_pct >= 0 else "🔻"
+            lines.append(f"{item.symbol}: {snap.price:.2f} {arrow} {snap.change_pct:+.2f}%")
+            prices.append({"symbol": item.symbol, "price": snap.price, "change_pct": snap.change_pct})
+
+    since = now - timedelta(hours=24)
+    news = (
+        db.query(NewsItem)
+        .filter(NewsItem.published_at >= since, NewsItem.symbol.in_(symbols))
+        .order_by(NewsItem.published_at.desc())
+        .limit(5)
+        .all()
+    )
+    if news:
+        lines.append("\n📰 Notícias das últimas 24h:")
+        lines.extend(f"• {n.symbol}: {n.headline}" for n in news)
+    news_data = [{"symbol": n.symbol, "headline": n.headline} for n in news]
+
+    global_news = (
+        db.query(GlobalNewsItem)
+        .filter(GlobalNewsItem.published_at >= since)
+        .order_by(GlobalNewsItem.impact_score.desc(), GlobalNewsItem.published_at.desc())
+        .limit(5)
+        .all()
+    )
+    if global_news:
+        lines.append("\nNoticias globais de maior impacto:")
+        lines.extend(f"- {n.headline} ({n.source or n.category}, impacto {n.impact_score})" for n in global_news)
+    global_news_data = [
+        {"headline": n.headline, "source": n.source, "impact_score": n.impact_score} for n in global_news
+    ]
+
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    econ_today = (
+        db.query(EconomicEvent)
+        .filter(
+            EconomicEvent.event_date >= day_start,
+            EconomicEvent.event_date < day_start + timedelta(days=1),
+            EconomicEvent.impact == "high",
+        )
+        .all()
+    )
+    if econ_today:
+        lines.append("\n🌎 Eventos econômicos de alto impacto hoje:")
+        lines.extend(f"• {e.event_name} ({e.country})" for e in econ_today)
+    econ_data = [{"event_name": e.event_name, "country": e.country} for e in econ_today]
+
+    upcoming_earnings = (
+        db.query(EarningsEvent)
+        .filter(
+            EarningsEvent.event_date >= now,
+            EarningsEvent.event_date <= now + timedelta(days=7),
+            EarningsEvent.symbol.in_(symbols),
+        )
+        .order_by(EarningsEvent.event_date)
+        .all()
+    )
+    if upcoming_earnings:
+        lines.append("\n📅 Earnings da watchlist nos próximos 7 dias:")
+        lines.extend(f"• {e.symbol}: {e.event_date.strftime('%d/%m')}" for e in upcoming_earnings)
+    earnings_data = [{"symbol": e.symbol, "date": e.event_date.strftime("%d/%m")} for e in upcoming_earnings]
+
+    message = "\n".join(lines)
+
+    if settings.llm_daily_narrative_enabled:
+        from app.llm_client import generate_daily_narrative
+
+        narrative = await generate_daily_narrative(
+            {
+                "precos": prices,
+                "noticias_24h": news_data,
+                "noticias_globais_24h": global_news_data,
+                "eventos_economicos_alto_impacto_hoje": econ_data,
+                "earnings_proximos_7_dias": earnings_data,
+            }
+        )
+        if narrative:
+            message = f"📊 Resumo do dia:\n{narrative}"
+
+    return message
+
+
 async def morning_report_job(telegram_app: Application | None) -> None:
+    """Gera a análise matinal uma vez e entrega a cada usuário Pro com Telegram vinculado."""
     from app import morning_report
 
     db = SessionLocal()
     try:
         report = await morning_report.generate_and_store(db)
-        delivered = await send_alert(telegram_app, f"☀️ {report.narrative}")
-        report.delivered_telegram = delivered
+        delivered_any = False
+        users = db.query(User).filter(User.telegram_chat_id.isnot(None)).all()
+        for user in users:
+            if billing.effective_plan(user) != "pro":
+                continue
+            if await send_alert(telegram_app, f"☀️ {report.narrative}", chat_id=user.telegram_chat_id):
+                delivered_any = True
+        report.delivered_telegram = delivered_any
         db.commit()
     except Exception:
         logger.exception("Erro no job morning_report")
@@ -380,7 +425,7 @@ async def archive_news() -> None:
 
     db = SessionLocal()
     try:
-        watch = [w.symbol for w in db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()]
+        watch = list(dict.fromkeys(w.symbol for w in active_watchlist(db)))
     finally:
         db.close()
     symbols = list(dict.fromkeys(watch + news_archive.research_symbols()))

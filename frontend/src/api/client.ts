@@ -13,6 +13,8 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+export const PAYMENT_REQUIRED_EVENT = 'payment-required';
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -57,9 +59,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     let detail = res.statusText;
     try {
       const data = await res.json();
-      detail = data.detail ?? detail;
+      detail = typeof data.detail === 'string' ? data.detail : detail;
     } catch {
       // response body wasn't JSON — keep statusText
+    }
+    if (res.status === 402) {
+      // limite do plano ou recurso Pro: o Layout mostra um convite para assinar
+      window.dispatchEvent(new CustomEvent(PAYMENT_REQUIRED_EVENT, { detail }));
     }
     throw new ApiError(res.status, detail);
   }
@@ -74,6 +80,7 @@ export const api = {
   get: <T>(path: string, options?: Pick<RequestOptions, 'skipAuth'>) => request<T>(path, options),
   post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>(path, { ...options, method: 'POST', body }),
+  patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
 

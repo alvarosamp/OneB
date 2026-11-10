@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app import indicators
 from app.market_data import yfinance_client
+from app.scope import active_watchlist, latest_snapshot_for_symbol
 from app.models import AlertLog, EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem, PriceSnapshot, Transaction, TransactionSide, WatchlistItem
 from app.positions import compute_position
 from app.trader_profile import analyze_trader_profile
@@ -24,15 +25,7 @@ class AgentVote:
 
 
 def _latest_snapshot(db: Session, symbol: str) -> PriceSnapshot | None:
-    item = db.query(WatchlistItem).filter(WatchlistItem.symbol == symbol).first()
-    if item is None:
-        return None
-    return (
-        db.query(PriceSnapshot)
-        .filter(PriceSnapshot.watchlist_item_id == item.id)
-        .order_by(PriceSnapshot.taken_at.desc())
-        .first()
-    )
+    return latest_snapshot_for_symbol(db, symbol)  # dado de mercado compartilhado
 
 
 def _vote_from_score(score: int) -> str:
@@ -109,9 +102,12 @@ def technical_agent(symbol: str, history: pd.DataFrame, snapshot: PriceSnapshot 
     )
 
 
-def news_agent(db: Session, symbol: str) -> AgentVote:
+def news_agent(db: Session, symbol: str, user_id: int | None = None) -> AgentVote:
     news = db.query(NewsItem).filter(NewsItem.symbol == symbol).order_by(NewsItem.published_at.desc()).limit(12).all()
-    alerts = db.query(AlertLog).filter(AlertLog.symbol == symbol).order_by(AlertLog.triggered_at.desc()).limit(6).all()
+    alert_query = db.query(AlertLog).filter(AlertLog.symbol == symbol)
+    if user_id is not None:
+        alert_query = alert_query.filter(AlertLog.user_id == user_id)
+    alerts = alert_query.order_by(AlertLog.triggered_at.desc()).limit(6).all()
     score = 45 + min(len(news) * 5, 25) + min(len(alerts) * 4, 16)
     negative_terms = ["lawsuit", "probe", "investigation", "miss", "cuts", "downgrade", "fraud", "recall"]
     positive_terms = ["beats", "raises", "upgrade", "partnership", "growth", "record", "approval"]
@@ -147,8 +143,11 @@ def macro_agent(db: Session) -> AgentVote:
     return AgentVote("Macro", _vote_from_score(score), score, "Leitura macro baseada em noticias globais e calendario economico.", evidence)
 
 
-def risk_agent(db: Session, symbol: str, capital_usd: float, risk_budget_pct: float, entry_price: float | None, history: pd.DataFrame) -> AgentVote:
-    transactions = db.query(Transaction).filter(Transaction.symbol == symbol).all()
+def risk_agent(db: Session, symbol: str, capital_usd: float, risk_budget_pct: float, entry_price: float | None, history: pd.DataFrame, user_id: int | None = None) -> AgentVote:
+    tx_query = db.query(Transaction).filter(Transaction.symbol == symbol)
+    if user_id is not None:
+        tx_query = tx_query.filter(Transaction.user_id == user_id)
+    transactions = tx_query.all()
     position = compute_position(symbol, transactions, entry_price)
     close = history["close"].dropna() if not history.empty else pd.Series(dtype=float)
     volatility = float(close.pct_change().dropna().tail(20).std() * 100) if len(close) > 20 else 0.0
@@ -173,10 +172,13 @@ def risk_agent(db: Session, symbol: str, capital_usd: float, risk_budget_pct: fl
     return AgentVote("Risco", _vote_from_score(max(0, min(100, score))), max(0, min(100, score)), "Gestao de risco calculada por capital, stop e volatilidade.", evidence)
 
 
-def profile_agent(db: Session, symbol: str) -> AgentVote:
-    profile = analyze_trader_profile(db)
+def profile_agent(db: Session, symbol: str, user_id: int | None = None) -> AgentVote:
+    profile = analyze_trader_profile(db, user_id)
     summary = profile["summary"]
-    transactions = db.query(Transaction).order_by(Transaction.executed_at).all()
+    tx_query = db.query(Transaction)
+    if user_id is not None:
+        tx_query = tx_query.filter(Transaction.user_id == user_id)
+    transactions = tx_query.order_by(Transaction.executed_at).all()
     if summary["closed_trades"] < 3:
         return AgentVote("Perfil", "Neutro", 45, "Ainda ha poucas operacoes registradas para aprender o perfil do trader.", ["Registre mais compras e vendas para gerar diagnosticos pessoais."])
     tech_count = sum(1 for tx in transactions if tx.symbol in {"NVDA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA"})
@@ -221,8 +223,8 @@ def simulate_history(history: pd.DataFrame) -> dict:
     return {"available": True, "summary": "Simulacao buy-and-hold aproximada no periodo carregado.", "metrics": metrics}
 
 
-def detect_patterns(db: Session) -> list[str]:
-    items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+def detect_patterns(db: Session, user_id: int | None = None) -> list[str]:
+    items = active_watchlist(db, user_id)
     patterns = []
     for item in items:
         history = yfinance_client.get_history(item.symbol, period="3mo", interval="1d")
@@ -241,17 +243,19 @@ def detect_patterns(db: Session) -> list[str]:
     return patterns[:12]
 
 
-def analyze_symbol(db: Session, symbol: str, capital_usd: float, risk_budget_pct: float, question: str = "") -> dict:
+def analyze_symbol(
+    db: Session, symbol: str, capital_usd: float, risk_budget_pct: float, question: str = "", user_id: int | None = None
+) -> dict:
     symbol = symbol.upper().strip()
     history = yfinance_client.get_history(symbol, period="1y", interval="1d")
     snapshot = _latest_snapshot(db, symbol)
     entry_price = snapshot.price if snapshot else (float(history["close"].iloc[-1]) if not history.empty else None)
     agents = [
         technical_agent(symbol, history, snapshot),
-        news_agent(db, symbol),
+        news_agent(db, symbol, user_id),
         macro_agent(db),
-        risk_agent(db, symbol, capital_usd, risk_budget_pct, entry_price, history),
-        profile_agent(db, symbol),
+        risk_agent(db, symbol, capital_usd, risk_budget_pct, entry_price, history, user_id),
+        profile_agent(db, symbol, user_id),
     ]
     confidence = round(mean([a.confidence for a in agents]))
     buy_votes = sum(1 for a in agents if a.vote == "Comprar")
@@ -284,6 +288,6 @@ def analyze_symbol(db: Session, symbol: str, capital_usd: float, risk_budget_pct
         "contrary_view": contrary[:5],
         "risk_plan": risk_vote.evidence,
         "simulation": simulate_history(history),
-        "patterns": detect_patterns(db),
+        "patterns": detect_patterns(db, user_id),
         "disclaimer": "Nao e recomendacao de investimento nem ordem de compra/venda. Use como copiloto de analise e valide manualmente.",
     }

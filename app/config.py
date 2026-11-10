@@ -20,6 +20,23 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
 
+    # "production" exige SECRET_KEY fixa (sem isso o app se recusa a subir)
+    app_env: str = "development"
+
+    # Cobrança (Stripe). Sem STRIPE_SECRET_KEY o checkout fica desligado e o admin ativa planos à mão.
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_price_id: str = ""  # id do preço recorrente do plano Pro (price_...)
+    pro_price_label: str = "R$ 39/mês"  # só texto exibido; o valor real é o do preço no Stripe
+    trial_days: int = 7  # teste grátis do Pro no cadastro (0 desliga)
+
+    # Limites por plano
+    free_max_symbols: int = 3
+    free_max_rules: int = 2
+    pro_max_symbols: int = 30
+    pro_max_rules: int = 50
+    llm_daily_limit: int = 30  # perguntas/análises de IA por usuário por dia (controle de custo)
+
     # Auth (JWT, ver app/auth.py)
     secret_key: str = ""
     jwt_expire_hours: int = 168  # 7 dias
@@ -55,6 +72,9 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+if not settings.secret_key and settings.app_env == "production":
+    raise RuntimeError("SECRET_KEY é obrigatória com APP_ENV=production.")
 
 if not settings.secret_key:
     # Sem SECRET_KEY no .env: gera uma chave efêmera pra não travar o dev local, mas ela muda

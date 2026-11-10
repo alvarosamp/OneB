@@ -7,7 +7,7 @@ from sqlalchemy.pool import StaticPool
 from app import auth as auth_module
 from app.db import Base, get_db
 from app.main import app
-from app.models import User
+from app.models import User, WatchlistItem
 
 
 @pytest.fixture()
@@ -41,31 +41,76 @@ def _auth_headers(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
-def test_cadastro_creates_first_user_as_admin(client):
+def _signup(test_client, username="admin", email=None, **extra):
+    body = {
+        "username": username,
+        "email": email or f"{username}@teste.com",
+        "password": "senha12345",
+        "accept_terms": True,
+    }
+    body.update(extra)
+    return test_client.post("/api/auth/cadastro", json=body)
+
+
+def test_cadastro_creates_first_user_as_admin_with_pro(client):
     test_client, Session = client
-    res = test_client.post("/api/auth/cadastro", json={"username": "admin", "password": "senha12345"})
+    res = _signup(test_client)
     assert res.status_code == 201
     data = res.json()
     assert data["user"]["username"] == "admin"
     assert data["user"]["is_admin"] is True
+    assert data["user"]["plan"] == "pro"
     assert data["access_token"]
 
     db = Session()
     user = db.query(User).filter(User.username == "admin").first()
-    assert user is not None
-    assert user.is_admin is True
+    assert user is not None and user.is_admin is True
     db.close()
 
 
-def test_cadastro_closes_after_first_user(client):
+def test_cadastro_is_open_and_new_users_get_a_trial(client):
+    test_client, _ = client
+    _signup(test_client, "dono")
+    res = _signup(test_client, "cliente")
+    assert res.status_code == 201
+    user = res.json()["user"]
+    assert user["is_admin"] is False
+    assert user["on_trial"] is True and user["plan"] == "pro" and user["paid"] is False
+    assert user["trial_ends_at"]
+
+
+def test_cadastro_requires_terms_and_unique_email(client):
+    test_client, _ = client
+    assert _signup(test_client, "ana", accept_terms=False).status_code == 400
+    assert _signup(test_client, "ana", email="x@teste.com").status_code == 201
+    assert _signup(test_client, "bia", email="X@teste.com").status_code == 400  # e-mail repetido
+    assert _signup(test_client, "ana", email="y@teste.com").status_code == 400  # usuário repetido
+    assert test_client.post(
+        "/api/auth/cadastro",
+        json={"username": "cris", "email": "invalido", "password": "senha12345", "accept_terms": True},
+    ).status_code == 422
+
+
+def test_login_accepts_email(client):
+    test_client, _ = client
+    _signup(test_client, "maria", email="maria@teste.com")
+    res = test_client.post("/api/auth/login", json={"username": "Maria@Teste.com", "password": "senha12345"})
+    assert res.status_code == 200
+
+
+def test_delete_account_removes_user_data(client):
     test_client, Session = client
-    db = Session()
-    db.add(User(username="admin", password_hash=auth_module.hash_password("senha12345"), is_admin=True))
-    db.commit()
-    db.close()
+    _signup(test_client, "dono")
+    token = _signup(test_client, "cliente").json()["access_token"]
+    headers = _auth_headers(token)
+    test_client.post("/api/watchlist", json={"symbol": "AAPL"}, headers=headers)
 
-    res = test_client.post("/api/auth/cadastro", json={"username": "outro", "password": "senha12345"})
-    assert res.status_code == 403
+    assert test_client.delete("/api/auth/me", headers=headers).status_code == 204
+    db = Session()
+    assert db.query(User).filter(User.username == "cliente").first() is None
+    assert db.query(WatchlistItem).count() == 0
+    db.close()
+    assert test_client.get("/api/auth/me", headers=headers).status_code == 401
 
 
 def test_login_success_returns_token_that_works_on_protected_route(client):

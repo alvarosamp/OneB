@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.auth import get_current_user
+from tests.helpers import install_test_user
 from app.db import Base, get_db
 from app.main import app
 from app.models import PriceSnapshot, WatchlistItem
@@ -30,7 +31,7 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = lambda: "test-user"
+    TestingSession.user_id = install_test_user(app, TestingSession)
 
     test_client = TestClient(app)
     yield test_client, TestingSession
@@ -59,7 +60,7 @@ def test_ask_returns_mocked_answer_without_calling_real_api(client):
 def test_ask_context_includes_watchlist_prices(client):
     test_client, Session = client
     db = Session()
-    item = WatchlistItem(symbol="AAPL", label="Apple")
+    item = WatchlistItem(user_id=Session.user_id, symbol="AAPL", label="Apple")
     db.add(item)
     db.commit()
     db.add(PriceSnapshot(watchlist_item_id=item.id, price=200.0, change_pct=1.5, volume=1000))

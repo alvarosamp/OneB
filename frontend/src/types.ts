@@ -19,8 +19,37 @@ export type TransactionSide = 'BUY' | 'SELL';
 export interface User {
   id: number;
   username: string;
+  email: string | null;
   is_admin: boolean;
   created_at: string;
+  /** Plano efetivo: "pro" também vale durante o teste grátis. */
+  plan: 'free' | 'pro';
+  paid: boolean;
+  on_trial: boolean;
+  trial_ends_at: string | null;
+  telegram_linked: boolean;
+}
+
+export interface PlanLimits {
+  max_symbols: number;
+  max_rules: number;
+}
+
+export interface PlansInfo {
+  free: PlanLimits & { name: string };
+  pro: PlanLimits & { name: string; price_label: string; trial_days: number };
+}
+
+export interface BillingStatus {
+  plan: 'free' | 'pro';
+  paid: boolean;
+  on_trial: boolean;
+  trial_ends_at: string | null;
+  subscription_status: string;
+  current_period_end: string | null;
+  limits: PlanLimits;
+  checkout_enabled: boolean;
+  has_customer: boolean;
 }
 
 export interface WatchlistItem {

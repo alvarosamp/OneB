@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app import indicators
 from app.config import settings
 from app.market_data import yfinance_client
+from app.scope import active_watchlist, latest_snapshot
 from app.models import EarningsEvent, EconomicEvent, GlobalNewsItem, MorningReport, PriceSnapshot, WatchlistItem
 
 INDEX_FETCHERS = [
@@ -52,16 +53,13 @@ def _index_section(key: str, fetcher_name: str) -> dict | None:
     }
 
 
-def _watchlist_section(db: Session) -> list[dict]:
-    items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+MAX_WATCHLIST_IN_REPORT = 10  # cada ativo custa uma chamada ao yfinance para os pivôs
+
+
+def watchlist_section(db: Session, user_id: int) -> list[dict]:
     out = []
-    for item in items:
-        snap = (
-            db.query(PriceSnapshot)
-            .filter(PriceSnapshot.watchlist_item_id == item.id)
-            .order_by(PriceSnapshot.taken_at.desc())
-            .first()
-        )
+    for item in active_watchlist(db, user_id)[:MAX_WATCHLIST_IN_REPORT]:
+        snap = latest_snapshot(db, item.id)
         levels = _quote_levels(item.symbol)
         out.append(
             {
@@ -75,9 +73,10 @@ def _watchlist_section(db: Session) -> list[dict]:
 
 
 def build_report_data(db: Session) -> dict:
-    """Assembles the structured data behind the morning report. Pure read of
-    already-fetched market data + one small yfinance call per index/watchlist
-    symbol for daily OHLC (needed for pivot points).
+    """Dados do relatório matinal de mercado, iguais para todos (índices, notícias, calendário).
+
+    A watchlist de cada usuário entra só na hora da leitura (`watchlist_section`), nunca no
+    relatório guardado.
     """
     now = datetime.now(timezone.utc)
     since = now - timedelta(hours=16)  # covers the prior US close through this morning
@@ -85,7 +84,7 @@ def build_report_data(db: Session) -> dict:
     today_end = today_start + timedelta(days=1)
 
     indices = [section for key, fetcher_name in INDEX_FETCHERS if (section := _index_section(key, fetcher_name))]
-    watchlist = _watchlist_section(db)
+    watchlist: list[dict] = []
 
     overnight_news = (
         db.query(GlobalNewsItem)

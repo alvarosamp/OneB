@@ -5,10 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import indicators
+from app import billing
 from app.auth import get_current_user
 from app.db import get_db
 from app.market_data import yfinance_client
-from app.models import AlertLog, EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem, PriceSnapshot, WatchlistItem
+from app.models import AlertLog, EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem, User
+from app.scope import active_watchlist, latest_snapshot
 from app.schemas import AlertLogOut
 
 router = APIRouter(prefix="/api", tags=["api"], dependencies=[Depends(get_current_user)])
@@ -21,7 +23,12 @@ def _json_list(series: pd.Series, decimals: int) -> list[float | None]:
 
 
 @router.get("/chart/{symbol}")
-def chart_data(symbol: str, period: str = "5d", interval: str = "15m"):
+def chart_data(
+    symbol: str,
+    period: str = "5d",
+    interval: str = "15m",
+    user: User = Depends(billing.rate_limit("chart", 60, 60)),
+):
     history = yfinance_client.get_history(symbol.upper(), period=period, interval=interval)
     if history.empty:
         raise HTTPException(status_code=404, detail="Sem dados históricos para este símbolo")
@@ -81,9 +88,10 @@ def list_alerts(
     limit: int = 50,
     symbol: str | None = None,
     rule_type: str | None = None,
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    query = db.query(AlertLog)
+    query = db.query(AlertLog).filter(AlertLog.user_id == user.id)
     if symbol:
         query = query.filter(AlertLog.symbol == symbol.upper())
     if rule_type:
@@ -178,16 +186,10 @@ def list_earnings_events(days_ahead: int = 7, limit: int = 50, db: Session = Dep
 
 
 @router.get("/dashboard-summary")
-def dashboard_summary(db: Session = Depends(get_db)):
-    items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+def dashboard_summary(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     rows = []
-    for item in items:
-        snap = (
-            db.query(PriceSnapshot)
-            .filter(PriceSnapshot.watchlist_item_id == item.id)
-            .order_by(PriceSnapshot.taken_at.desc())
-            .first()
-        )
+    for item in active_watchlist(db, user.id):
+        snap = latest_snapshot(db, item.id)
         rows.append(
             {
                 "id": item.id,
@@ -199,7 +201,9 @@ def dashboard_summary(db: Session = Depends(get_db)):
             }
         )
 
-    alerts = db.query(AlertLog).order_by(AlertLog.triggered_at.desc()).limit(20).all()
+    alerts = (
+        db.query(AlertLog).filter(AlertLog.user_id == user.id).order_by(AlertLog.triggered_at.desc()).limit(20).all()
+    )
     alerts_out = [
         {
             "symbol": a.symbol,

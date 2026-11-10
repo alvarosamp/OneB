@@ -29,6 +29,16 @@ export function Usuarios() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  async function setPlan(u: User, plan: 'free' | 'pro') {
+    try {
+      await api.patch(`/api/auth/usuarios/${u.id}/plano`, { plan });
+      toast(`${u.username}: plano ${plan === 'pro' ? 'Pro liberado' : 'Free'}`, 'success');
+      load();
+    } catch {
+      toast('Erro ao alterar o plano', 'error');
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -56,14 +66,16 @@ export function Usuarios() {
           <thead>
             <tr>
               <th>Usuário</th>
+              <th>E-mail</th>
               <th>Admin</th>
+              <th>Plano</th>
               <th>Criado em</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={3} className="muted">
+                <td colSpan={5} className="muted">
                   Carregando...
                 </td>
               </tr>
@@ -71,7 +83,14 @@ export function Usuarios() {
               users.map((u) => (
                 <tr key={u.id}>
                   <td>{u.username}</td>
+                  <td className="muted">{u.email ?? '—'}</td>
                   <td>{u.is_admin ? 'Sim' : 'Não'}</td>
+                  <td>
+                    {u.paid ? 'Pro' : u.on_trial ? 'Teste' : 'Free'}{' '}
+                    <button type="button" className="link-btn" onClick={() => setPlan(u, u.paid ? 'free' : 'pro')}>
+                      {u.paid ? 'Rebaixar' : 'Liberar Pro'}
+                    </button>
+                  </td>
                   <td className="muted">{new Date(u.created_at).toLocaleString('pt-BR')}</td>
                 </tr>
               ))

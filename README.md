@@ -104,26 +104,60 @@ aberta enquanto não existir nenhuma conta (ver seção "Autenticação" abaixo)
 
 ## Autenticação
 
-Login por token (JWT), pensado pra ficar exposto na internet 24/7 sem virar um cadastro público:
+Login por token (JWT), cadastro aberto para clientes:
 
-- **Primeiro acesso**: `POST /api/auth/cadastro` só funciona enquanto **não existir nenhum
-  usuário** no banco. A primeira conta criada vira administradora automaticamente.
-- **Depois disso, o cadastro se fecha sozinho** (a API devolve 403) — o front mostra "cadastro
-  fechado" e manda pro login. Novas contas só podem ser criadas por um admin já logado, na tela
-  `/usuarios`.
-- Senhas ficam com hash bcrypt (nunca em texto plano). O login devolve um token JWT que o front
-  guarda no `localStorage` e manda em `Authorization: Bearer <token>` em cada request — sem
-  cookie, sem CSRF (não tem cookie automático do navegador pra explorar).
-- Token expira em `JWT_EXPIRE_HOURS` (padrão 7 dias) — depois disso precisa logar de novo. Sem
-  refresh token (mantido simples de propósito, ver "Limitações conhecidas").
-- Rate limit simples no login: 5 tentativas erradas seguidas bloqueiam por 5 minutos (contador
-  em memória, reseta se o processo reiniciar — trava contra brute force casual, não solução
-  enterprise).
-- Sem "esqueci minha senha" — se alguém esquecer, um admin recria o usuário direto no banco (ou
-  me chama que eu ajudo). Não há serviço de e-mail configurado no projeto.
+- `POST /api/auth/cadastro` cria contas com **usuário, e-mail e aceite dos termos**. A **primeira
+  conta do sistema vira administradora** (e Pro); as demais são clientes e ganham o teste grátis
+  do Pro (`TRIAL_DAYS`, padrão 7). Faça o seu cadastro primeiro, antes de divulgar o link.
+- Login por usuário **ou e-mail**. Senhas com hash bcrypt. O token JWT vai em
+  `Authorization: Bearer <token>` (sem cookie, sem CSRF) e expira em `JWT_EXPIRE_HOURS`.
+- Rate limit simples no login: 5 erros seguidos bloqueiam por 5 minutos (em memória).
+- Cada cliente enxerga **só os próprios dados** (watchlist, regras, alertas, posições). O dado de
+  mercado (cotações, notícias, calendário) é compartilhado.
+- O cliente pode **excluir a conta e todos os dados** em `/conta` (LGPD).
+- Admin: `/usuarios` lista contas, cria usuários e **libera/rebaixa o Pro à mão** (cliente que
+  pagou por fora, cortesia).
+- **Ainda não existe "esqueci minha senha"** (precisa de um serviço de e-mail). Até lá, o admin
+  recria o acesso.
 
-Fluxo sugerido: você acessa primeiro, faz seu próprio cadastro (vira admin), depois cria a conta
-do pai do seu amigo em `/usuarios`.
+## Planos e cobrança (Stripe)
+
+| | Free | Pro |
+|---|---|---|
+| Ativos / regras | `FREE_MAX_SYMBOLS` (3) / `FREE_MAX_RULES` (2) | `PRO_MAX_SYMBOLS` (30) / `PRO_MAX_RULES` (50) |
+| Painel, notícias, calendário, posições | sim | sim |
+| Telegram, painel de risco, análise matinal, PDF/exportação, assistente e copiloto de IA | não (402) | sim |
+
+IA tem limite diário por usuário (`LLM_DAILY_LIMIT`) para controlar custo. Código em
+`app/billing.py`; rotas em `/api/billing/*`.
+
+Para ligar a cobrança:
+
+1. No Stripe, crie um **Produto** com preço **recorrente mensal** e copie o `price_...`.
+2. Defina `STRIPE_SECRET_KEY` e `STRIPE_PRICE_ID` no backend (comece com as chaves de **teste**).
+3. Crie um **webhook** apontando para `https://SEU_BACKEND/api/billing/webhook` com os eventos
+   `checkout.session.completed` e `customer.subscription.created|updated|deleted`, e copie o
+   segredo `whsec_...` para `STRIPE_WEBHOOK_SECRET`.
+4. Ative o **Customer Portal** no Stripe (é por ele que o cliente cancela e troca o cartão).
+5. Teste com o cartão `4242 4242 4242 4242`. Localmente: `stripe listen --forward-to
+   localhost:8000/api/billing/webhook`.
+
+`PRO_PRICE_LABEL` é só o texto exibido no site (o valor real é o do preço no Stripe): mantenha os
+dois iguais. Sem as chaves, o botão de assinar some e o admin libera o Pro à mão.
+
+### Telegram por cliente
+
+Um único bot atende todos. O cliente Pro gera um código em `/conta` e envia `/vincular CODIGO`
+ao bot; a partir daí recebe os próprios alertas e resumos e usa `/add`, `/status`, `/matinal`
+etc. na própria watchlist. `TELEGRAM_CHAT_ID` agora só serve para vincular automaticamente o
+administrador na primeira migração.
+
+### Migração de bancos antigos
+
+No startup, `app/migrations.py` leva um banco do tempo de usuário único ao modelo novo sem perder
+dados: os dados antigos passam a pertencer ao primeiro admin e quem já tinha conta fica no Pro.
+Testado em SQLite (`tests/test_migrations.py`); em Postgres a migração é "melhor esforço" e não
+foi testada.
 
 ## Rodando os testes
 
@@ -229,14 +263,19 @@ Dois serviços no **Render** (não pede cartão de crédito no free tier):
    não é 100% contínuo. Para monitoramento 24/7 de verdade, migre pro plano **Starter**
    (~US$7/mês), que não dorme.
 8. Persistência: o SQLite fica no filesystem do container, que é efêmero no Render — se o
-   serviço reiniciar, **o histórico de preços/alertas E as contas de usuário/senha zeram** (o
-   cadastro reabre sozinho, o que é seguro mas incômodo). Pra persistir de verdade, adicione um
-   **Render Disk** (storage persistente, custo baixo) apontando pro caminho do `DATABASE_URL`,
-   ou migre para o Render Postgres (free tier disponível) trocando `DATABASE_URL` — o
-   SQLAlchemy já suporta ambos sem mudar código. Recomendo fortemente configurar isso antes de
-   considerar o deploy "definitivo".
+   serviço reiniciar, **contas, assinaturas e dados dos clientes zeram**. Com clientes pagantes
+   isso é inaceitável: use um **Render Disk** apontando para o caminho do `DATABASE_URL`
+   (ex: `sqlite:////data/nasdaq_monitor.db`) e faça backup dele. O caminho testado é SQLite +
+   disco; Postgres exigiria instalar o driver e validar a migração.
+9. **Produção para clientes pagantes**: use plano que não durma (Starter ou acima), defina
+   `APP_ENV=production` (o app recusa subir sem `SECRET_KEY`), rode **um único processo** (o
+   agendador roda dentro dele; mais de um worker duplicaria alertas) e configure o Stripe.
 
 ### 2. Front-end — Static Site
+
+> O site tem rotas como `/termos` e `/planos`: o host estático precisa **reescrever tudo para
+> `index.html`** (no Render: Redirects/Rewrites, `/*` → `/index.html`, ação *Rewrite*). Defina
+> também `VITE_CONTACT_EMAIL` (aparece nos Termos e na Privacidade).
 
 1. No painel do Render: **New +** → **Static Site** → conecte o mesmo repositório.
 2. **Root Directory**: `frontend`.

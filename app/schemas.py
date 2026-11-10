@@ -10,24 +10,36 @@ class UserOut(BaseModel):
 
     id: int
     username: str
+    email: str | None = None
     is_admin: bool
     created_at: datetime
+    plan: str = "free"  # plano efetivo (Pro durante o teste conta como Pro)
+    paid: bool = False
+    on_trial: bool = False
+    trial_ends_at: datetime | None = None
+    telegram_linked: bool = False
 
 
 class LoginRequest(BaseModel):
-    username: str
+    username: str  # aceita usuário ou e-mail
     password: str
 
 
 class CadastroRequest(BaseModel):
     username: str = Field(min_length=3, max_length=64)
+    email: str = Field(min_length=5, max_length=254, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
     password: str = Field(min_length=8)
+    accept_terms: bool = False
 
 
 class UsuarioCreateRequest(BaseModel):
     username: str = Field(min_length=3, max_length=64)
     password: str = Field(min_length=8)
     is_admin: bool = False
+
+
+class PlanUpdateRequest(BaseModel):
+    plan: str = Field(pattern="^(free|pro)$")
 
 
 class TokenResponse(BaseModel):

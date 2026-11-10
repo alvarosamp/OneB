@@ -84,8 +84,11 @@ def _group_pnl(trades: list[ClosedTrade], key_fn) -> list[dict]:
     return sorted(rows, key=lambda row: row["pnl"], reverse=True)
 
 
-def analyze_trader_profile(db: Session) -> dict:
-    transactions = db.query(Transaction).order_by(Transaction.executed_at).all()
+def analyze_trader_profile(db: Session, user_id: int | None = None) -> dict:
+    query = db.query(Transaction)
+    if user_id is not None:
+        query = query.filter(Transaction.user_id == user_id)
+    transactions = query.order_by(Transaction.executed_at).all()
     closed = build_closed_trades(transactions)
     open_symbols = sorted({t.symbol for t in transactions if t.side == TransactionSide.BUY})
 

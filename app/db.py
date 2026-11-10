@@ -24,3 +24,6 @@ def init_db():
     from app import models  # noqa: F401  ensure models are registered
 
     Base.metadata.create_all(bind=engine)
+    from app import migrations
+
+    migrations.run(engine)

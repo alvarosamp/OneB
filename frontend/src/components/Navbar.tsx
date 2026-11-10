@@ -65,12 +65,14 @@ export function Navbar() {
         <NavLink to="/copiloto">Copiloto</NavLink>
         <NavLink to="/assistente">Assistente IA</NavLink>
         <NavLink to="/como-usar">Como usar</NavLink>
+        <NavLink to="/planos">Planos</NavLink>
+        <NavLink to="/conta">Conta</NavLink>
         {user.is_admin && <NavLink to="/usuarios">Usuários</NavLink>}
         <button type="button" className="nav-link" onClick={handleDownloadPdf} disabled={downloading}>
           {downloading ? 'Gerando...' : 'Baixar PDF'}
         </button>
         <span className="nav-user">
-          {user.username}
+          {user.username} <span className="plan-badge">{user.plan === 'pro' ? (user.on_trial ? 'Teste' : 'Pro') : 'Free'}</span>
           <button type="button" className="link-btn" onClick={handleLogout}>
             Sair
           </button>

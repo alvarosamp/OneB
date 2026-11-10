@@ -53,7 +53,7 @@ function WatchlistRow({ row }: { row: MorningReportWatchlistRow }) {
 }
 
 export function AnaliseMatinal() {
-  const [today, setToday] = useState<MorningReport | null>(null);
+  const [, setToday] = useState<MorningReport | null>(null);
   const [history, setHistory] = useState<MorningReport[]>([]);
   const [selected, setSelected] = useState<MorningReport | null>(null);
   const [loading, setLoading] = useState(true);

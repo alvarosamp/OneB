@@ -72,6 +72,21 @@ cd frontend && npm install
 - Verificação visual no navegador segue bloqueada: o preview do backend não consegue ler `.venv/pyvenv.cfg` (sandbox). Rode `uvicorn` e `npm run dev` à mão.
 - `npx tsc --noEmit` não checa nada neste projeto (tsconfig com referências); use `npx tsc -b`. Erro antigo conhecido em `AnaliseMatinal.tsx` ('today' sem uso).
 
+## 5c. MVP vendável (2026-11-09)
+
+Feito: multiusuário (dados isolados por conta, cadastro aberto com e-mail e aceite dos termos),
+planos Free/Pro com limites e teste grátis, cobrança Stripe (checkout, portal, webhook), Telegram
+por cliente (`/vincular`), landing, `/planos`, `/conta` (excluir conta), termos e privacidade,
+migração do banco antigo. Detalhes e passo a passo do Stripe no README.
+
+Falta antes de cobrar (nada disso dá para resolver só com código):
+- Revisão jurídica dos Termos/Privacidade e do enquadramento CVM (P3 acima). Os textos são modelo.
+- Criar produto/preço/webhook no Stripe e testar o fluxo com chaves de teste (o webhook foi testado
+  com assinatura simulada, não contra o Stripe de verdade).
+- Hospedar com disco persistente e sem dormir; definir `VITE_CONTACT_EMAIL` e `PRO_PRICE_LABEL`.
+- "Esqueci minha senha" (precisa de e-mail transacional).
+- Confirmar o preço (R$ 39 é só um valor provisório).
+
 ## 6. Pendências de git
 
 - `master` local: 8 commits à frente e 21 atrás de `origin/master`. Não foi feito merge nem rebase. Revise o que há no remoto antes de integrar.
