@@ -1,0 +1,140 @@
+.ticker {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 56px;
+  grid-template-rows: auto auto auto;
+  column-gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-2) var(--sp-3);
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.item + .item {
+  border-left: 1px solid var(--border);
+}
+
+a.item:hover {
+  background: var(--surface-hover);
+  text-decoration: none;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+.label svg {
+  color: var(--warning);
+}
+
+.price {
+  grid-column: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+}
+
+.change {
+  grid-column: 1;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.spark {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: center;
+}
+
+.empty {
+  color: var(--text-tertiary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-regular);
+}
+
+/* Flash curto quando o preço muda (mudança de dado). */
+.flashUp {
+  animation: flashUp 900ms var(--ease);
+}
+
+.flashDown {
+  animation: flashDown 900ms var(--ease);
+}
+
+@keyframes flashUp {
+  from {
+    background: var(--positive-subtle);
+  }
+}
+
+@keyframes flashDown {
+  from {
+    background: var(--negative-subtle);
+  }
+}
+
+.skeleton {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+@media (max-width: 1279px) {
+  .ticker {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .item:nth-child(4) {
+    border-left: 0;
+  }
+
+  .item:nth-child(n + 4) {
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 767px) {
+  .ticker {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin: 0 calc(var(--sp-4) * -1);
+    padding: 0 var(--sp-4);
+  }
+
+  .ticker::-webkit-scrollbar {
+    display: none;
+  }
+
+  .item {
+    flex: 0 0 auto;
+    min-width: 150px;
+    scroll-snap-align: start;
+  }
+
+  .item:nth-child(n) {
+    border-top: 0;
+  }
+
+  .item:nth-child(4) {
+    border-left: 1px solid var(--border);
+  }
+}

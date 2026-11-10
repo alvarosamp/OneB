@@ -55,13 +55,40 @@ const routine = [
   'Revise o Perfil do Trader semanalmente para detectar erros repetidos e setups mais fortes.',
 ];
 
+const validationChecks = [
+  {
+    title: 'Dados reais',
+    text: 'Confirme se AAPL, MSFT, NVDA e SNAP retornam candles OHLCV suficientes pelo Yahoo Finance.',
+  },
+  {
+    title: 'Falso positivo',
+    text: 'Compare cada sinal historico com o retorno dos proximos 5 pregoes e conte os sinais que falharam.',
+  },
+  {
+    title: 'Confianca minima',
+    text: 'A simulacao so pode comprar se a precisao historica for pelo menos 58% e o retorno medio for positivo.',
+  },
+  {
+    title: 'Banca de US$200',
+    text: 'O robô compra apenas acoes inteiras que caibam no caixa, sem alavancagem e sem ordem real.',
+  },
+  {
+    title: 'Risco',
+    text: 'Toda entrada simulada nasce com stop de 1 ATR e alvo de 2 ATR; posicoes abertas continuam sendo gerenciadas.',
+  },
+  {
+    title: 'Resposta confiavel',
+    text: 'Quando o filtro nao passa, a resposta correta e NO_TRADE. Esperar tambem e uma decisao.',
+  },
+];
+
 export function ComoUsar() {
   return (
     <div className="container dashboard-container">
       <div className="page-header">
         <div>
           <p className="eyebrow">Manual operacional</p>
-          <h1>Como usar o Monitor NASDAQ</h1>
+          <h1>Como usar o OneB Terminal</h1>
           <p className="muted">
             O sistema transforma dados de mercado em um processo de decisao: monitoramento, contexto,
             explicabilidade, risco, diario e aprendizado do trader. Ele nao executa ordens.
@@ -126,9 +153,33 @@ export function ComoUsar() {
       </section>
 
       <section className="panel">
+        <h2>Modo simulacao confiavel</h2>
+        <p className="muted">
+          O projeto inclui um simulador de carteira ficticia que roda em segundo plano no Docker.
+          Ele usa US$200 de banca inicial, dados historicos do Yahoo Finance, mede falsos positivos
+          e so segue uma recomendacao quando a calibracao historica passa no filtro minimo.
+        </p>
+        <ul className="source-list">
+          {validationChecks.map((item) => (
+            <li key={item.title}>
+              <strong>{item.title}</strong>
+              <span>{item.text}</span>
+            </li>
+          ))}
+        </ul>
+        <ol className="decision-list">
+          <li>Rode o projeto com Docker para manter API, worker, frontend e simulador ativos.</li>
+          <li>Abra o Resumo Diario para ler tendencias, volatilidade, noticias e pontos de atencao.</li>
+          <li>Acompanhe a simulacao pelos arquivos de eventos e estado salvos na pasta data.</li>
+          <li>Antes de confiar em uma entrada, confira se a decisao atual nao foi bloqueada por falso positivo historico.</li>
+          <li>Use o resultado como treino e validacao de processo, nunca como ordem automatica.</li>
+        </ol>
+      </section>
+
+      <section className="panel">
         <h2>Limites importantes</h2>
         <p className="muted">
-          O Monitor NASDAQ usa fontes gratuitas e dados que podem ter atraso. O Copiloto e o Assistente
+          O OneB Terminal usa fontes gratuitas e dados que podem ter atraso. O Copiloto e o Assistente
           ajudam a interpretar informacoes, mas nao garantem resultado, nao substituem gestao de risco e
           nao constituem recomendacao de investimento.
         </p>

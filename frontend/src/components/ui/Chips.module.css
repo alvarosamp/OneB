@@ -1,0 +1,35 @@
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 28px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+.chip:hover {
+  color: var(--text-primary);
+  border-color: var(--text-tertiary);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--brand-border);
+  background: var(--brand-subtle);
+  color: var(--text-primary);
+}
+
+.count {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}

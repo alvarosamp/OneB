@@ -1,0 +1,85 @@
+/* Páginas de pesquisa/risco: estilos mínimos com os tokens do tema (escopados para não vazar). */
+.research-scope {
+  max-width: var(--content-max, 1100px);
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-4);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: var(--lh-normal);
+}
+
+.research-scope.research-standalone {
+  min-height: 100vh;
+  background: var(--bg-0);
+}
+
+.research-scope h1 { font-size: var(--fs-2xl); margin: 0 0 var(--sp-2); }
+.research-scope h2 { font-size: var(--fs-xl); margin: var(--sp-6) 0 var(--sp-2); }
+.research-scope a { color: var(--brand); }
+.research-scope .muted { color: var(--text-secondary); }
+.research-scope .block-text { display: block; }
+
+.research-scope .panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  margin: var(--sp-3) 0;
+}
+
+.research-scope .metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--sp-3);
+  margin: var(--sp-3) 0;
+}
+
+.research-scope .metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+}
+
+.research-scope .metric-card strong { font-size: var(--fs-xl); }
+.research-scope .metric-label { color: var(--text-tertiary); font-size: var(--fs-sm); }
+.research-scope .table-scroll { overflow-x: auto; }
+
+.research-scope .table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+.research-scope .table th,
+.research-scope .table td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.research-scope input {
+  background: var(--bg-1);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.research-scope button {
+  background: var(--brand);
+  color: var(--text-on-brand);
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-4);
+  cursor: pointer;
+}
+
+.research-scope .disclaimer {
+  margin-top: var(--sp-8);
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+}

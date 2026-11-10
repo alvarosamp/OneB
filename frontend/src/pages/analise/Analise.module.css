@@ -1,0 +1,280 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.inline {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.w140 {
+  width: 140px;
+}
+
+.w220 {
+  width: 220px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.h2 {
+  font-size: var(--fs-lg);
+}
+
+.h3 {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.note {
+  max-width: 80ch;
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+}
+
+.meta {
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.lead {
+  max-width: var(--measure);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-normal);
+}
+
+.headline {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: baseline;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-8);
+  align-items: start;
+}
+
+.list {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding-left: var(--sp-5);
+  line-height: var(--lh-normal);
+}
+
+.feed {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feed li {
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+
+.feed a {
+  color: var(--text-primary);
+}
+
+.inlineIcon {
+  display: inline;
+  vertical-align: -2px;
+  color: var(--text-tertiary);
+}
+
+.morning {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.narrative {
+  max-width: var(--measure);
+  font-size: var(--fs-md);
+  line-height: var(--lh-reading);
+  white-space: pre-wrap;
+}
+
+.historyRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  align-items: center;
+}
+
+.regime {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.regimeHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.regimeLabel {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+}
+
+/* Técnica */
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+.chart {
+  min-width: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.chartHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.bigNum {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.side {
+  min-width: 0;
+  padding-left: var(--sp-6);
+  border-left: 1px solid var(--border);
+}
+
+.study {
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.signals {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
+}
+
+.signals li {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+}
+
+.numbers {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-2) var(--sp-3);
+  margin: 0;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+
+.numbers dt {
+  color: var(--text-secondary);
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+}
+
+.numbers dd {
+  margin: 0;
+  text-align: right;
+}
+
+.itemList {
+  display: grid;
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
+}
+
+.itemList li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-1) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.itemNote {
+  display: block;
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+}
+
+.miniForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.quick {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+}
+
+@media (max-width: 1199px) {
+  .workbench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .side {
+    padding-left: 0;
+    border-left: 0;
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 899px) {
+  .two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .w140,
+  .w220 {
+    width: 100%;
+  }
+}

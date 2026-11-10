@@ -8,8 +8,10 @@ that gap at no cost.
 from __future__ import annotations
 
 import logging
+import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pandas as pd
 import yfinance as yf
@@ -18,6 +20,16 @@ logger = logging.getLogger(__name__)
 
 
 _COLUMNS = ["open", "high", "low", "close", "volume"]
+PROVIDER_NAME = "yfinance"
+PROVIDER_ROLE = "historical_ohlcv"
+REQUIRED_FOR_TECHNICAL_ANALYSIS = True
+
+_CACHE_DIR = Path(os.getenv("YFINANCE_CACHE_DIR", "data/yfinance_cache"))
+try:
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    yf.set_tz_cache_location(str(_CACHE_DIR))
+except Exception:
+    logger.warning("Nao foi possivel configurar o cache local do yfinance.", exc_info=True)
 
 
 @dataclass
@@ -194,3 +206,9 @@ def get_quote(symbol: str):
     change_pct = ((latest - previous) / previous * 100) if previous else 0.0
     volume = float(history["volume"].iloc[-1]) if "volume" in history and len(history) else 0.0
     return Quote(symbol=symbol, price=latest, change_pct=change_pct, volume=volume)
+
+
+# The macro/cross-asset instrument registry (NASDAQ, DXY, Treasury yields,
+# etc.) now lives in app.market_data.macro_data — it routes each instrument
+# to its most reliable source (FRED for yields/dollar index, yfinance for
+# everything else) instead of only ever using Yahoo proxies.

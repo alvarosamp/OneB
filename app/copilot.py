@@ -8,8 +8,16 @@ import pandas as pd
 from sqlalchemy.orm import Session
 
 from app import indicators
-from app.market_data import yfinance_client
-from app.models import AlertLog, EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem, PriceSnapshot, Transaction, TransactionSide, WatchlistItem
+from app.market_data import service as market_data_service
+from app.models import (
+    AlertLog,
+    EconomicEvent,
+    GlobalNewsItem,
+    NewsItem,
+    PriceSnapshot,
+    Transaction,
+    WatchlistItem,
+)
 from app.positions import compute_position
 from app.trader_profile import analyze_trader_profile
 
@@ -147,8 +155,8 @@ def macro_agent(db: Session) -> AgentVote:
     return AgentVote("Macro", _vote_from_score(score), score, "Leitura macro baseada em noticias globais e calendario economico.", evidence)
 
 
-def risk_agent(db: Session, symbol: str, capital_usd: float, risk_budget_pct: float, entry_price: float | None, history: pd.DataFrame) -> AgentVote:
-    transactions = db.query(Transaction).filter(Transaction.symbol == symbol).all()
+def risk_agent(db: Session, symbol: str, user_id: int, capital_usd: float, risk_budget_pct: float, entry_price: float | None, history: pd.DataFrame) -> AgentVote:
+    transactions = db.query(Transaction).filter(Transaction.user_id == user_id, Transaction.symbol == symbol).all()
     position = compute_position(symbol, transactions, entry_price)
     close = history["close"].dropna() if not history.empty else pd.Series(dtype=float)
     volatility = float(close.pct_change().dropna().tail(20).std() * 100) if len(close) > 20 else 0.0
@@ -173,10 +181,10 @@ def risk_agent(db: Session, symbol: str, capital_usd: float, risk_budget_pct: fl
     return AgentVote("Risco", _vote_from_score(max(0, min(100, score))), max(0, min(100, score)), "Gestao de risco calculada por capital, stop e volatilidade.", evidence)
 
 
-def profile_agent(db: Session, symbol: str) -> AgentVote:
-    profile = analyze_trader_profile(db)
+def profile_agent(db: Session, symbol: str, user_id: int) -> AgentVote:
+    profile = analyze_trader_profile(db, user_id)
     summary = profile["summary"]
-    transactions = db.query(Transaction).order_by(Transaction.executed_at).all()
+    transactions = db.query(Transaction).filter(Transaction.user_id == user_id).order_by(Transaction.executed_at).all()
     if summary["closed_trades"] < 3:
         return AgentVote("Perfil", "Neutro", 45, "Ainda ha poucas operacoes registradas para aprender o perfil do trader.", ["Registre mais compras e vendas para gerar diagnosticos pessoais."])
     tech_count = sum(1 for tx in transactions if tx.symbol in {"NVDA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA"})
@@ -225,7 +233,7 @@ def detect_patterns(db: Session) -> list[str]:
     items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
     patterns = []
     for item in items:
-        history = yfinance_client.get_history(item.symbol, period="3mo", interval="1d")
+        history = market_data_service.get_bars(item.symbol, period="3mo", interval="1d")
         if history.empty or len(history) < 30:
             continue
         close = history["close"]
@@ -241,17 +249,87 @@ def detect_patterns(db: Session) -> list[str]:
     return patterns[:12]
 
 
-def analyze_symbol(db: Session, symbol: str, capital_usd: float, risk_budget_pct: float, question: str = "") -> dict:
+def build_trade_plan(
+    history: pd.DataFrame,
+    entry_price: float | None,
+    capital_usd: float,
+    risk_budget_pct: float,
+    bias: str,
+) -> dict:
+    """Build a transparent, long-only *conditional* plan for US equities.
+
+    This is deliberately not an execution instruction: the plan is unavailable
+    until the daily history contains enough data, and its validity is tied to
+    the explanatory bias returned by the other agents.  ATR supplies a
+    volatility-aware minimum stop distance while the 20-day low supplies the
+    structural invalidation level.
+    """
+    if entry_price is None or history.empty or len(history) < 20:
+        return {
+            "available": False,
+            "timeframe": "1D",
+            "reason": "Histórico diário insuficiente para calcular níveis técnicos confiáveis.",
+        }
+
+    atr_14 = _safe_last(indicators.atr(history["high"], history["low"], history["close"]))
+    support = float(history["low"].tail(20).min())
+    resistance = float(history["high"].tail(20).max())
+    # A stop must be below the entry by at least 1 ATR, but never above the
+    # latest 20-day support.  This makes the invalidation reproducible.
+    atr_stop = entry_price - (atr_14 or entry_price * 0.03)
+    stop_price = min(atr_stop, support * 0.995)
+    risk_per_share = max(entry_price - stop_price, entry_price * 0.005)
+    risk_amount = capital_usd * (risk_budget_pct / 100)
+    shares_by_risk = int(risk_amount / risk_per_share)
+    shares_by_capital = int(capital_usd / entry_price)
+    suggested_shares = max(0, min(shares_by_risk, shares_by_capital))
+    target_1 = entry_price + risk_per_share * 2
+    target_2 = entry_price + risk_per_share * 3
+
+    if bias == "OBSERVAR_COMPRA":
+        status = "OBSERVAR_CONFIRMAÇÃO"
+        reason = "Só considerar após confirmar o gatilho técnico e revisar notícias do dia."
+    elif bias == "EVITAR_POR_ENQUANTO":
+        status = "NÃO OPERAR"
+        reason = "O consenso atual não autoriza uma entrada; os níveis ficam apenas como referência."
+    else:
+        status = "AGUARDAR"
+        reason = "Aguardar confirmação antes de considerar qualquer entrada manual."
+
+    return {
+        "available": True,
+        "timeframe": "1D",
+        "holding_window": "5 a 20 pregões",
+        "status": status,
+        "reason": reason,
+        "entry_price": round(entry_price, 2),
+        "stop_price": round(stop_price, 2),
+        "target_1_price": round(target_1, 2),
+        "target_2_price": round(target_2, 2),
+        "risk_per_share_usd": round(risk_per_share, 2),
+        "risk_amount_usd": round(risk_amount, 2),
+        "suggested_shares": suggested_shares,
+        "position_value_usd": round(suggested_shares * entry_price, 2),
+        "risk_reward_target_1": 2.0,
+        "risk_reward_target_2": 3.0,
+        "support_20d": round(support, 2),
+        "resistance_20d": round(resistance, 2),
+        "atr_14": round(atr_14, 2) if atr_14 is not None else None,
+        "invalidation": f"Fechamento diário abaixo de US$ {stop_price:.2f} invalida o cenário.",
+    }
+
+
+def analyze_symbol(db: Session, symbol: str, user_id: int, capital_usd: float, risk_budget_pct: float, question: str = "") -> dict:
     symbol = symbol.upper().strip()
-    history = yfinance_client.get_history(symbol, period="1y", interval="1d")
+    history = market_data_service.get_bars(symbol, period="1y", interval="1d")
     snapshot = _latest_snapshot(db, symbol)
     entry_price = snapshot.price if snapshot else (float(history["close"].iloc[-1]) if not history.empty else None)
     agents = [
         technical_agent(symbol, history, snapshot),
         news_agent(db, symbol),
         macro_agent(db),
-        risk_agent(db, symbol, capital_usd, risk_budget_pct, entry_price, history),
-        profile_agent(db, symbol),
+        risk_agent(db, symbol, user_id, capital_usd, risk_budget_pct, entry_price, history),
+        profile_agent(db, symbol, user_id),
     ]
     confidence = round(mean([a.confidence for a in agents]))
     buy_votes = sum(1 for a in agents if a.vote == "Comprar")
@@ -273,6 +351,7 @@ def analyze_symbol(db: Session, symbol: str, capital_usd: float, risk_budget_pct
     for agent in agents:
         if agent.vote != "Comprar":
             contrary.extend(agent.evidence[:1])
+    trade_plan = build_trade_plan(history, entry_price, capital_usd, risk_budget_pct, bias)
     return {
         "symbol": symbol,
         "question": question,
@@ -283,6 +362,7 @@ def analyze_symbol(db: Session, symbol: str, capital_usd: float, risk_budget_pct
         "why": explanation,
         "contrary_view": contrary[:5],
         "risk_plan": risk_vote.evidence,
+        "trade_plan": trade_plan,
         "simulation": simulate_history(history),
         "patterns": detect_patterns(db),
         "disclaimer": "Nao e recomendacao de investimento nem ordem de compra/venda. Use como copiloto de analise e valide manualmente.",

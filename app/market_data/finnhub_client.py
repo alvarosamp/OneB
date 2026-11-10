@@ -195,10 +195,11 @@ class EarningsEntry:
 def get_earnings_calendar(from_date: date, to_date: date, symbol: str | None = None) -> list[EarningsEntry]:
     try:
         client = get_client()
-        kwargs = {"_from": from_date.isoformat(), "to": to_date.isoformat()}
-        if symbol:
-            kwargs["symbol"] = symbol
-        data = client.earnings_calendar(**kwargs)
+        # finnhub-python's earnings_calendar() takes `symbol` as a required
+        # positional/keyword argument (no default) — omitting it raises
+        # TypeError, not an empty result. "" is the library's own documented
+        # way to ask for the global calendar (all symbols).
+        data = client.earnings_calendar(_from=from_date.isoformat(), to=to_date.isoformat(), symbol=symbol or "")
     except Exception:
         logger.exception("Falha ao buscar calendário de earnings no Finnhub")
         return []

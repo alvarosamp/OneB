@@ -1,8 +1,10 @@
-# Sobe backend (API) e front-end (Vite) juntos para desenvolvimento local.
-# Backend: http://localhost:8000 | Front-end: http://localhost:5173
+# Sobe os processos separados para desenvolvimento local:
+# API: http://localhost:8000 | Front-end: http://localhost:5173 | Worker: scheduler/bots
 services:
-  nasdaq-monitor:
+  api:
     build: .
+    user: "0:0"
+    command: sh -c "RUN_EMBEDDED_SCHEDULER=false uvicorn app.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     env_file:
@@ -12,6 +14,46 @@ services:
     environment:
       - DATABASE_URL=sqlite:////app/data/nasdaq_monitor.db
       - FRONTEND_ORIGIN=http://localhost:5173
+      - RUN_EMBEDDED_SCHEDULER=false
+    restart: unless-stopped
+
+  worker:
+    build: .
+    user: "0:0"
+    command: python -m app.worker
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:////app/data/nasdaq_monitor.db
+      - RUN_EMBEDDED_SCHEDULER=false
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  paper-simulator:
+    build: .
+    user: "0:0"
+    command: python -m app.paper_simulator
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:////app/data/nasdaq_monitor.db
+      - PAPER_SIM_INTERVAL_SECONDS=60
+      - PAPER_SIM_INITIAL_CAPITAL=50000
+      - PAPER_SIM_MAX_POSITION_PCT=0.20
+      - PAPER_SIM_MAX_OPEN_POSITIONS=5
+      - PAPER_SIM_RELIABLE_PRECISION_PCT=70
+      - PAPER_SIM_AI_FIRST_MODE=true
+      - PAPER_SIM_AI_FIRST_MIN_PRECISION_PCT=45
+      # No PAPER_SIM_SYMBOLS override: falls back to app.paper_simulator.DEFAULT_SYMBOLS,
+      # the single diversified 24-symbol universe used everywhere else (was previously a
+      # separate, stale hardcoded list here that drifted from the code).
+    depends_on:
+      - api
     restart: unless-stopped
 
   frontend:
@@ -22,5 +64,5 @@ services:
     environment:
       - VITE_API_URL=http://localhost:8000
     depends_on:
-      - nasdaq-monitor
+      - api
     restart: unless-stopped

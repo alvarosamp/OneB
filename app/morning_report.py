@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from app import indicators
 from app.config import settings
+from app.market_data import service as market_data_service
 from app.market_data import yfinance_client
 from app.models import EarningsEvent, EconomicEvent, GlobalNewsItem, MorningReport, PriceSnapshot, WatchlistItem
 
@@ -28,7 +29,7 @@ INDEX_FETCHERS = [
 
 def _quote_levels(symbol: str) -> dict | None:
     """Daily history for `symbol` -> pivot points (prior day OHLC) + swing levels."""
-    history = yfinance_client.get_history(symbol, period="3mo", interval="1d")
+    history = market_data_service.get_bars(symbol, period="3mo", interval="1d")
     if history.empty or len(history) < 2:
         return None
     prior = history.iloc[-2]
@@ -52,8 +53,15 @@ def _index_section(key: str, fetcher_name: str) -> dict | None:
     }
 
 
-def _watchlist_section(db: Session) -> list[dict]:
-    items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+def _watchlist_section(db: Session, user_id: int) -> list[dict]:
+    items = (
+        db.query(WatchlistItem)
+        .filter(
+            (WatchlistItem.user_id == user_id) | (WatchlistItem.user_id.is_(None)),
+            WatchlistItem.active.is_(True),
+        )
+        .all()
+    )
     out = []
     for item in items:
         snap = (
@@ -74,10 +82,13 @@ def _watchlist_section(db: Session) -> list[dict]:
     return out
 
 
-def build_report_data(db: Session) -> dict:
+def build_report_data(db: Session, user_id: int) -> dict:
     """Assembles the structured data behind the morning report. Pure read of
     already-fetched market data + one small yfinance call per index/watchlist
     symbol for daily OHLC (needed for pivot points).
+
+    `user_id` scopes only the watchlist section — indices/news/calendar are
+    market-wide data shared by every account.
     """
     now = datetime.now(timezone.utc)
     since = now - timedelta(hours=16)  # covers the prior US close through this morning
@@ -85,7 +96,7 @@ def build_report_data(db: Session) -> dict:
     today_end = today_start + timedelta(days=1)
 
     indices = [section for key, fetcher_name in INDEX_FETCHERS if (section := _index_section(key, fetcher_name))]
-    watchlist = _watchlist_section(db)
+    watchlist = _watchlist_section(db, user_id)
 
     overnight_news = (
         db.query(GlobalNewsItem)
@@ -166,11 +177,11 @@ def render_text(data: dict) -> str:
     return "\n".join(lines)
 
 
-async def generate_and_store(db: Session) -> MorningReport:
+async def generate_and_store(db: Session, user_id: int) -> MorningReport:
     """Builds the report, optionally enriches it with an LLM narrative, and
     persists it so the dashboard/history can show it without recomputing.
     """
-    data = build_report_data(db)
+    data = build_report_data(db, user_id)
     narrative = render_text(data)
 
     if settings.llm_daily_narrative_enabled:

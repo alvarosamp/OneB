@@ -17,9 +17,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "output" / "pdf" / "monitor_nasdaq_guia_projeto.pdf"
+OUTPUT = ROOT / "output" / "pdf" / "oneb_market_guia_projeto.pdf"
 
 
 def styles():
@@ -121,7 +120,7 @@ def footer(canvas, doc):
     canvas.saveState()
     canvas.setFont("Helvetica", 8)
     canvas.setFillColor(colors.HexColor("#6b7280"))
-    canvas.drawString(1.6 * cm, 1.1 * cm, "Monitor NASDAQ - documentacao do projeto")
+    canvas.drawString(1.6 * cm, 1.1 * cm, "OneB Market - documentacao do projeto")
     canvas.drawRightString(19.4 * cm, 1.1 * cm, f"Pagina {doc.page}")
     canvas.restoreState()
 
@@ -136,12 +135,12 @@ def build():
         leftMargin=1.6 * cm,
         topMargin=1.6 * cm,
         bottomMargin=1.6 * cm,
-        title="Monitor NASDAQ - Guia do Projeto",
+        title="OneB Market - Guia do Projeto",
     )
 
     story = []
     story.append(Spacer(1, 5 * cm))
-    story.append(Paragraph("Monitor NASDAQ", s["CoverTitle"]))
+    story.append(Paragraph("OneB Market", s["CoverTitle"]))
     story.append(
         Paragraph(
             "Guia do projeto, aplicacoes presentes e fluxo operacional para monitoramento, "
@@ -161,7 +160,7 @@ def build():
 
     story.append(Paragraph("1. Visao Geral", s["SectionTitle"]))
     for item in [
-        "O Monitor NASDAQ e uma plataforma de apoio a decisao para acompanhar ativos, alertas, noticias e contexto macro.",
+        "A OneB Market e uma plataforma de apoio a decisao para acompanhar ativos, alertas, noticias e contexto macro.",
         "O foco nao e apenas exibir graficos. O produto organiza dados e oferece interpretacao explicavel.",
         "A aplicacao combina dashboard, regras, noticias, chatbot, copiloto multiagente, perfil do trader e relatorios.",
         "O usuario continua responsavel por validar qualquer decisao e executar ordens fora do sistema.",

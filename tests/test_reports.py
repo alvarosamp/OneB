@@ -1,17 +1,9 @@
-from app.db import Base
-from app.models import AlertLog, WatchlistItem, PriceSnapshot
-from app.reports import build_pdf_report
-import pandas as pd
-import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-
-@pytest.fixture(autouse=True)
-def _no_network(monkeypatch):
-    from app import analysis
-
-    monkeypatch.setattr(analysis.yfinance_client, "get_history", lambda *a, **kw: pd.DataFrame())
+from app.db import Base
+from app.models import AlertLog, PriceSnapshot, WatchlistItem
+from app.reports import build_pdf_report
 
 
 def _make_session():
@@ -22,7 +14,7 @@ def _make_session():
 
 def test_build_pdf_report_empty_watchlist_does_not_crash():
     db = _make_session()
-    pdf_bytes = build_pdf_report(db)
+    pdf_bytes = build_pdf_report(db, user_id=1)
     assert pdf_bytes.startswith(b"%PDF")
     assert len(pdf_bytes) > 500
 
@@ -36,6 +28,6 @@ def test_build_pdf_report_with_data():
     db.add(AlertLog(symbol="AAPL", rule_type="PRICE_ABOVE", message="AAPL passou de 150"))
     db.commit()
 
-    pdf_bytes = build_pdf_report(db)
+    pdf_bytes = build_pdf_report(db, user_id=1)
     assert pdf_bytes.startswith(b"%PDF")
     assert len(pdf_bytes) > 500

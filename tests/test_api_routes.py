@@ -1,5 +1,8 @@
-import pytest
 from datetime import datetime, timezone
+from types import SimpleNamespace
+
+import pandas as pd
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,9 +11,22 @@ from sqlalchemy.pool import StaticPool
 from app.auth import get_current_user
 from app.db import Base, get_db
 from app.main import app
-from app.models import AlertLog, GlobalNewsItem, PriceSnapshot, Transaction, TransactionSide, WatchlistItem
+from app.market_data import macro_data
+from app.market_data.providers import MarketQuote
 from app.market_data.yfinance_client import CommodityQuote, FxQuote
-import pandas as pd
+from app.models import (
+    AlertCondition,
+    AlertLog,
+    AlertRule,
+    GlobalNewsItem,
+    MacroIntelligenceSnapshot,
+    PriceSnapshot,
+    RuleLogic,
+    RuleType,
+    Transaction,
+    TransactionSide,
+    WatchlistItem,
+)
 
 
 @pytest.fixture()
@@ -34,7 +50,7 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = lambda: "test-user"
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=1)
 
     # Deliberately NOT using TestClient as a context manager: that would trigger
     # app.main's lifespan (real DB init, real scheduler, real Telegram polling
@@ -55,7 +71,7 @@ def test_dashboard_summary_empty(client):
 def test_dashboard_summary_with_data(client):
     test_client, Session = client
     db = Session()
-    item = WatchlistItem(symbol="AAPL", label="Apple")
+    item = WatchlistItem(user_id=1, symbol="AAPL", label="Apple")
     db.add(item)
     db.commit()
     db.add(PriceSnapshot(watchlist_item_id=item.id, price=150.5, change_pct=1.2, volume=1000))
@@ -70,11 +86,404 @@ def test_dashboard_summary_with_data(client):
     assert data["rows"][0]["price"] == 150.5
 
 
+def test_macro_trend_radar_contract_and_order(client, monkeypatch):
+    test_client, _ = client
+    history_calls: list[tuple[str, str, str]] = []
+    trend_calls: list[tuple[str, bool]] = []
+
+    def fake_history(key: str, *, period: str, interval: str, refresh: bool = False):
+        assert refresh is False
+        history_calls.append((key, period, interval))
+        frame = pd.DataFrame()
+        frame.attrs["macro_key"] = key
+        return frame
+
+    def fake_trend(frame: pd.DataFrame, *, yield_series: bool):
+        key = frame.attrs["macro_key"]
+        trend_calls.append((key, yield_series))
+        return {"direction": "LATERAL", "change_unit": "bps" if yield_series else "%"}
+
+    monkeypatch.setattr("app.routers.regime.macro_data.get_macro_history", fake_history)
+    monkeypatch.setattr("app.routers.regime.regime_engine.trend_analysis", fake_trend)
+    monkeypatch.setattr("app.routers.regime.regime_engine.latest_macro_snapshot", lambda *_args: None)
+    monkeypatch.setattr("app.routers.regime.regime_engine.cross_asset_relevance", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(
+        "app.routers.regime.regime_engine.macro_correlation_analysis",
+        lambda histories: {"60": {"received_keys": list(histories)}},
+    )
+    monkeypatch.setattr("app.routers.regime.regime_engine.macro_relationship_dynamics", lambda _windows: [{"status": "INVERSAO"}])
+    monkeypatch.setattr(
+        "app.routers.regime.regime_engine.macro_lead_lag_candidates",
+        lambda histories: [{"leader": next(iter(histories)), "follower": "DXY"}],
+    )
+
+    res = test_client.get("/api/regime/macro")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert [row["key"] for row in data["trend_watchlist"]] == list(macro_data.TREND_WATCHLIST)
+    assert len(data["instruments"]) == len(macro_data.MACRO_INSTRUMENTS)
+    assert all(row["context"] for row in data["trend_watchlist"])
+    assert "VIX" in {row["key"] for row in data["instruments"]}
+    assert "VIX" not in {row["key"] for row in data["trend_watchlist"]}
+    assert data["correlation_windows"]["60"]["received_keys"] == list(macro_data.MACRO_INSTRUMENTS)
+    assert data["relationship_dynamics"] == [{"status": "INVERSAO"}]
+    assert data["lead_lag_candidates"][0]["leader"] == next(iter(macro_data.MACRO_INSTRUMENTS))
+    assert history_calls == [(key, "1y", "1d") for key in macro_data.MACRO_INSTRUMENTS]
+    assert {key for key, is_yield in trend_calls if is_yield} == {"US2Y", "US5Y", "US10Y", "US30Y"}
+    assert all(
+        row["trend"]["change_unit"] == ("bps" if row["key"].startswith("US") else "%")
+        for row in data["trend_watchlist"]
+    )
+
+
+def test_macro_history_endpoint_returns_persisted_daily_state(client):
+    test_client, Session = client
+    db = Session()
+    db.add(
+        MacroIntelligenceSnapshot(
+            snapshot_date="2026-09-15",
+            captured_at=datetime(2026, 9, 15, 21, tzinfo=timezone.utc),
+            coverage_pct=91.7,
+            fresh_count=10,
+            stale_count=1,
+            missing_count=1,
+            payload={"lead_lag_candidates": []},
+        )
+    )
+    db.commit()
+    db.close()
+
+    res = test_client.get("/api/regime/macro/history", params={"limit": 30})
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data["days_recorded"] == 1
+    assert data["snapshots"][0]["snapshot_date"] == "2026-09-15"
+    assert data["snapshots"][0]["coverage_pct"] == 91.7
+
+
+def test_dashboard_summary_includes_user_item_from_older_workspace(client):
+    test_client, Session = client
+    db = Session()
+    item = WatchlistItem(user_id=1, workspace_id=99, symbol="NVDA", label="Nvidia")
+    db.add(item)
+    db.commit()
+    db.add(PriceSnapshot(watchlist_item_id=item.id, price=120.0, change_pct=1.5, volume=1000))
+    db.commit()
+    db.close()
+
+    res = test_client.get("/api/dashboard-summary")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data["rows"]) == 1
+    assert data["rows"][0]["symbol"] == "NVDA"
+
+
+def test_watchlist_delete_allows_user_item_from_older_workspace(client):
+    test_client, Session = client
+    db = Session()
+    item = WatchlistItem(user_id=1, workspace_id=99, symbol="SNAP", label="Snap")
+    db.add(item)
+    db.commit()
+    item_id = item.id
+    db.close()
+
+    res = test_client.delete(f"/api/watchlist/{item_id}")
+
+    assert res.status_code == 204
+    db = Session()
+    assert db.get(WatchlistItem, item_id).active is False
+    db.close()
+
+
+def test_watchlist_rules_allow_user_item_from_older_workspace(client):
+    test_client, Session = client
+    db = Session()
+    item = WatchlistItem(user_id=1, workspace_id=99, symbol="MSFT", label="Microsoft")
+    rule = AlertRule(watchlist_item=item, logic=RuleLogic.ALL, cooldown_minutes=30)
+    rule.conditions = [AlertCondition(rule_type=RuleType.PRICE_ABOVE, threshold=400)]
+    db.add(item)
+    db.commit()
+    item_id = item.id
+    rule_id = rule.id
+    db.close()
+
+    list_res = test_client.get(f"/api/watchlist/{item_id}/rules")
+    delete_res = test_client.delete(f"/api/watchlist/rules/{rule_id}")
+
+    assert list_res.status_code == 200
+    assert list_res.json()[0]["id"] == rule_id
+    assert delete_res.status_code == 204
+    db = Session()
+    assert db.get(AlertRule, rule_id).active is False
+    db.close()
+
+
+def test_watchlist_add_existing_symbol_creates_user_copy(client):
+    test_client, Session = client
+    db = Session()
+    db.add(WatchlistItem(user_id=2, workspace_id=99, symbol="AAPL", label="Other user"))
+    db.commit()
+    db.close()
+
+    res = test_client.post("/api/watchlist", json={"symbol": "AAPL", "label": "Apple"})
+
+    assert res.status_code == 201
+    assert res.json()["symbol"] == "AAPL"
+    db = Session()
+    rows = db.query(WatchlistItem).filter(WatchlistItem.symbol == "AAPL").order_by(WatchlistItem.id).all()
+    assert [(row.user_id, row.workspace_id, row.label) for row in rows] == [(2, 99, "Other user"), (1, 1, "Apple")]
+    db.close()
+
+
+def test_saas_overview_creates_default_workspace(client):
+    test_client, _ = client
+
+    res = test_client.get("/api/saas/overview")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data["workspace"]["plan"] == "FREE"
+    assert data["limits"]["watchlist_items"] == 5
+    assert data["usage"]["watchlist_items"] == 0
+
+
+def test_saas_plan_and_channel_configuration(client):
+    test_client, _ = client
+
+    plan_res = test_client.put("/api/saas/plan", json={"plan": "PRO"})
+    assert plan_res.status_code == 200
+    assert plan_res.json()["workspace"]["plan"] == "PRO"
+
+    channel_res = test_client.post(
+        "/api/saas/channels",
+        json={"channel_type": "EMAIL", "destination": "alerts@example.com"},
+    )
+    assert channel_res.status_code == 201
+    assert channel_res.json()["destination"] == "alerts@example.com"
+
+    overview = test_client.get("/api/saas/overview").json()
+    assert overview["usage"]["notification_channels"] == 1
+
+
+def test_intelligence_radar_score_and_decision_journal(client):
+    test_client, Session = client
+    db = Session()
+    item = WatchlistItem(symbol="AAPL", label="Apple")
+    db.add(item)
+    db.commit()
+    db.add(PriceSnapshot(watchlist_item_id=item.id, price=190, change_pct=2.5, volume=1000))
+    db.commit()
+    db.close()
+
+    radar = test_client.get("/api/intelligence/radar")
+    assert radar.status_code == 200
+    assert radar.json()["scores"][0]["symbol"] == "AAPL"
+
+    score = test_client.get("/api/intelligence/score/AAPL")
+    assert score.status_code == 200
+    assert score.json()["score"] >= 50
+
+    decision = test_client.post(
+        "/api/intelligence/decisions",
+        json={"symbol": "AAPL", "thesis": "Rompimento com momentum", "trigger": "Fechar acima da maxima"},
+    )
+    assert decision.status_code == 201
+    assert decision.json()["status"] == "OPEN"
+
+    playbooks = test_client.get("/api/intelligence/playbooks")
+    assert playbooks.status_code == 200
+    assert len(playbooks.json()) >= 3
+
+
+def test_intelligence_live_check_uses_market_history(client, monkeypatch):
+    test_client, _ = client
+    dates = pd.date_range("2026-01-01", periods=5, freq="D", tz="UTC")
+    history = pd.DataFrame(
+        {
+            "open": [100, 101, 102, 103, 104],
+            "high": [101, 102, 103, 104, 105],
+            "low": [99, 100, 101, 102, 103],
+            "close": [100, 102, 101, 104, 106],
+            "volume": [1000, 1100, 1200, 1300, 1400],
+        },
+        index=dates,
+    )
+    # The endpoint uses the configured market-data provider through the shared
+    # service, so patch the service boundary rather than a specific provider.
+    # This keeps the test independent from the developer's .env selection.
+    monkeypatch.setattr("app.market_data.service.get_bars", lambda *args, **kwargs: history)
+    monkeypatch.setattr(
+        "app.routers.intelligence.quality_gate",
+        lambda *args, **kwargs: {"allowed": True, "confidence": "HIGH", "reason": ""},
+    )
+
+    res = test_client.get("/api/intelligence/live-check/AAPL")
+
+    assert res.status_code == 200
+    assert "AAPL" in res.json()["score_bot"]
+
+
+def test_data_quality_compares_multiple_sources(client, monkeypatch):
+    test_client, _ = client
+    dates = pd.date_range(pd.Timestamp.now(tz="UTC").normalize() - pd.Timedelta(days=1), periods=2, freq="D", tz="UTC")
+    _unused_history = pd.DataFrame(
+        {
+            "open": [100, 101],
+            "high": [101, 102],
+            "low": [99, 100],
+            "close": [100, 101],
+            "volume": [1000, 1100],
+        },
+        index=dates,
+    )
+
+    class FakeQuote:
+        price = 101.2
+        change_pct = 1.2
+
+    monkeypatch.setattr("app.data_quality.finnhub_client.get_quote", lambda symbol: FakeQuote())
+    monkeypatch.setattr(
+        "app.data_quality.market_data_service.get_quote",
+        lambda symbol, **kwargs: MarketQuote(
+            symbol=symbol,
+            price=101,
+            change_pct=1.0,
+            provider="yfinance",
+            provider_time=dates[-1].to_pydatetime(),
+            received_at=dates[-1].to_pydatetime(),
+        ),
+    )
+
+    res = test_client.get("/api/intelligence/data-quality/AAPL")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data["confidence"] == "HIGH"
+    assert len([p for p in data["providers"] if p["available"]]) == 2
+
+
+def test_free_plan_limits_watchlist_items(client):
+    test_client, _ = client
+
+    for symbol in ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN"]:
+        assert test_client.post("/api/watchlist", json={"symbol": symbol}).status_code == 201
+
+    blocked = test_client.post("/api/watchlist", json={"symbol": "META"})
+
+    assert blocked.status_code == 402
+    assert "Limite do plano FREE" in blocked.json()["detail"]
+
+
+def test_operations_health_endpoint(client):
+    test_client, _ = client
+
+    res = test_client.get("/api/operations/health")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert "providers" in data
+    assert "data_quality" in data
+    assert "db" in data
+    assert "market_cache" in data
+    assert "paper_simulator" in data
+    assert "probability_model" in data
+    assert "automation" in data
+    assert data["readiness"]["trade_automation_allowed"] is False
+
+
+def test_operations_lab_endpoint_summarizes_paper_simulator(client, monkeypatch):
+    test_client, _ = client
+
+    def fake_read_json(path):
+        if path.endswith("paper_simulator_state.json"):
+            return {
+                "initial_capital": 10000.0,
+                "cash": 7500.0,
+                "positions": {
+                    "AAPL": {
+                        "entry_at": "2026-08-10",
+                        "entry_price": 200.0,
+                        "shares": 5,
+                        "stop": 190.0,
+                        "target": 220.0,
+                        "score": 82,
+                    }
+                },
+                "closed_trades": [],
+            }
+        if path.endswith("simulation_validation_report.json"):
+            return {"can_trade_now": False, "decision_rule": "regra", "risk_rule": "risco", "market_data": []}
+        if path.endswith("paper_simulator_deep_replay.json"):
+            return {"status": "completed", "return_pct": 3.2, "win_rate_pct": 55.0}
+        if path.endswith("automation_readiness_report.json"):
+            return {"verdict": "HUMAN_APPROVAL_REQUIRED", "recommendation": "manter humano"}
+        return None
+
+    monkeypatch.setattr("app.routers.operations._read_json", fake_read_json)
+    monkeypatch.setattr(
+        "app.routers.operations._read_jsonl_tail",
+        lambda *args, **kwargs: [
+            {"at": "2026-08-10T10:00:00+00:00", "type": "calibration", "calibration": {"precision_pct": 60.0}},
+            {"at": "2026-08-10T10:01:00+00:00", "type": "decision", "decision": "NO_TRADE", "reason": "sem sinal"},
+        ],
+    )
+
+    res = test_client.get("/api/operations/lab")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data["mode"] == "paper_trading"
+    assert data["latest_decision"]["title"] == "NO_TRADE"
+    assert data["latest_calibration"]["precision_pct"] == 60.0
+    assert data["state"]["positions"][0]["symbol"] == "AAPL"
+    assert data["readiness"]["trade_automation_allowed"] is False
+
+
+def test_operations_health_marks_yfinance_as_required(client, monkeypatch):
+    test_client, _ = client
+    dates = pd.date_range("2026-01-01", periods=2, freq="D", tz="UTC")
+    history = pd.DataFrame(
+        {
+            "open": [100, 101],
+            "high": [101, 102],
+            "low": [99, 100],
+            "close": [100, 101],
+            "volume": [1000, 1100],
+        },
+        index=dates,
+    )
+    monkeypatch.setattr("app.routers.operations.market_data_service.get_bars", lambda *args, **kwargs: history)
+
+    res = test_client.get("/api/operations/health")
+
+    assert res.status_code == 200
+    providers = res.json()["providers"]
+    assert providers["yfinance_enabled"] is True
+    assert providers["yfinance_required_for_technical_analysis"] is True
+    assert providers["yfinance_available"] is True
+    assert providers["yfinance_role"] == "historical_ohlcv"
+
+
+def test_share_watchlist_public_read_only(client):
+    test_client, _ = client
+    test_client.post("/api/watchlist", json={"symbol": "AAPL", "label": "Apple"})
+
+    share = test_client.post("/api/share/watchlist")
+
+    assert share.status_code == 200
+    public = test_client.get(f"/api/share/{share.json()['slug']}")
+    assert public.status_code == 200
+    assert public.json()["rows"][0]["symbol"] == "AAPL"
+
+
 def test_alerts_filter_by_symbol(client):
     test_client, Session = client
     db = Session()
-    db.add(AlertLog(symbol="AAPL", rule_type="PRICE_ABOVE", message="AAPL subiu"))
-    db.add(AlertLog(symbol="MSFT", rule_type="PRICE_ABOVE", message="MSFT subiu"))
+    db.add(AlertLog(user_id=1, symbol="AAPL", rule_type="PRICE_ABOVE", message="AAPL subiu"))
+    db.add(AlertLog(user_id=1, symbol="MSFT", rule_type="PRICE_ABOVE", message="MSFT subiu"))
     db.commit()
     db.close()
 
@@ -88,8 +497,8 @@ def test_alerts_filter_by_symbol(client):
 def test_alerts_filter_by_rule_type(client):
     test_client, Session = client
     db = Session()
-    db.add(AlertLog(symbol="AAPL", rule_type="PRICE_ABOVE", message="a"))
-    db.add(AlertLog(symbol="AAPL", rule_type="RSI_OVERBOUGHT", message="b"))
+    db.add(AlertLog(user_id=1, symbol="AAPL", rule_type="PRICE_ABOVE", message="a"))
+    db.add(AlertLog(user_id=1, symbol="AAPL", rule_type="RSI_OVERBOUGHT", message="b"))
     db.commit()
     db.close()
 
@@ -248,7 +657,7 @@ def test_copilot_analyze_endpoint(client, monkeypatch):
         index=dates,
     )
 
-    monkeypatch.setattr("app.copilot.yfinance_client.get_history", lambda *args, **kwargs: history)
+    monkeypatch.setattr("app.copilot.market_data_service.get_bars", lambda *args, **kwargs: history)
 
     res = test_client.post(
         "/api/copilot/analyze",
@@ -259,6 +668,9 @@ def test_copilot_analyze_endpoint(client, monkeypatch):
     assert data["symbol"] == "NVDA"
     assert "votes" in data
     assert len(data["votes"]) == 5
+    assert data["trade_plan"]["available"] is True
+    assert data["trade_plan"]["target_1_price"] > data["trade_plan"]["entry_price"]
+    assert data["trade_plan"]["stop_price"] < data["trade_plan"]["entry_price"]
     assert "simulation" in data
 
 
@@ -267,6 +679,7 @@ def test_trader_profile_endpoint_with_closed_trade(client):
     db = Session()
     db.add(
         Transaction(
+            user_id=1,
             symbol="NVDA",
             side=TransactionSide.BUY,
             quantity=10,
@@ -276,6 +689,7 @@ def test_trader_profile_endpoint_with_closed_trade(client):
     )
     db.add(
         Transaction(
+            user_id=1,
             symbol="NVDA",
             side=TransactionSide.SELL,
             quantity=10,
@@ -292,6 +706,164 @@ def test_trader_profile_endpoint_with_closed_trade(client):
     assert data["summary"]["closed_trades"] == 1
     assert data["summary"]["total_pnl"] == 100
     assert data["journal"][0]["return_pct"] == 10
+
+
+def test_positions_fallback_to_market_history_without_snapshot(client, monkeypatch):
+    test_client, Session = client
+    db = Session()
+    db.add(WatchlistItem(symbol="SNAP", label="Snap"))
+    db.add(
+        Transaction(
+            user_id=1,
+            symbol="SNAP",
+            side=TransactionSide.BUY,
+            quantity=10,
+            price=5,
+            executed_at=datetime(2026, 1, 1, 10, tzinfo=timezone.utc),
+        )
+    )
+    db.commit()
+    db.close()
+
+    dates = pd.date_range("2026-01-01", periods=2, freq="D", tz="UTC")
+    history = pd.DataFrame(
+        {
+            "open": [5, 5.2],
+            "high": [5.3, 5.6],
+            "low": [4.9, 5.1],
+            "close": [5.1, 5.5],
+            "volume": [1000, 1200],
+        },
+        index=dates,
+    )
+    monkeypatch.setattr("app.routers.positions.market_data_service.get_bars", lambda *args, **kwargs: history)
+
+    res = test_client.get("/api/positions")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data[0]["current_price"] == 5.5
+    assert data[0]["unrealized_pnl"] == 5
+
+
+def test_technical_desk_analysis_levels_and_setups(client, monkeypatch):
+    test_client, _ = client
+    dates = pd.date_range("2026-01-01", periods=80, freq="D", tz="UTC")
+    history = pd.DataFrame(
+        {
+            "open": [100 + i * 0.2 for i in range(80)],
+            "high": [101 + i * 0.2 for i in range(80)],
+            "low": [99 + i * 0.2 for i in range(80)],
+            "close": [100 + i * 0.2 for i in range(80)],
+            "volume": [1000 + i * 10 for i in range(80)],
+        },
+        index=dates,
+    )
+    monkeypatch.setattr("app.routers.technical.market_data_service.get_bars", lambda *args, **kwargs: history)
+
+    level = test_client.post(
+        "/api/technical/levels",
+        json={"symbol": "NVDA", "kind": "SUPPORT", "label": "Fundo relevante", "price": 112.5},
+    )
+    assert level.status_code == 201
+    assert level.json()["symbol"] == "NVDA"
+
+    setup = test_client.post(
+        "/api/technical/setups",
+        json={
+            "symbol": "NVDA",
+            "direction": "LONG",
+            "entry_price": 116,
+            "stop_price": 112,
+            "target_price": 124,
+            "thesis": "Continuidade acima das medias",
+        },
+    )
+    assert setup.status_code == 201
+
+    analysis = test_client.get("/api/technical/analysis/NVDA")
+    assert analysis.status_code == 200
+    data = analysis.json()
+    assert data["symbol"] == "NVDA"
+    assert data["bias"] in {"ALTISTA", "BAIXISTA", "NEUTRO"}
+    assert data["atr_14"] is not None
+    assert data["atr_pct"] is not None
+    assert data["annualized_volatility_20"] is not None
+    assert data["avg_range_pct_20"] is not None
+    assert data["volatility_label"] in {"Baixa", "Media", "Alta", "Muito alta", "Sem leitura"}
+    assert data["suggested_shares_200_usd"] >= 0
+    assert data["levels"][0]["label"] == "Fundo relevante"
+    assert data["setups"][0]["risk_reward"] if "risk_reward" in data["setups"][0] else data["risk_reward"] == 2.0
+
+    assert test_client.delete(f"/api/technical/levels/{level.json()['id']}").status_code == 204
+    assert test_client.delete(f"/api/technical/setups/{setup.json()['id']}").status_code == 204
+
+    refreshed = test_client.get("/api/technical/analysis/NVDA").json()
+    assert refreshed["levels"] == []
+    assert refreshed["setups"] == []
+
+
+def test_decision_desk_generates_and_records_recommendations(client, monkeypatch):
+    test_client, _ = client
+    rows = 240
+    history = pd.DataFrame(
+        {
+            "open": [100 + i * 0.2 for i in range(rows)],
+            "high": [102 + i * 0.2 for i in range(rows)],
+            "low": [99 + i * 0.2 for i in range(rows)],
+            "close": [100 + i * 0.2 for i in range(rows)],
+            "volume": [1000 + i for i in range(rows)],
+        },
+        index=pd.date_range("2025-01-01", periods=rows, freq="D"),
+    )
+    monkeypatch.setattr("app.paper_simulator._history", lambda symbol, period="1y": history)
+    # The scenario verifies decision recording, not external provider health.
+    # Keep it deterministic and cover data-quality behavior in its own tests.
+    monkeypatch.setattr(
+        "app.decision_engine.quality_gate",
+        lambda *args, **kwargs: {"allowed": True, "confidence": "HIGH", "reason": ""},
+    )
+
+    data = test_client.get("/api/decision-desk/recommendations?record=true").json()
+
+    assert "recommendations" in data
+    assert data["recorded"] == len(data["recommendations"])
+    assert data["recommendations"][0]["fair_reason"]
+
+    history_rows = test_client.get("/api/decision-desk/history").json()
+    assert len(history_rows) >= 1
+    assert history_rows[0]["evidence"]
+
+
+def test_daily_market_summary_endpoint(client, monkeypatch):
+    test_client, Session = client
+    db = Session()
+    db.add(WatchlistItem(symbol="NVDA", label="Nvidia"))
+    db.commit()
+    db.close()
+
+    dates = pd.date_range("2026-01-01", periods=80, freq="D", tz="UTC")
+    history = pd.DataFrame(
+        {
+            "open": [100 + i * 0.2 for i in range(80)],
+            "high": [101 + i * 0.2 for i in range(80)],
+            "low": [99 + i * 0.2 for i in range(80)],
+            "close": [100 + i * 0.2 for i in range(80)],
+            "volume": [1000 + i * 10 for i in range(80)],
+        },
+        index=dates,
+    )
+    monkeypatch.setattr("app.reports.market_data_service.get_bars", lambda *args, **kwargs: history)
+
+    res = test_client.get("/api/reports/daily-summary")
+
+    assert res.status_code == 200
+    data = res.json()
+    assert "market_tone" in data
+    assert data["key_takeaways"]
+    rows = data["opportunities"] + data["risks"] + data["watch"]
+    assert rows[0]["symbol"] == "NVDA"
+    assert data["action_plan"]
 
 
 def test_morning_report_today_404_when_none_generated(client):

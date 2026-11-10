@@ -7,8 +7,19 @@ from sqlalchemy.orm import Session
 from app import indicators
 from app.auth import get_current_user
 from app.db import get_db
+from app.market_data import service as market_data_service
 from app.market_data import yfinance_client
-from app.models import AlertLog, EarningsEvent, EconomicEvent, GlobalNewsItem, NewsItem, PriceSnapshot, WatchlistItem
+from app.models import (
+    AlertLog,
+    EarningsEvent,
+    EconomicEvent,
+    GlobalNewsItem,
+    NewsItem,
+    PriceSnapshot,
+    User,
+    WatchlistItem,
+)
+from app.saas import get_or_create_workspace
 from app.schemas import AlertLogOut
 
 router = APIRouter(prefix="/api", tags=["api"], dependencies=[Depends(get_current_user)])
@@ -22,7 +33,7 @@ def _json_list(series: pd.Series, decimals: int) -> list[float | None]:
 
 @router.get("/chart/{symbol}")
 def chart_data(symbol: str, period: str = "5d", interval: str = "15m"):
-    history = yfinance_client.get_history(symbol.upper(), period=period, interval=interval)
+    history = market_data_service.get_bars(symbol.upper(), period=period, interval=interval)
     if history.empty:
         raise HTTPException(status_code=404, detail="Sem dados históricos para este símbolo")
 
@@ -82,8 +93,9 @@ def list_alerts(
     symbol: str | None = None,
     rule_type: str | None = None,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
-    query = db.query(AlertLog)
+    query = db.query(AlertLog).filter((AlertLog.user_id == user.id) | (AlertLog.user_id.is_(None)))
     if symbol:
         query = query.filter(AlertLog.symbol == symbol.upper())
     if rule_type:
@@ -178,8 +190,22 @@ def list_earnings_events(days_ahead: int = 7, limit: int = 50, db: Session = Dep
 
 
 @router.get("/dashboard-summary")
-def dashboard_summary(db: Session = Depends(get_db)):
-    items = db.query(WatchlistItem).filter(WatchlistItem.active.is_(True)).all()
+def dashboard_summary(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    workspace = get_or_create_workspace(db, user)
+    items = (
+        db.query(WatchlistItem)
+        .filter(WatchlistItem.active.is_(True))
+        .all()
+    )
+    items = [
+        item
+        for item in items
+        if (
+            getattr(user, "is_admin", False)
+            or item.user_id in (None, getattr(user, "id", None))
+            or item.workspace_id in (None, workspace.id)
+        )
+    ]
     rows = []
     for item in items:
         snap = (
@@ -199,7 +225,13 @@ def dashboard_summary(db: Session = Depends(get_db)):
             }
         )
 
-    alerts = db.query(AlertLog).order_by(AlertLog.triggered_at.desc()).limit(20).all()
+    alerts = (
+        db.query(AlertLog)
+        .filter((AlertLog.user_id == user.id) | (AlertLog.user_id.is_(None)))
+        .order_by(AlertLog.triggered_at.desc())
+        .limit(20)
+        .all()
+    )
     alerts_out = [
         {
             "symbol": a.symbol,

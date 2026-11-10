@@ -61,9 +61,9 @@ def test_build_report_data_includes_indices_and_watchlist(monkeypatch):
     monkeypatch.setattr(morning_report.yfinance_client, "get_nasdaq_quote", lambda: fake_quote)
     monkeypatch.setattr(morning_report.yfinance_client, "get_sp500_quote", lambda: None)
     monkeypatch.setattr(morning_report.yfinance_client, "get_gold_quote", lambda: None)
-    monkeypatch.setattr(morning_report.yfinance_client, "get_history", lambda *a, **kw: _daily_history())
+    monkeypatch.setattr(morning_report.market_data_service, "get_bars", lambda *a, **kw: _daily_history())
 
-    data = morning_report.build_report_data(db)
+    data = morning_report.build_report_data(db, user_id=1)
 
     assert len(data["indices"]) == 1
     assert data["indices"][0]["symbol"] == "NQ=F"
@@ -94,7 +94,7 @@ def test_generate_and_store_persists_report(monkeypatch):
     monkeypatch.setattr(morning_report.yfinance_client, "get_gold_quote", lambda: None)
     monkeypatch.setattr(morning_report.settings, "llm_daily_narrative_enabled", False)
 
-    report = asyncio.run(morning_report.generate_and_store(db))
+    report = asyncio.run(morning_report.generate_and_store(db, user_id=1))
 
     assert report.id is not None
     assert report.narrative

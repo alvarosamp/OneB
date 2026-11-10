@@ -1,0 +1,91 @@
+.nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-nav);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    height: calc(var(--bottomnav-h) + env(safe-area-inset-bottom));
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    border-top: 1px solid var(--border);
+    background: var(--bg-0);
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+}
+
+.item:hover {
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.active {
+  color: var(--text-primary);
+}
+
+.active svg {
+  color: var(--brand);
+}
+
+.plus {
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--brand-strong);
+  color: var(--text-on-brand);
+}
+
+.sheetList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheetItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--sp-2);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: var(--text-primary);
+  font-size: var(--fs-lg);
+  text-align: left;
+  text-decoration: none;
+}
+
+.sheetItem:hover {
+  background: var(--surface-hover);
+  text-decoration: none;
+}
+
+.sheetItem svg {
+  color: var(--text-secondary);
+}

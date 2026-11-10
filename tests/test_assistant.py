@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -30,7 +31,7 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = lambda: "test-user"
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=1, username="test-user", is_admin=False)
 
     test_client = TestClient(app)
     yield test_client, TestingSession

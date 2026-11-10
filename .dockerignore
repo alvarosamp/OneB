@@ -1,0 +1,16 @@
+# A imagem do backend usa uma allowlist para impedir que bancos, segredos, resultados de
+# pesquisa e artefatos sincronizados pelo OneDrive entrem no contexto de build.
+**
+!Dockerfile
+!requirements.txt
+!alembic.ini
+!app/
+!app/**
+!scripts/
+!scripts/**
+!migrations/
+!migrations/**
+
+**/.env
+**/__pycache__/
+**/*.pyc

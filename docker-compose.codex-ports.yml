@@ -1,0 +1,12 @@
+services:
+  api:
+    ports: !override
+      - "8001:8000"
+    environment:
+      - FRONTEND_ORIGIN=http://localhost:5175
+
+  frontend:
+    ports: !override
+      - "5175:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8001

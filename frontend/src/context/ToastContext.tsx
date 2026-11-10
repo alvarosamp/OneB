@@ -1,4 +1,6 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
+import { AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
+import styles from './Toast.module.css';
 
 type ToastType = 'info' | 'success' | 'error';
 
@@ -6,7 +8,6 @@ interface ToastItem {
   id: number;
   message: string;
   type: ToastType;
-  show: boolean;
 }
 
 interface ToastContextValue {
@@ -15,33 +16,43 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+const ICONS = { info: Info, success: CheckCircle2, error: AlertTriangle };
+
+/**
+ * Confirmações curtas. O texto repete o verbo da ação ("Alerta criado").
+ * Erros ficam mais tempo e podem ser fechados.
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
   const counter = useRef(0);
 
-  const toast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = counter.current++;
-    setItems((prev) => [...prev, { id, message, type, show: false }]);
+  const dismiss = useCallback((id: number) => setItems((prev) => prev.filter((t) => t.id !== id)), []);
 
-    // trigger the fade-in on the next frame, then auto-remove after 4s
-    requestAnimationFrame(() => {
-      setItems((prev) => prev.map((t) => (t.id === id ? { ...t, show: true } : t)));
-    });
-    setTimeout(() => {
-      setItems((prev) => prev.map((t) => (t.id === id ? { ...t, show: false } : t)));
-      setTimeout(() => setItems((prev) => prev.filter((t) => t.id !== id)), 300);
-    }, 4000);
-  }, []);
+  const toast = useCallback(
+    (message: string, type: ToastType = 'info') => {
+      const id = counter.current++;
+      setItems((prev) => [...prev.slice(-3), { id, message, type }]);
+      setTimeout(() => dismiss(id), type === 'error' ? 7000 : 4000);
+    },
+    [dismiss],
+  );
 
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="toast-container">
-        {items.map((item) => (
-          <div key={item.id} className={`toast toast-${item.type} ${item.show ? 'show' : ''}`}>
-            {item.message}
-          </div>
-        ))}
+      <div className={styles.region} role="status" aria-live="polite">
+        {items.map((item) => {
+          const Icon = ICONS[item.type];
+          return (
+            <div key={item.id} className={[styles.toast, styles[item.type]].join(' ')} role={item.type === 'error' ? 'alert' : undefined}>
+              <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+              <span>{item.message}</span>
+              <button type="button" className={styles.close} aria-label="Fechar aviso" onClick={() => dismiss(item.id)}>
+                <X size={14} strokeWidth={1.75} aria-hidden="true" />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </ToastContext.Provider>
   );

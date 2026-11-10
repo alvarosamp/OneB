@@ -1,0 +1,39 @@
+.board {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.summary {
+  display: flex;
+  gap: var(--sp-2) var(--sp-4);
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.summary span {
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+}
+
+.summary strong {
+  margin-right: var(--sp-4);
+  font-size: var(--fs-lg);
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--sp-6);
+}
+
+.charts h3 {
+  margin-bottom: var(--sp-2);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
+.canvas {
+  position: relative;
+  height: 200px;
+}

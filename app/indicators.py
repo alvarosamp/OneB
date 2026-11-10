@@ -60,6 +60,52 @@ def pct_change_over_window(close: pd.Series, periods: int = 1) -> pd.Series:
     return close.pct_change(periods=periods) * 100
 
 
+def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
+    previous_close = close.shift(1)
+    ranges = pd.concat(
+        [
+            high - low,
+            (high - previous_close).abs(),
+            (low - previous_close).abs(),
+        ],
+        axis=1,
+    )
+    true_range = ranges.max(axis=1)
+    return true_range.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
+
+
+def adx(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.DataFrame:
+    """Wilder's DMI/ADX: directional movement (+DI/-DI) and trend strength (ADX).
+
+    Needed by the regime engine (trend-strength input) and by the 13X /
+    100 Pips proprietary indicators, which both key off the DI+/DI-/ADX
+    structure.
+    """
+    up_move = high.diff()
+    down_move = -low.diff()
+    plus_dm = up_move.where((up_move > down_move) & (up_move > 0), 0.0)
+    minus_dm = down_move.where((down_move > up_move) & (down_move > 0), 0.0)
+
+    tr = pd.concat(
+        [high - low, (high - close.shift(1)).abs(), (low - close.shift(1)).abs()],
+        axis=1,
+    ).max(axis=1)
+
+    atr_wilder = tr.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
+    plus_di = 100 * plus_dm.ewm(alpha=1 / period, min_periods=period, adjust=False).mean() / atr_wilder.replace(0, np.nan)
+    minus_di = 100 * minus_dm.ewm(alpha=1 / period, min_periods=period, adjust=False).mean() / atr_wilder.replace(0, np.nan)
+
+    dx = (plus_di - minus_di).abs() / (plus_di + minus_di).replace(0, np.nan) * 100
+    adx_line = dx.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
+
+    return pd.DataFrame({"plus_di": plus_di, "minus_di": minus_di, "adx": adx_line})
+
+
+def annualized_volatility(close: pd.Series, periods_per_year: int = 252, window: int = 20) -> pd.Series:
+    returns = close.pct_change()
+    return returns.rolling(window=window, min_periods=window).std() * np.sqrt(periods_per_year) * 100
+
+
 def classic_pivot_points(high: float, low: float, close: float) -> dict[str, float]:
     """Classic floor-trader pivot points from the prior period's OHLC.
 

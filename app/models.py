@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, String, Float, Integer, Boolean, DateTime, ForeignKey, Enum, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -21,12 +21,52 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
-class WatchlistItem(Base):
-    __tablename__ = "watchlist_items"
+class LoginAttempt(Base):
+    """Tentativa de login malsucedida, usada pelo rate limit em app/auth.py.
+
+    Persistida no banco (em vez de um dict em memória) para que o lockout
+    sobreviva a restart/redeploy do processo da API e valha para todas as
+    réplicas, não só a que recebeu as tentativas.
+    """
+
+    __tablename__ = "login_attempts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    symbol: Mapped[str] = mapped_column(String(16), unique=True, index=True)
+    username: Mapped[str] = mapped_column(String(64), index=True)
+    attempted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class RefreshToken(Base):
+    """Refresh token opaco, guardado com hash e rotacionado a cada uso.
+
+    Só o hash sha256 fica no banco: um dump do banco não devolve credenciais
+    utilizáveis. `family_id` amarra todas as rotações de um mesmo login; se um
+    token já rotacionado (revogado) reaparecer, isso significa que alguém copiou
+    a credencial, e a família inteira é revogada de uma vez (detecção de reuso).
+    """
+
+    __tablename__ = "refresh_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    family_id: Mapped[str] = mapped_column(String(36), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    replaced_by_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class WatchlistItem(Base):
+    __tablename__ = "watchlist_items"
+    __table_args__ = (UniqueConstraint("user_id", "symbol", name="uq_watchlist_user_symbol"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    workspace_id: Mapped[int | None] = mapped_column(ForeignKey("saas_workspaces.id"), nullable=True, index=True)
+    symbol: Mapped[str] = mapped_column(String(16), index=True)
     label: Mapped[str] = mapped_column(String(64), default="")
+    asset_type: Mapped[str] = mapped_column(String(24), default="equity")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
@@ -95,10 +135,44 @@ class PriceSnapshot(Base):
     watchlist_item: Mapped["WatchlistItem"] = relationship(back_populates="snapshots")
 
 
+class MacroSnapshot(Base):
+    """Periodic quote for one cross-asset instrument (DXY, US10Y, Gold, etc.),
+    keyed by the friendly name from app.market_data.macro_data.MACRO_INSTRUMENTS.
+    Powers the regime engine's macro overlay and cross-asset correlation reads.
+    """
+
+    __tablename__ = "macro_snapshots"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String(16), index=True)
+    symbol: Mapped[str] = mapped_column(String(32))
+    name: Mapped[str] = mapped_column(String(64))
+    price: Mapped[float] = mapped_column(Float)
+    change_pct: Mapped[float] = mapped_column(Float, default=0.0)
+    taken_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class MacroIntelligenceSnapshot(Base):
+    """One idempotent daily capture of the complete cross-asset state."""
+
+    __tablename__ = "macro_intelligence_snapshots"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    snapshot_date: Mapped[str] = mapped_column(String(10), unique=True, index=True)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    coverage_pct: Mapped[float] = mapped_column(Float, default=0.0)
+    fresh_count: Mapped[int] = mapped_column(Integer, default=0)
+    stale_count: Mapped[int] = mapped_column(Integer, default=0)
+    missing_count: Mapped[int] = mapped_column(Integer, default=0)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
 class AlertLog(Base):
     __tablename__ = "alert_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    workspace_id: Mapped[int | None] = mapped_column(ForeignKey("saas_workspaces.id"), nullable=True, index=True)
     symbol: Mapped[str] = mapped_column(String(16), index=True)
     rule_type: Mapped[str] = mapped_column(String(32))
     message: Mapped[str] = mapped_column(Text)
@@ -117,6 +191,11 @@ class NewsItem(Base):
     source: Mapped[str] = mapped_column(String(128), default="")
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    # Nullable on purpose: this table is the raw archive being accumulated for the
+    # future sentiment-vs-return experiment (see docs/data_phase_findings.md) — no
+    # scorer writes to it yet. Backfilling scores for older rows once one exists is
+    # just an UPDATE, not a schema change.
+    sentiment_score: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
 
 class GlobalNewsItem(Base):
@@ -131,6 +210,7 @@ class GlobalNewsItem(Base):
     impact_score: Mapped[int] = mapped_column(Integer, default=0, index=True)
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    sentiment_score: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
 
 class EconomicEvent(Base):
@@ -165,6 +245,102 @@ class TransactionSide(str, enum.Enum):
     SELL = "SELL"
 
 
+class SubscriptionPlan(str, enum.Enum):
+    FREE = "FREE"
+    PRO = "PRO"
+    ADVISOR = "ADVISOR"
+
+
+class NotificationChannelType(str, enum.Enum):
+    TELEGRAM = "TELEGRAM"
+    EMAIL = "EMAIL"
+    WEBHOOK = "WEBHOOK"
+
+
+class SaasWorkspace(Base):
+    __tablename__ = "saas_workspaces"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    name: Mapped[str] = mapped_column(String(96), default="Meu workspace")
+    brand_name: Mapped[str] = mapped_column(String(96), default="OneB")
+    plan: Mapped[SubscriptionPlan] = mapped_column(Enum(SubscriptionPlan), default=SubscriptionPlan.FREE)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    channels: Mapped[list["NotificationChannel"]] = relationship(
+        back_populates="workspace", cascade="all, delete-orphan"
+    )
+    segments: Mapped[list["ClientSegment"]] = relationship(back_populates="workspace", cascade="all, delete-orphan")
+    report_templates: Mapped[list["ReportTemplate"]] = relationship(
+        back_populates="workspace", cascade="all, delete-orphan"
+    )
+
+
+class NotificationChannel(Base):
+    __tablename__ = "notification_channels"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    workspace_id: Mapped[int] = mapped_column(ForeignKey("saas_workspaces.id"), index=True)
+    channel_type: Mapped[NotificationChannelType] = mapped_column(Enum(NotificationChannelType))
+    destination: Mapped[str] = mapped_column(String(256))
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    workspace: Mapped["SaasWorkspace"] = relationship(back_populates="channels")
+
+
+class ClientSegment(Base):
+    __tablename__ = "client_segments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    workspace_id: Mapped[int] = mapped_column(ForeignKey("saas_workspaces.id"), index=True)
+    name: Mapped[str] = mapped_column(String(96))
+    description: Mapped[str] = mapped_column(String(256), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    workspace: Mapped["SaasWorkspace"] = relationship(back_populates="segments")
+
+
+class ReportTemplate(Base):
+    __tablename__ = "report_templates"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    workspace_id: Mapped[int] = mapped_column(ForeignKey("saas_workspaces.id"), index=True)
+    title: Mapped[str] = mapped_column(String(128))
+    audience: Mapped[str] = mapped_column(String(96), default="Investidores")
+    include_ai_summary: Mapped[bool] = mapped_column(Boolean, default=True)
+    include_backtest: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    workspace: Mapped["SaasWorkspace"] = relationship(back_populates="report_templates")
+
+
+class DecisionJournal(Base):
+    __tablename__ = "decision_journals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    symbol: Mapped[str] = mapped_column(String(16), index=True)
+    thesis: Mapped[str] = mapped_column(Text)
+    trigger: Mapped[str] = mapped_column(String(512), default="")
+    invalidation: Mapped[str] = mapped_column(String(512), default="")
+    timeframe: Mapped[str] = mapped_column(String(64), default="")
+    risk_notes: Mapped[str] = mapped_column(String(512), default="")
+    status: Mapped[str] = mapped_column(String(32), default="OPEN", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class Playbook(Base):
+    __tablename__ = "playbooks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    name: Mapped[str] = mapped_column(String(96))
+    description: Mapped[str] = mapped_column(String(256), default="")
+    rule_preset: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class Transaction(Base):
     """Registro manual de compra/venda para acompanhamento de posição e P&L.
 
@@ -175,12 +351,185 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     symbol: Mapped[str] = mapped_column(String(16), index=True)
     side: Mapped[TransactionSide] = mapped_column(Enum(TransactionSide))
     quantity: Mapped[float] = mapped_column(Float)
     price: Mapped[float] = mapped_column(Float)
     executed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     notes: Mapped[str] = mapped_column(String(256), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    workspace_id: Mapped[int | None] = mapped_column(ForeignKey("saas_workspaces.id"), nullable=True, index=True)
+    action: Mapped[str] = mapped_column(String(64), index=True)
+    entity_type: Mapped[str] = mapped_column(String(64), default="")
+    entity_id: Mapped[str] = mapped_column(String(64), default="")
+    details: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class ShareLink(Base):
+    __tablename__ = "share_links"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    workspace_id: Mapped[int | None] = mapped_column(ForeignKey("saas_workspaces.id"), nullable=True, index=True)
+    slug: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(128), default="Watchlist compartilhada")
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class TechnicalLevel(Base):
+    __tablename__ = "technical_levels"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    workspace_id: Mapped[int | None] = mapped_column(ForeignKey("saas_workspaces.id"), nullable=True, index=True)
+    symbol: Mapped[str] = mapped_column(String(16), index=True)
+    label: Mapped[str] = mapped_column(String(96), default="")
+    kind: Mapped[str] = mapped_column(String(32), default="ZONE")
+    price: Mapped[float] = mapped_column(Float)
+    color: Mapped[str] = mapped_column(String(16), default="#60a5fa")
+    notes: Mapped[str] = mapped_column(String(512), default="")
+    active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class TradeSetup(Base):
+    __tablename__ = "trade_setups"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    workspace_id: Mapped[int | None] = mapped_column(ForeignKey("saas_workspaces.id"), nullable=True, index=True)
+    symbol: Mapped[str] = mapped_column(String(16), index=True)
+    direction: Mapped[str] = mapped_column(String(8), default="LONG")
+    entry_price: Mapped[float] = mapped_column(Float)
+    stop_price: Mapped[float] = mapped_column(Float)
+    target_price: Mapped[float] = mapped_column(Float)
+    thesis: Mapped[str] = mapped_column(Text, default="")
+    invalidation: Mapped[str] = mapped_column(String(512), default="")
+    status: Mapped[str] = mapped_column(String(32), default="PLANNED", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class RecommendationDecision(Base):
+    __tablename__ = "recommendation_decisions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    workspace_id: Mapped[int | None] = mapped_column(ForeignKey("saas_workspaces.id"), nullable=True, index=True)
+    symbol: Mapped[str] = mapped_column(String(16), index=True)
+    action: Mapped[str] = mapped_column(String(32), index=True)
+    confidence: Mapped[int] = mapped_column(Integer, default=0)
+    score: Mapped[int] = mapped_column(Integer, default=0)
+    price: Mapped[float] = mapped_column(Float)
+    suggested_size_pct: Mapped[float] = mapped_column(Float, default=0.0)
+    stop_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    target_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    thesis: Mapped[str] = mapped_column(Text, default="")
+    fair_reason: Mapped[str] = mapped_column(Text, default="")
+    invalidation: Mapped[str] = mapped_column(Text, default="")
+    evidence_json: Mapped[str] = mapped_column(Text, default="[]")
+    memory_json: Mapped[str] = mapped_column(Text, default="{}")
+    # Immutable prediction contract captured at decision time. This lets
+    # calibration remain reproducible even after a live model changes.
+    horizon: Mapped[str] = mapped_column(String(16), default="5d")
+    direction: Mapped[str] = mapped_column(String(16), default="long")
+    probability: Mapped[float | None] = mapped_column(Float, nullable=True)
+    uncertainty: Mapped[float | None] = mapped_column(Float, nullable=True)
+    regime: Mapped[str] = mapped_column(String(32), default="UNKNOWN", index=True)
+    model_id: Mapped[str] = mapped_column(String(64), default="decision_engine")
+    model_version: Mapped[str] = mapped_column(String(32), default="v1")
+    dataset_version: Mapped[str] = mapped_column(String(64), default="live")
+    quality_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    prediction_json: Mapped[str] = mapped_column(Text, default="{}")
+    data_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    outcome_status: Mapped[str] = mapped_column(String(32), default="PENDING", index=True)
+    outcome_return_1d_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outcome_return_5d_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outcome_return_20d_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outcome_1d_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    outcome_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    outcome_20d_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class Course(Base):
+    __tablename__ = "lms_courses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(96), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(Text, default="")
+    order: Mapped[int] = mapped_column(Integer, default=0, index=True)
+    published: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    modules: Mapped[list["CourseModule"]] = relationship(
+        back_populates="course", cascade="all, delete-orphan", order_by="CourseModule.order"
+    )
+
+
+class CourseModule(Base):
+    __tablename__ = "lms_modules"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("lms_courses.id"), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    order: Mapped[int] = mapped_column(Integer, default=0, index=True)
+
+    course: Mapped["Course"] = relationship(back_populates="modules")
+    lessons: Mapped[list["Lesson"]] = relationship(
+        back_populates="module", cascade="all, delete-orphan", order_by="Lesson.order"
+    )
+
+
+class Lesson(Base):
+    __tablename__ = "lms_lessons"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    module_id: Mapped[int] = mapped_column(ForeignKey("lms_modules.id"), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(Text, default="")
+    video_url: Mapped[str] = mapped_column(String(1024), default="")
+    duration_minutes: Mapped[int] = mapped_column(Integer, default=0)
+    order: Mapped[int] = mapped_column(Integer, default=0, index=True)
+
+    module: Mapped["CourseModule"] = relationship(back_populates="lessons")
+
+
+class LessonProgress(Base):
+    __tablename__ = "lms_lesson_progress"
+    __table_args__ = (UniqueConstraint("user_id", "lesson_id", name="uq_lesson_progress_user_lesson"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lms_lessons.id"), index=True)
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class LiveStatus(str, enum.Enum):
+    SCHEDULED = "SCHEDULED"
+    LIVE = "LIVE"
+    ENDED = "ENDED"
+
+
+class LiveSession(Base):
+    __tablename__ = "lms_live_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[LiveStatus] = mapped_column(Enum(LiveStatus), default=LiveStatus.SCHEDULED, index=True)
+    scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    stream_url: Mapped[str] = mapped_column(String(1024), default="")
+    replay_url: Mapped[str] = mapped_column(String(1024), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 

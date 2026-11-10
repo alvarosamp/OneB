@@ -1,14 +1,20 @@
-"""Thin client for Financial Modeling Prep's economic calendar.
+"""Thin client for Financial Modeling Prep's fundamentals (annual key
+metrics / income statement).
 
-Finnhub's free tier does not reliably expose macro/economic calendar data,
-so this covers that gap. Free tier account required at
-https://financialmodelingprep.com (separate API key from Finnhub).
+Free tier account required at https://financialmodelingprep.com (separate
+API key from Finnhub).
+
+NOTE: this module used to also provide the economic calendar, but FMP
+retired the whole /api/v3 surface on 2025-08-31 and the /stable
+replacement (economic-calendar) returned 402 "Restricted Endpoint" on this
+account's free-tier key — confirmed during this session's data audit. The
+economic calendar now comes from app.market_data.fred_client.get_economic_calendar
+instead (FRED's own release-dates endpoint, same key already in use for
+macro series, no separate signup).
 """
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
-from datetime import date, datetime, timezone
 
 import httpx
 
@@ -16,60 +22,46 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://financialmodelingprep.com/api/v3/economic_calendar"
+STABLE_BASE_URL = "https://financialmodelingprep.com/stable"
+MAX_FREE_TIER_LIMIT = 5
 
 
-@dataclass
-class EconomicEventEntry:
-    event_name: str
-    country: str
-    event_date: datetime
-    impact: str
-    actual: str
-    forecast: str
-    previous: str
-
-
-def get_economic_calendar(from_date: date, to_date: date) -> list[EconomicEventEntry]:
+def _get_stable(endpoint: str, symbol: str, limit: int = MAX_FREE_TIER_LIMIT) -> list[dict]:
+    """Shared fetch for the annual-only /stable fundamentals endpoints.
+    `limit` is capped at MAX_FREE_TIER_LIMIT — the free plan 402s above 5.
+    """
     if not settings.fmp_api_key:
-        logger.warning("FMP_API_KEY não configurada — calendário econômico desativado.")
+        logger.warning("FMP_API_KEY não configurada — fundamentals (%s) indisponível.", endpoint)
         return []
 
     try:
         resp = httpx.get(
-            BASE_URL,
-            params={
-                "from": from_date.isoformat(),
-                "to": to_date.isoformat(),
-                "apikey": settings.fmp_api_key,
-            },
+            f"{STABLE_BASE_URL}/{endpoint}",
+            params={"symbol": symbol, "limit": min(limit, MAX_FREE_TIER_LIMIT), "apikey": settings.fmp_api_key},
             timeout=15,
         )
         resp.raise_for_status()
         data = resp.json()
     except Exception:
-        logger.exception("Falha ao buscar calendário econômico na FMP")
+        logger.exception("Falha ao buscar %s para %s na FMP", endpoint, symbol)
         return []
 
-    entries = []
-    for item in data or []:
-        raw_date = item.get("date")
-        name = item.get("event")
-        if not raw_date or not name:
-            continue
-        try:
-            event_date = datetime.fromisoformat(raw_date).replace(tzinfo=timezone.utc)
-        except ValueError:
-            continue
-        entries.append(
-            EconomicEventEntry(
-                event_name=name,
-                country=item.get("country", ""),
-                event_date=event_date,
-                impact=(item.get("impact") or "low").lower(),
-                actual=str(item.get("actual", "") or ""),
-                forecast=str(item.get("estimate", "") or ""),
-                previous=str(item.get("previous", "") or ""),
-            )
-        )
-    return entries
+    return data if isinstance(data, list) else []
+
+
+def get_key_metrics(symbol: str, limit: int = MAX_FREE_TIER_LIMIT) -> list[dict]:
+    """Up to 5 most recent annual key-metrics reports (valuation, returns,
+    leverage ratios), newest first. Each row has a "date" (fiscal period
+    end) but NOT a filing date — join with get_income_statement on "date"
+    to get filingDate for point-in-time-correct usage.
+    """
+    return _get_stable("key-metrics", symbol, limit)
+
+
+def get_income_statement(symbol: str, limit: int = MAX_FREE_TIER_LIMIT) -> list[dict]:
+    """Up to 5 most recent annual income statements, newest first. Includes
+    "filingDate" — the date this report actually became public, which is
+    what any point-in-time feature join must use instead of "date" (period
+    end) to avoid look-ahead bias.
+    """
+    return _get_stable("income-statement", symbol, limit)

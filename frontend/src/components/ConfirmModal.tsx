@@ -1,51 +1,47 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
-
-interface ConfirmState {
-  message: string;
-  resolve: (result: boolean) => void;
-}
+import { Button } from './ui/Button';
+import { Modal } from './ui/Modal';
 
 type ConfirmFn = (message: string) => Promise<boolean>;
 
 const ConfirmContext = createContext<ConfirmFn | null>(null);
 
+/** Confirmação de ações destrutivas, com foco preso e Esc para cancelar. */
 export function ConfirmProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ConfirmState | null>(null);
-  const [show, setShow] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
   const resolverRef = useRef<((result: boolean) => void) | null>(null);
 
-  const confirm = useCallback<ConfirmFn>((message) => {
+  const confirm = useCallback<ConfirmFn>((msg) => {
     return new Promise((resolve) => {
       resolverRef.current = resolve;
-      setState({ message, resolve });
-      requestAnimationFrame(() => setShow(true));
+      setMessage(msg);
     });
   }, []);
 
   function close(result: boolean) {
-    setShow(false);
-    setTimeout(() => setState(null), 200);
+    setMessage(null);
     resolverRef.current?.(result);
+    resolverRef.current = null;
   }
 
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      {state && (
-        <div className={`modal-overlay ${show ? 'show' : ''}`} onClick={() => close(false)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <p>{state.message}</p>
-            <div className="modal-actions">
-              <button type="button" className="btn-secondary" onClick={() => close(false)}>
-                Cancelar
-              </button>
-              <button type="button" className="btn-danger" onClick={() => close(true)}>
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={message !== null}
+        onClose={() => close(false)}
+        title="Confirmar"
+        footer={
+          <>
+            <Button onClick={() => close(false)}>Cancelar</Button>
+            <Button variant="danger" data-autofocus onClick={() => close(true)}>
+              Confirmar
+            </Button>
+          </>
+        }
+      >
+        <p>{message}</p>
+      </Modal>
     </ConfirmContext.Provider>
   );
 }

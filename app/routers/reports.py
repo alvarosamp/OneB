@@ -5,16 +5,18 @@ from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.db import get_db
-from app import analysis, scheduler
-from app.reports import build_pdf_report
+from app import analysis
+from app.models import User
+from app.reports import build_daily_market_summary, build_pdf_report
+from app.schemas import DailyMarketSummaryOut
 
 router = APIRouter(prefix="/api/reports", tags=["reports"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/pdf")
-def download_report(db: Session = Depends(get_db)):
-    pdf_bytes = build_pdf_report(db)
-    filename = f"monitor-nasdaq-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}.pdf"
+def download_report(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    pdf_bytes = build_pdf_report(db, user.id)
+    filename = f"oneb-market-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}.pdf"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
@@ -39,8 +41,6 @@ def export_csv(db: Session = Depends(get_db)):
     )
 
 
-@router.post("/refresh")
-async def refresh_now():
-    """Força coleta imediata de cotações, notícias e calendários (sem esperar o agendador)."""
-    await scheduler.refresh_all()
-    return {"status": "ok"}
+@router.get("/daily-summary", response_model=DailyMarketSummaryOut)
+def daily_summary(db: Session = Depends(get_db)):
+    return build_daily_market_summary(db)

@@ -1,0 +1,97 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  height: 32px;
+  padding: 0 var(--sp-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  /* neutraliza estilos legados de "form button" */
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  box-shadow: none;
+  filter: none;
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.button:hover {
+  text-decoration: none;
+  filter: none;
+}
+
+.button:disabled,
+.button[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sm {
+  height: 28px;
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-sm);
+}
+
+.lg {
+  height: 40px;
+  padding: 0 var(--sp-4);
+}
+
+.iconOnly {
+  width: 32px;
+  padding: 0;
+}
+
+.sm.iconOnly {
+  width: 28px;
+}
+
+.primary {
+  background: var(--brand-strong);
+  color: var(--text-on-brand);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+
+.secondary {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.danger {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--negative-text);
+}
+
+.danger:hover:not(:disabled) {
+  background: var(--negative-subtle);
+}
+
+.block {
+  width: 100%;
+}

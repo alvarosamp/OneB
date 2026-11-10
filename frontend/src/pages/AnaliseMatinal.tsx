@@ -53,7 +53,6 @@ function WatchlistRow({ row }: { row: MorningReportWatchlistRow }) {
 }
 
 export function AnaliseMatinal() {
-  const [today, setToday] = useState<MorningReport | null>(null);
   const [history, setHistory] = useState<MorningReport[]>([]);
   const [selected, setSelected] = useState<MorningReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,7 +68,6 @@ export function AnaliseMatinal() {
         api.get<MorningReport[]>('/api/morning-report/history?limit=14'),
       ]);
       const todayReport = t.status === 'fulfilled' ? t.value : null;
-      setToday(todayReport);
       setSelected(todayReport);
       setHistory(h.status === 'fulfilled' ? h.value : []);
     } finally {
@@ -85,7 +83,6 @@ export function AnaliseMatinal() {
     setGenerating(true);
     try {
       const report = await api.post<MorningReport>('/api/morning-report/generate');
-      setToday(report);
       setSelected(report);
       setHistory((prev) => [report, ...prev.filter((r) => r.id !== report.id)]);
       toast('Analise matinal gerada.', 'success');
@@ -135,11 +132,11 @@ export function AnaliseMatinal() {
         <p className="muted">Nenhuma analise matinal gerada ainda. Clique em "Gerar agora".</p>
       ) : (
         <>
-          <section>
-            <h2>
-              Indices e commodities{' '}
-              <span className="muted">(gerado {fmtDateTime(selected.generated_at)})</span>
-            </h2>
+          <section className="panel">
+            <div className="panel-title">
+              <h2>Indices e commodities</h2>
+              <span className="muted">gerado {fmtDateTime(selected.generated_at)}</span>
+            </div>
             <div className="metric-grid">
               {selected.data.indices.map((idx) => (
                 <IndexCard key={idx.key} idx={idx} />
@@ -147,10 +144,10 @@ export function AnaliseMatinal() {
             </div>
           </section>
 
-          <section>
+          <section className="panel">
             <h2>Watchlist</h2>
-            <div className="table-scroll">
-              <table className="table">
+            <div className="table-scroll compact-scroll">
+              <table className="table dense-table">
                 <thead>
                   <tr>
                     <th>Simbolo</th>
@@ -174,26 +171,26 @@ export function AnaliseMatinal() {
             </div>
           </section>
 
-          <section>
+          <section className="panel">
             <h2>Leitura do dia</h2>
-            <div className="panel">
-              <pre className="morning-report-narrative">{selected.narrative}</pre>
-            </div>
+            <pre className="morning-report-narrative">{selected.narrative}</pre>
             <button type="button" onClick={() => handleDownloadPdf(selected.id)} disabled={downloading}>
               {downloading ? 'Gerando PDF...' : 'Baixar PDF desta analise'}
             </button>
           </section>
 
           {history.length > 1 && (
-            <section>
+            <section className="panel">
               <h2>Historico</h2>
-              <ul className="alert-list">
+              <ul className="compact-list">
                 {history.map((r) => (
                   <li key={r.id}>
-                    <button type="button" className="link-btn" onClick={() => setSelected(r)}>
-                      {fmtDateTime(r.generated_at)}
-                    </button>
-                    {r.id === selected.id && <span className="muted"> (selecionado)</span>}
+                    <span className="mini-symbol">{r.id === selected.id ? 'atual' : 'ver'}</span>
+                    <div>
+                      <button type="button" className="link-btn" onClick={() => setSelected(r)}>
+                        {fmtDateTime(r.generated_at)}
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

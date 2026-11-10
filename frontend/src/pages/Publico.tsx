@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/research.css';
 import { api } from '../api/client';
 import type { SignalLog } from '../types';
 
@@ -21,7 +22,7 @@ export function Publico() {
   const agg = log?.result.aggregate;
 
   return (
-    <main className="page">
+    <main className="research-scope research-standalone">
       <h1>Monitor de risco para ações</h1>
       <p className="muted">
         Mostramos o risco de cada ativo (tendência, volatilidade, tamanho de posição, stop e resultados

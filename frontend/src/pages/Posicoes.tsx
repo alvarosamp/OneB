@@ -83,13 +83,18 @@ export function Posicoes() {
 
   return (
     <div className="container">
-      <h1>Posições &amp; P&amp;L</h1>
-      <p className="muted">
-        Registro manual de compras/vendas — não integra com nenhuma corretora nem executa nada, é
-        só contabilidade pra você acompanhar o resultado do que já operou (ex: na Exness).
-      </p>
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">Lançamento manual</p>
+          <h1>Posições &amp; P&amp;L</h1>
+          <p className="muted">
+            Registro manual de compras/vendas — não integra com nenhuma corretora nem executa nada, é
+            só contabilidade pra você acompanhar o resultado do que já operou (ex: na Exness).
+          </p>
+        </div>
+      </div>
 
-      <section>
+      <section className="panel">
         <h2>Registrar transação</h2>
         <form onSubmit={handleSubmit}>
           <input type="text" placeholder="Símbolo (ex: AAPL)" required value={symbol} onChange={(e) => setSymbol(e.target.value)} />
@@ -119,10 +124,10 @@ export function Posicoes() {
         </form>
       </section>
 
-      <section>
+      <section className="panel">
         <h2>Posições</h2>
-        <div className="table-scroll">
-          <table className="table">
+        <div className="table-scroll compact-scroll">
+          <table className="table dense-table">
             <thead>
               <tr>
                 <th>Símbolo</th>
@@ -182,10 +187,10 @@ export function Posicoes() {
       </section>
 
       {historySymbol && (
-        <section>
+        <section className="panel">
           <h2>Histórico — {historySymbol}</h2>
-          <div className="table-scroll">
-            <table className="table">
+          <div className="table-scroll compact-scroll">
+            <table className="table dense-table">
               <thead>
                 <tr>
                   <th>Data</th>

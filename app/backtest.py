@@ -29,6 +29,10 @@ class BacktestResult:
     trigger_count: int
     avg_forward_return_pct: float | None
     occurrences: list[BacktestOccurrence] = field(default_factory=list)
+    win_rate_pct: float | None = None
+    profit_factor: float | None = None
+    max_drawdown_pct: float | None = None
+    buy_hold_return_pct: float | None = None
 
 
 def backtest_conditions(
@@ -72,9 +76,23 @@ def backtest_conditions(
 
     valid_returns = [o.forward_return_pct for o in occurrences if o.forward_return_pct is not None]
     avg_return = round(sum(valid_returns) / len(valid_returns), 2) if valid_returns else None
+    wins = [r for r in valid_returns if r > 0]
+    losses = [r for r in valid_returns if r < 0]
+    win_rate = round(len(wins) / len(valid_returns) * 100, 2) if valid_returns else None
+    gross_profit = sum(wins)
+    gross_loss = abs(sum(losses))
+    profit_factor = round(gross_profit / gross_loss, 2) if gross_loss else (999.0 if gross_profit else None)
+    equity = close / close.iloc[0] if len(close) else close
+    drawdown = ((equity / equity.cummax()) - 1) * 100 if len(equity) else close
+    max_drawdown = round(float(drawdown.min()), 2) if len(drawdown) else None
+    buy_hold = round(float((close.iloc[-1] / close.iloc[0] - 1) * 100), 2) if len(close) >= 2 else None
 
     return BacktestResult(
         trigger_count=len(occurrences),
         avg_forward_return_pct=avg_return,
         occurrences=occurrences[-max_occurrences:],
+        win_rate_pct=win_rate,
+        profit_factor=profit_factor,
+        max_drawdown_pct=max_drawdown,
+        buy_hold_return_pct=buy_hold,
     )

@@ -1,0 +1,152 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  max-width: 1080px;
+}
+
+.back {
+  align-self: flex-start;
+  font-size: var(--fs-sm);
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-6);
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: var(--fs-xl);
+}
+
+.lead {
+  margin-top: var(--sp-2);
+  max-width: var(--measure);
+  color: var(--text-secondary);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-reading);
+}
+
+.meta {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.header .meta {
+  display: block;
+  margin-top: var(--sp-2);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: var(--sp-8);
+  align-items: start;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-lg);
+}
+
+.goals {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-6);
+  padding-left: var(--sp-5);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-reading);
+}
+
+.text {
+  font-size: var(--fs-md);
+  line-height: var(--lh-reading);
+  color: var(--text-secondary);
+}
+
+.modules {
+  display: grid;
+  border-top: 1px solid var(--border);
+}
+
+.module {
+  border-bottom: 1px solid var(--border);
+}
+
+.moduleHead {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: var(--sp-2);
+  align-items: center;
+  width: 100%;
+  padding: var(--sp-3) 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.moduleTitle {
+  font-weight: var(--fw-medium);
+}
+
+.lessons {
+  display: grid;
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  list-style: none;
+}
+
+.lesson {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  align-items: start;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-6);
+  border-radius: var(--radius-md);
+  color: inherit;
+}
+
+.lesson:hover {
+  background: var(--surface-hover);
+  text-decoration: none;
+}
+
+.lesson > span:nth-child(2) {
+  display: grid;
+  gap: 2px;
+}
+
+.lessonTitle {
+  color: var(--text-primary);
+}
+
+.done {
+  color: var(--brand);
+  margin-top: 2px;
+}
+
+.current {
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.todo {
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+@media (max-width: 899px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

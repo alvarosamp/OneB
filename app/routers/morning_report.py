@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app import morning_report
 from app.auth import get_current_user
 from app.db import get_db
-from app.models import MorningReport
+from app.models import MorningReport, User
 from app.reports import build_morning_report_pdf
 
 router = APIRouter(prefix="/api/morning-report", tags=["morning-report"], dependencies=[Depends(get_current_user)])
@@ -35,8 +35,8 @@ def get_history(limit: int = 14, db: Session = Depends(get_db)):
 
 
 @router.post("/generate")
-async def generate_now(db: Session = Depends(get_db)):
-    report = await morning_report.generate_and_store(db)
+async def generate_now(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    report = await morning_report.generate_and_store(db, user.id)
     return _out(report)
 
 

@@ -1,0 +1,36 @@
+{
+  "acquired_at": "2026-09-13",
+  "storage_root": "D:\\OneB\\market-data",
+  "sources": [
+    {
+      "symbol": "NQ",
+      "url": "https://www.kaggle.com/datasets/tgtanalytics/nq-futures-1min-bar-2022-2025/data",
+      "raw_zip": "D:\\OneB\\market-data\\kaggle\\nq-futures-1min-bar-2022-2025\\dataset.zip",
+      "raw_zip_bytes": 19141759,
+      "raw_zip_sha256": "8d3f157a422636e5b8dda51cc3a3d9209c50cb53f9b279d3e14b627ce59370dc",
+      "native_timeframe": "M1",
+      "research_file": "D:\\OneB\\market-data\\research-ready\\NQ_M5_2022-12-26_2025-12-12.csv.gz",
+      "research_sha256": "ce95ed9d834a6cda447fa897fb07eb66d16c2f6a4b2f961aff4021061106eb5a",
+      "limitations": ["third-party continuous series", "roll rule not documented", "no bid/ask"]
+    },
+    {
+      "symbol": "XAUUSD",
+      "url": "https://www.kaggle.com/datasets/novandraanugrah/xauusd-gold-price-historical-data-2004-2024/data",
+      "raw_zip": "D:\\OneB\\market-data\\kaggle\\xauusd-2004-2026\\dataset.zip",
+      "raw_zip_bytes": 103449070,
+      "raw_zip_sha256": "d6ab5d4cd2fd26af31859402f7b8930935198a5b0be8e5115469fa6f55605dfd",
+      "native_timeframes": ["M1", "M5"],
+      "research_files": [
+        {
+          "path": "D:\\OneB\\market-data\\research-ready\\XAUUSD_M5_2021-01-01_2026-01-31.csv.gz",
+          "sha256": "8d6eae83d4cae61224d9dd762ff1c6fd31b1967198e2e10027fc1fbd13c725bb"
+        },
+        {
+          "path": "D:\\OneB\\market-data\\research-ready\\XAUUSD_M10_2021-01-01_2026-01-31.csv.gz",
+          "sha256": "16ae605c1c75c1f10781718d32f5301f780a4d549990a04bcf2dcc530cc21"
+        }
+      ],
+      "limitations": ["XAUUSD is not COMEX GC", "feed-dependent volume", "no bid/ask"]
+    }
+  ]
+}

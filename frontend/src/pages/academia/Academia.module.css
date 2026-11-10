@@ -1,0 +1,240 @@
+/* Academia: mesmo sistema do terminal, mais respiro e texto de leitura confortável. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  max-width: 1080px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: var(--fs-xl);
+}
+
+.lead {
+  margin-top: var(--sp-2);
+  max-width: var(--measure);
+  color: var(--text-secondary);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-reading);
+}
+
+.sectionTitle {
+  font-size: var(--fs-lg);
+  margin-bottom: var(--sp-4);
+}
+
+/* Continuar */
+.continue {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) auto;
+  gap: var(--sp-6);
+  align-items: center;
+  padding: var(--sp-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-0);
+}
+
+.thumb {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  color: var(--text-secondary);
+}
+
+.thumb svg {
+  color: var(--text-tertiary);
+}
+
+.continueBody {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.continueLabel {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.continueTitle {
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
+}
+
+.meta {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  max-width: 420px;
+}
+
+.bar {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+  border-radius: inherit;
+}
+
+/* Trilhas */
+.tracks {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+
+.track {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 200px 120px;
+  gap: var(--sp-4);
+  align-items: center;
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--border);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.track:hover {
+  text-decoration: none;
+  background: var(--surface-hover);
+}
+
+.trackNumber {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  color: var(--text-secondary);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.trackDone {
+  background: var(--brand-subtle);
+  box-shadow: inset 0 0 0 1px var(--brand-border);
+  color: var(--brand);
+}
+
+.trackBody {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.trackTitle {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+}
+
+.trackSummary {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.trackProgress {
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.trackStatus {
+  justify-self: end;
+}
+
+.unavailable {
+  opacity: 0.7;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  align-items: center;
+  margin-bottom: var(--sp-3);
+}
+
+.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-8);
+}
+
+.list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list > li {
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.listTitle {
+  font-weight: var(--fw-medium);
+}
+
+.certificate {
+  margin-top: var(--sp-4);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  max-width: var(--measure);
+}
+
+@media (max-width: 899px) {
+  .continue {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .thumb {
+    display: none;
+  }
+
+  .track {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .trackProgress,
+  .trackStatus {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

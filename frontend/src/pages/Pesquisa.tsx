@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import '../styles/research.css';
 import { api } from '../api/client';
 import { useToast } from '../context/ToastContext';
 import type { ResearchEventRow, ResearchStudy } from '../types';
@@ -72,7 +73,7 @@ export function Pesquisa() {
   const symbols = study?.symbols ?? [];
 
   return (
-    <div className="container dashboard-container">
+    <div className="research-scope">
       <div className="page-header">
         <div>
           <p className="eyebrow">Pesquisa</p>
